@@ -1,7 +1,8 @@
 import React from 'react';
-import { Bell, LogIn, MessageCircle } from 'lucide-react';
+import { Bell, LogIn, MessageCircle, Shield, ShieldCheck } from 'lucide-react';
 import { AppNotification, UserProfile } from '../types';
 import { WHATSAPP_HELP_URL } from '../constants/links';
+import { VestraLogo } from './VestraLogo';
 
 interface TopHeaderProps {
   notifications: AppNotification[];
@@ -15,82 +16,81 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
   notifications,
   user,
   onOpenNotifications,
+  onOpenAdmin,
   onOpenAuth,
 }) => {
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const isSuperAdmin = Boolean(user && user.isAdmin === true);
 
   return (
-    <header className="px-5 pt-3 pb-2 flex items-center justify-between bg-transparent">
+    <header className="px-5 pt-3.5 pb-2.5 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-slate-200/70 sticky top-0 z-30 transition-all">
       {/* Brand & Logo */}
-      <div className="flex items-center gap-2.5">
-        {/* SolNova brand mark: golden sun with energy bolt */}
-        <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#312E81] via-[#1E40AF] to-[#2563EB] shadow-md shadow-indigo-500/25">
-          <svg viewBox="0 0 24 24" className="w-5.5 h-5.5" aria-hidden="true">
-            <defs>
-              <linearGradient id="snSunHdr" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#FDE68A" />
-                <stop offset="1" stopColor="#F59E0B" />
-              </linearGradient>
-            </defs>
-            <circle cx="12" cy="12" r="7.5" fill="none" stroke="#FBBF24" strokeOpacity="0.4" strokeWidth="1" />
-            <circle cx="12" cy="12" r="4.8" fill="url(#snSunHdr)" />
-            <path d="M12.9 7.5 l-3.1 5.1 h2.2 l-0.9 3.7 l3.1 -5.1 h-2.2 z" fill="#FFFBEB" />
-          </svg>
-        </div>
-
-        <div className="flex flex-col">
-          <h1 className="text-[17px] font-extrabold tracking-tight text-[#0F172A] leading-tight">
-            SolNova Capital
-          </h1>
-          <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 leading-none mt-0.5">
-            Solar Mining & Investment
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <VestraLogo size="sm" showText={true} />
       </div>
 
       {/* Action Icons */}
-      <div className="flex items-center gap-1.5">
-        {/* WhatsApp Help Option */}
+      <div className="flex items-center gap-2">
+        {/* Admin Quick Switch (if authenticated admin) */}
+        {isSuperAdmin && (
+          <button
+            id="btn-header-admin-console"
+            onClick={onOpenAdmin}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
+            title="Switch to Administrator Console"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Admin</span>
+          </button>
+        )}
+
+        {/* WhatsApp VIP Concierge Option */}
         <a
           id="btn-whatsapp-header"
           href={WHATSAPP_HELP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 border border-emerald-500/30 transition-all text-[11px] font-bold shadow-2xs active:scale-95"
-          title="Direct WhatsApp Help & Support"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border border-emerald-200 transition-all text-[11px] font-bold shadow-2xs active:scale-95"
+          title="Direct VIP WhatsApp Concierge"
         >
-          <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/20" />
-          <span className="hidden sm:inline">WhatsApp</span>
+          <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="hidden sm:inline">Desk</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
         </a>
 
-        {onOpenAuth && (
-          <button
-            onClick={onOpenAuth}
-            className="p-1.5 text-slate-700 hover:text-slate-900 rounded-full hover:bg-slate-200/60 transition-colors flex items-center justify-center cursor-pointer"
-            title={user ? `Signed in as ${user.fullName}` : 'Sign In / Register'}
-          >
-            {user ? (
-              <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold text-[11px] flex items-center justify-center shadow-xs">
-                {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U'}
-              </div>
-            ) : (
-              <LogIn className="w-4 h-4 text-blue-600" />
-            )}
-          </button>
-        )}
-
+        {/* Notifications */}
         <button
           id="btn-notifications"
           onClick={onOpenNotifications}
           aria-label="View notifications"
-          className="relative p-1.5 text-slate-700 hover:text-slate-900 rounded-full hover:bg-slate-200/60 transition-colors cursor-pointer"
+          className="relative p-2 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
         >
-          <Bell className="w-5 h-5" />
+          <Bell className="w-4.5 h-4.5 text-slate-700" />
           {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+            <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-rose-600 text-[9px] font-extrabold text-white rounded-full flex items-center justify-center ring-2 ring-white">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
           )}
         </button>
+
+        {/* User Profile Avatar / Switch */}
+        {onOpenAuth && (
+          <button
+            onClick={onOpenAuth}
+            className="p-1 text-slate-700 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer"
+            title={user ? `Signed in as ${user.fullName} (${user.username})` : 'Sign In / Register'}
+          >
+            {user ? (
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 text-emerald-400 font-bold text-xs flex items-center justify-center shadow-xs">
+                {user.fullName ? user.fullName.charAt(0).toUpperCase() : 'V'}
+              </div>
+            ) : (
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+                <LogIn className="w-3.5 h-3.5" />
+              </div>
+            )}
+          </button>
+        )}
       </div>
     </header>
   );

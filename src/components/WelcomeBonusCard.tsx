@@ -56,11 +56,11 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
                 Welcome Bonus Unlocked
               </h4>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/70 text-emerald-800 uppercase tracking-wide">
-                0% Fee Active
+                Credited
               </span>
             </div>
             <p className="text-[12px] text-slate-600 mt-0.5 leading-snug">
-              UGX 4,000 welcome credit is active in your account.
+              UGX 5,000 welcome credit is active in your wallet.
             </p>
           </div>
         </div>
@@ -70,12 +70,12 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
             onClick={onOpenWithdraw}
             className="text-[12px] font-bold text-emerald-800 bg-white hover:bg-emerald-100/60 px-3 py-1.5 rounded-xl border border-emerald-300 shadow-2xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
           >
-            <span>Withdraw (0% Fee)</span>
+            <span>Withdraw Bonus</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600" />
           </button>
         ) : (
           <span className="text-[13px] font-black font-mono text-emerald-700 shrink-0 bg-white/80 px-2.5 py-1 rounded-xl border border-emerald-200/60 shadow-2xs">
-            +UGX 4,000
+            +UGX 5,000
           </span>
         )}
       </div>
@@ -117,7 +117,7 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
     }
   };
 
-  // State 2: Deposit is approved & bonus is ready to withdraw at 0% fee or claim
+  // State 2: Deposit is approved & bonus is ready to withdraw (30% bonus charge applies)
   if (hasApprovedDeposit) {
     return (
       <div
@@ -131,19 +131,19 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
               <Gift className="w-3.5 h-3.5 text-amber-300" />
               Welcome Bonus Ready
             </span>
-            <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              0% Transaction Fee
+            <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30 flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+              Unlocked with Deposit
             </span>
           </div>
 
           <div>
             <h3 className="text-[16.5px] font-black tracking-tight text-white flex items-center gap-2">
-              <span>Withdraw UGX 4,000 Welcome Bonus</span>
+              <span>Withdraw UGX 5,000 Welcome Bonus</span>
               <Sparkles className="w-4 h-4 text-amber-300" />
             </h3>
             <p className="text-[12.5px] text-blue-100/90 mt-1 leading-snug">
-              Your deposit has been approved! You can now withdraw your UGX 4,000 Welcome Bonus at <strong className="text-amber-300 font-bold">0% transaction fee</strong>, or claim it to your wallet.
+              Your qualifying deposit has been approved! Your UGX 5,000 Welcome Bonus is unlocked for withdrawal (subject to 30% bonus protection charge: UGX 1,500 fee, UGX 3,500 payout).
             </p>
           </div>
 
@@ -155,17 +155,17 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {/* Direct 0% Fee Withdrawal Action */}
+            {/* Direct Bonus Withdrawal Action */}
             {onOpenWithdraw && (
               <button
-                id="btn-withdraw-welcome-bonus-zero-fee"
+                id="btn-withdraw-welcome-bonus-action"
                 onClick={onOpenWithdraw}
                 className="py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] text-white font-extrabold text-[13px] rounded-xl transition-all shadow-md shadow-emerald-900/30 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ArrowUpRight className="w-4 h-4 text-emerald-100" />
-                <span>Withdraw UGX 4,000</span>
+                <span>Withdraw UGX 5,000</span>
                 <span className="text-[10px] font-black bg-black/20 text-emerald-100 px-1.5 py-0.5 rounded">
-                  0% FEE
+                  30% CHARGE
                 </span>
               </button>
             )}
@@ -207,14 +207,14 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h4 className="text-[13.5px] font-extrabold text-slate-800 leading-tight">
-              UGX 4,000 Welcome Bonus
+              UGX 5,000 Welcome Bonus
             </h4>
             <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100/80 border border-amber-200/60 px-2 py-0.5 rounded-full uppercase tracking-wide">
-              Locked
+              Restricted
             </span>
           </div>
           <p className="text-[12px] text-slate-600 mt-0.5 leading-snug">
-            Your UGX 4,000 bonus is locked. Make and complete your first deposit to unlock <strong className="text-slate-800 font-semibold">0% fee withdrawal</strong> to your mobile money or bank account.
+            Your UGX 5,000 Welcome Bonus is restricted from immediate withdrawal. Complete a qualifying deposit (minimum UGX 20,000) to unlock withdrawal. Attempting to withdraw bonus funds is subject to a 30% bonus protection charge.
           </p>
         </div>
       </div>

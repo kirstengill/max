@@ -775,10 +775,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-[17px] font-black text-white leading-none">
-                  ADMINISTRATION HUB
+                  VESTRA ADMIN CONSOLE
                 </h2>
-                <span className="text-[9.5px] font-mono font-bold bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full border border-blue-400/30">
-                  SUPABASE CLOUD
+                <span className="text-[9.5px] font-mono font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-400/30">
+                  SOVEREIGN VAULTS
                 </span>
               </div>
               <p className="text-[11.5px] text-slate-400 mt-1">
@@ -1425,7 +1425,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                         </span>
                         <div className="flex items-center gap-1">
                           <span className="font-mono font-bold text-slate-800 text-[11.5px] truncate block">
-                            {tx.recipientInfo || (isDeposit ? 'Direct Mobile Money' : 'SolNova Financial Core')}
+                            {tx.recipientInfo || (isDeposit ? 'Direct Mobile Money' : 'VESTRA Treasury Core')}
                           </span>
                           {tx.recipientInfo && (
                             <button
@@ -2005,11 +2005,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   title: '',
                   subtitle: '',
                   category: 'DS-Mining',
-                  dailyRewardUGX: 250000,
-                  minInvestUGX: 5000000,
-                  estYearlyROI: 120,
-                  hashrate: '60.0 TH/s',
-                  powerSource: 'Solar / Hybrid Dynamo',
+                  dailyRewardUGX: 4500,
+                  minInvestUGX: 15000,
+                  estYearlyROI: 10950,
+                  hashrate: 'Algorithmic Engine',
+                  powerSource: 'Clean Energy Grid',
                   status: 'Active',
                   image: '',
                 });
@@ -2801,7 +2801,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </label>
                   <input
                     type="number"
-                    placeholder="e.g. 5000000"
+                    placeholder="e.g. 15000"
                     value={editingProject.minInvestUGX || ''}
                     onChange={(e) =>
                       setEditingProject({
@@ -2820,7 +2820,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </label>
                   <input
                     type="number"
-                    placeholder="e.g. 212328"
+                    placeholder="e.g. 4500"
                     value={editingProject.dailyRewardUGX || ''}
                     onChange={(e) =>
                       setEditingProject({

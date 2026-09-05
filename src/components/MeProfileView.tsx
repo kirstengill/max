@@ -88,8 +88,8 @@ export const MeProfileView: React.FC<MeProfileViewProps> = ({
               <h4 className="text-[13.5px] font-bold text-slate-900 leading-tight">
                 Referral Program
               </h4>
-              <span className="text-[9.5px] font-bold uppercase tracking-wider bg-blue-200 text-blue-900 px-1.5 py-0.2 rounded-full">
-                Code: {user?.referralCode || 'SC-SOLNOVA'}
+              <span className="text-[9.5px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-900 px-1.5 py-0.2 rounded-full">
+                Code: {user?.referralCode || 'VESTRA-VIP'}
               </span>
             </div>
             <p className="text-[11px] text-slate-600 mt-0.5">
@@ -233,7 +233,7 @@ export const MeProfileView: React.FC<MeProfileViewProps> = ({
 
       {/* Footer Info */}
       <div className="text-center pt-2 text-[11px] text-slate-400">
-        SolNova Capital • Solar Mining & Investment
+        VESTRA Sovereign Capital • Institutional Yield Vaults
       </div>
     </div>
   );

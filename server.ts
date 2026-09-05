@@ -64,7 +64,7 @@ export interface CatalogMachine {
   id: string;
   title: string;
   subtitle?: string;
-  category: 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All';
+  category: 'Alpha Vaults' | 'Infrastructure' | 'Private Wealth' | 'Liquid Yield' | 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All' | string;
   image: string;
   dailyRewardUGX: number;
   status: 'Active' | 'Maintenance' | 'Pending' | 'Reserved';
@@ -208,13 +208,13 @@ const serverDatabase: ServerUserStore = {
           userId: defaultUserId,
           username: 'demouser',
           type: 'bonus',
-          amountUGX: 4000,
+          amountUGX: 5000,
           currency: 'UGX',
           status: 'completed',
           date: new Date().toLocaleString(),
           timestamp: Date.now(),
           created_at: new Date().toISOString(),
-          description: 'Welcome Bonus Credit',
+          description: 'Welcome Bonus — UGX 5,000 (New Account Activation)',
           paymentMethod: 'System',
         },
       ],
@@ -224,8 +224,8 @@ const serverDatabase: ServerUserStore = {
         {
           id: 'notif_demo_1',
           userId: defaultUserId,
-          title: 'Welcome Bonus Claimed!',
-          message: 'UGX 4,000 starter bonus has been credited to your account.',
+          title: 'Welcome Bonus Credited!',
+          message: 'UGX 5,000 Welcome Bonus has been credited to your account.',
           type: 'success',
           read: false,
           date: 'Just now',
@@ -246,75 +246,94 @@ const balanceAdjustments: BalanceAdjustmentRecord[] = [];
 let catalogDatabase: CatalogMachine[] = [
   {
     id: 'mach_starter_15k',
-    title: 'STARTER NODE',
-    subtitle: '(Entry-level Miner)',
-    category: 'DS-Mining',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
-    dailyRewardUGX: 1250, // Massive yield so it returns 25,000 very quickly
+    title: 'VESTRA Liquid Arbitrage Vault',
+    subtitle: '(High-Frequency Algorithmic Yield)',
+    category: 'Liquid Yield',
+    image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1000&q=80',
+    dailyRewardUGX: 4500,
     status: 'Active',
-    estYearlyROI: 3000,
+    estYearlyROI: 10950,
     minInvestUGX: 15000,
-    hashrate: '2.5 TH/s',
-    powerSource: 'Grid Power',
-    uptime: '99.50%',
-    temperature: '35.0°C',
-    efficiency: 95.0,
+    hashrate: 'Algorithmic MM Engine',
+    powerSource: 'Tier-1 Liquidity Reserve',
+    uptime: '99.98%',
+    temperature: 'Optimal',
+    efficiency: 99.5,
+    totalMinedUGX: 0,
+    unclaimedRewardsUGX: 0,
+    isBoosted: false,
+  },
+  {
+    id: 'mach_horizon_liquid_res',
+    title: 'VESTRA Horizon Liquid Reserve',
+    subtitle: '(Daily Flexible Income Vault)',
+    category: 'Liquid Yield',
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000&q=80',
+    dailyRewardUGX: 6200,
+    status: 'Active',
+    estYearlyROI: 11315,
+    minInvestUGX: 20000,
+    hashrate: 'Dynamic Yield Engine',
+    powerSource: 'Multi-Protocol Vault',
+    uptime: '99.99%',
+    temperature: 'Nominal',
+    efficiency: 99.7,
     totalMinedUGX: 0,
     unclaimedRewardsUGX: 0,
     isBoosted: false,
   },
   {
     id: 'mach_solar_mech_10',
-    title: 'SOLAR-MECH 10',
-    subtitle: '(Advanced Mower-Miner)',
-    category: 'DS-Mining',
-    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
-    dailyRewardUGX: 212328,
+    title: 'VESTRA Sovereign AI Cluster',
+    subtitle: '(High-Throughput Enterprise GPU Infrastructure)',
+    category: 'Infrastructure',
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
+    dailyRewardUGX: 9600,
     status: 'Active',
-    estYearlyROI: 120,
-    minInvestUGX: 5000000,
-    hashrate: '54.2 TH/s',
-    powerSource: 'Solar 1.2kW Array + Dual Kinetic Blade Dynamos',
-    uptime: '99.94%',
-    temperature: '41.2°C',
-    efficiency: 99.2,
+    estYearlyROI: 11680,
+    minInvestUGX: 30000,
+    hashrate: '520 TFLOPS FP16',
+    powerSource: 'Hydro-Cooled Zero Carbon Grid',
+    uptime: '99.99%',
+    temperature: '19.4°C',
+    efficiency: 99.8,
     totalMinedUGX: 18450000,
     unclaimedRewardsUGX: 142800,
     isBoosted: false,
   },
   {
     id: 'mach_ds_mining_shoe',
-    title: 'DS-MINING SHOE (Series 1)',
-    subtitle: '(Kinetic Footwear Node)',
-    category: 'DS-Mining',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
-    dailyRewardUGX: 1200000,
+    title: 'VESTRA Quantum Alpha Fund',
+    subtitle: '(Delta-Neutral Quantitative Multi-Strategy)',
+    category: 'Alpha Vaults',
+    image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=1000&q=80',
+    dailyRewardUGX: 20000,
     status: 'Active',
-    estYearlyROI: 135,
-    minInvestUGX: 25000000,
-    hashrate: '210.8 TH/s',
-    powerSource: 'Kinetic-Electro Hybrid Regenerative Coil',
-    uptime: '99.98%',
-    temperature: '38.6°C',
-    efficiency: 98.8,
+    estYearlyROI: 12166,
+    minInvestUGX: 60000,
+    hashrate: 'Dynamic Matrix v4',
+    powerSource: 'Automated Smart Liquidity',
+    uptime: '100.00%',
+    temperature: 'Nominal',
+    efficiency: 99.9,
     totalMinedUGX: 148200000,
     unclaimedRewardsUGX: 890000,
     isBoosted: true,
   },
   {
     id: 'mach_hydro_turbine_x500',
-    title: 'HYDRO-MINER X500',
-    subtitle: '(Micro-Hydro Generator)',
-    category: 'Clean Energy',
-    image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=800&q=80',
-    dailyRewardUGX: 717672,
+    title: 'VESTRA Clean Grid Infrastructure',
+    subtitle: '(Renewable Micro-Turbine & Solar Grid)',
+    category: 'Infrastructure',
+    image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=1000&q=80',
+    dailyRewardUGX: 42000,
     status: 'Active',
-    estYearlyROI: 110,
-    minInvestUGX: 10000000,
-    hashrate: '118.0 TH/s',
-    powerSource: 'Micro-Hydro Turbine + Closed Loop Coolant',
-    uptime: '99.85%',
-    temperature: '32.1°C',
+    estYearlyROI: 12775,
+    minInvestUGX: 120000,
+    hashrate: '1.2 MW Co-Gen',
+    powerSource: 'High-Efficiency Hydroelectric & Solar',
+    uptime: '99.95%',
+    temperature: '22.0°C',
     efficiency: 99.6,
     totalMinedUGX: 42100000,
     unclaimedRewardsUGX: 350000,
@@ -322,19 +341,19 @@ let catalogDatabase: CatalogMachine[] = [
   },
   {
     id: 'mach_quantum_vip_9000',
-    title: 'QUANTUM VIP NODE-9',
-    subtitle: '(High-Density Institutional Rig)',
-    category: 'VIP Products',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
-    dailyRewardUGX: 4500000,
-    status: 'Reserved',
-    estYearlyROI: 180,
-    minInvestUGX: 100000000,
-    hashrate: '1,250.0 TH/s',
-    powerSource: 'Direct Grid / Cryo-Immersion Subsystem',
+    title: 'VESTRA Apex VIP Syndicate',
+    subtitle: '(Exclusive Institutional Private Placement)',
+    category: 'Private Wealth',
+    image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=1000&q=80',
+    dailyRewardUGX: 110000,
+    status: 'Active',
+    estYearlyROI: 13383,
+    minInvestUGX: 300000,
+    hashrate: 'Sovereign Institutional',
+    powerSource: 'Prime Custodial Yield Pool',
     uptime: '100.00%',
-    temperature: '26.4°C',
-    efficiency: 99.9,
+    temperature: 'Cryo-Shielded',
+    efficiency: 100.0,
     totalMinedUGX: 0,
     unclaimedRewardsUGX: 0,
     isBoosted: false,
@@ -423,7 +442,16 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
               createdAt: new Date().toISOString(),
             },
             data: {
-              wallet: { totalBalanceUGX: 4000, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+              wallet: {
+                totalBalanceUGX: 5000,
+                welcomeBonusUGX: 5000,
+                withdrawableBalanceUGX: 0,
+                depositedBalanceUGX: 0,
+                bonusLocked: true,
+                dailyPnlUGX: 0,
+                activeMachinesCount: 0,
+                pendingTasksCount: 0,
+              },
               transactions: [],
               machines: [],
               adminTasks: [],
@@ -511,7 +539,16 @@ app.post('/api/auth/signin', async (req: Request, res: Response) => {
           serverDatabase[data.user.id] = {
             user: userProfile,
             data: {
-              wallet: { totalBalanceUGX: 4000, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+              wallet: {
+                totalBalanceUGX: 5000,
+                welcomeBonusUGX: 5000,
+                withdrawableBalanceUGX: 0,
+                depositedBalanceUGX: 0,
+                bonusLocked: true,
+                dailyPnlUGX: 0,
+                activeMachinesCount: 0,
+                pendingTasksCount: 0,
+              },
               transactions: [],
               machines: [],
               adminTasks: [],
@@ -660,10 +697,14 @@ app.post('/api/auth/signup', async (req: Request, res: Response) => {
     createdAt: new Date().toISOString(),
   };
 
-  // Initial user data with automatic UGX 4,000 welcome credit
+  // Initial user data with automatic UGX 5,000 welcome credit
   const initialUserData = {
     wallet: {
-      totalBalanceUGX: 4000,
+      totalBalanceUGX: 5000,
+      welcomeBonusUGX: 5000,
+      withdrawableBalanceUGX: 0,
+      depositedBalanceUGX: 0,
+      bonusLocked: true,
       dailyPnlUGX: 0,
       activeMachinesCount: 0,
       pendingTasksCount: 0,
@@ -674,14 +715,14 @@ app.post('/api/auth/signup', async (req: Request, res: Response) => {
         userId: newUserId,
         username: cleanUsername,
         userFullName: newUser.fullName,
-        type: 'reward',
-        amountUGX: 4000,
+        type: 'bonus',
+        amountUGX: 5000,
         currency: 'UGX',
         date: 'Just now',
         timestamp: Date.now(),
         status: 'completed',
-        description: 'New User Starting Balance (UGX 4,000 Welcome Credit)',
-        txHash: `0x${Math.random().toString(16).substring(2, 10)}...4000`,
+        description: 'Welcome Bonus — UGX 5,000 (New Account Activation)',
+        txHash: `0x${Math.random().toString(16).substring(2, 10)}...5000`,
       },
     ],
     machines: [],
@@ -690,7 +731,7 @@ app.post('/api/auth/signup', async (req: Request, res: Response) => {
       {
         id: `notif_welcome_${Date.now()}`,
         title: 'Welcome Bonus Credited',
-        message: 'UGX 4,000 starting credit deposited into your consolidated wallet.',
+        message: 'UGX 5,000 Welcome Bonus deposited into your consolidated wallet.',
         timestamp: 'Just now',
         read: false,
         type: 'success',
@@ -973,6 +1014,13 @@ app.post('/api/wallet/deposit', requireAuth, (req: Request, res: Response) => {
     return res.status(400).json({ error: 'Please enter a valid deposit amount in UGX.' });
   }
 
+  const MIN_DEPOSIT_UGX = 20000;
+  if (numAmount < MIN_DEPOSIT_UGX) {
+    return res.status(400).json({
+      error: `Minimum Deposit: The minimum deposit amount is UGX ${MIN_DEPOSIT_UGX.toLocaleString()}.`,
+    });
+  }
+
   const txId = `tx_dep_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' Today';
   const methodLabel = paymentMethod || 'MTN Mobile Money / Airtel';
@@ -1049,13 +1097,13 @@ app.post('/api/wallet/withdraw', requireAuth, (req: Request, res: Response) => {
     return res.status(403).json({ error: 'Account is suspended. Withdrawals are disabled.' });
   }
 
-  const { amountUGX, paymentMethod, recipientInfo } = req.body;
+  const { amountUGX, paymentMethod, recipientInfo, isBonusWithdrawal } = req.body;
   const numAmount = Math.round(Number(amountUGX));
   if (!numAmount || numAmount <= 0) {
     return res.status(400).json({ error: 'Please enter a valid withdrawal amount in UGX.' });
   }
 
-  const MIN_WITHDRAWAL_UGX = 10000;
+  const MIN_WITHDRAWAL_UGX = 5000;
   if (numAmount < MIN_WITHDRAWAL_UGX) {
     return res.status(400).json({
       error: `Minimum Withdrawal: The minimum withdrawal amount is UGX ${MIN_WITHDRAWAL_UGX.toLocaleString()}.`,
@@ -1070,10 +1118,37 @@ app.post('/api/wallet/withdraw', requireAuth, (req: Request, res: Response) => {
     });
   }
 
+  // Check if user has an approved qualifying deposit
+  const hasApprovedDeposit = record.data.transactions.some(
+    (t: any) => t.type === 'deposit' && (t.status === 'approved' || t.status === 'completed')
+  );
+
+  const welcomeBonusAmount = record.data.wallet.welcomeBonusUGX ?? 5000;
+  // Non-bonus funds available for withdrawal before deposit
+  const nonBonusFunds = hasApprovedDeposit ? currentBalance : Math.max(0, currentBalance - welcomeBonusAmount);
+
+  // Welcome Bonus Withdrawal Restriction:
+  // If user attempts to withdraw money that comes from the welcome bonus before making a qualifying deposit, prevent the withdrawal.
+  if (!hasApprovedDeposit && (isBonusWithdrawal || numAmount > nonBonusFunds)) {
+    return res.status(400).json({
+      error: `Welcome Bonus Restriction: The UGX ${welcomeBonusAmount.toLocaleString()} welcome bonus cannot be withdrawn until you have made a qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.`,
+      restrictionActive: true,
+      welcomeBonusUGX: welcomeBonusAmount,
+    });
+  }
+
+  // Normal withdrawal fee (20%) vs Bonus withdrawal protection fee (30%)
+  const isBonus = Boolean(isBonusWithdrawal);
+  const feeRate = isBonus ? 0.30 : 0.20; // 30% bonus-related protection charge vs 20% normal withdrawal fee
+  const feeUGX = Math.round(numAmount * feeRate);
+  const netAmountUGX = numAmount - feeUGX;
+
   const txId = `tx_wth_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' Today';
   const methodLabel = paymentMethod || 'Mobile Money Payout';
-  const desc = `Withdrawal to ${recipientInfo || 'Registered Account'}`;
+  const desc = isBonus
+    ? `Bonus Withdrawal of UGX ${numAmount.toLocaleString()} (30% Charge: UGX ${feeUGX.toLocaleString()} | You Receive: UGX ${netAmountUGX.toLocaleString()}) to ${recipientInfo || 'Registered Destination'}`
+    : `Normal Withdrawal of UGX ${numAmount.toLocaleString()} (20% Fee: UGX ${feeUGX.toLocaleString()} | You Receive: UGX ${netAmountUGX.toLocaleString()}) to ${recipientInfo || 'Registered Destination'}`;
 
   const newTx = {
     id: txId,
@@ -1082,6 +1157,11 @@ app.post('/api/wallet/withdraw', requireAuth, (req: Request, res: Response) => {
     userFullName: userRecord.fullName,
     type: 'withdraw',
     amountUGX: numAmount,
+    feeUGX: feeUGX,
+    netAmountUGX: netAmountUGX,
+    feeRate: feeRate,
+    totalDeductionUGX: numAmount,
+    isBonusWithdrawal: isBonus,
     currency: 'UGX',
     date: nowStr,
     timestamp: Date.now(),
@@ -1097,7 +1177,7 @@ app.post('/api/wallet/withdraw', requireAuth, (req: Request, res: Response) => {
   const userNotif = {
     id: `notif_${Date.now()}`,
     title: 'Withdrawal Request Submitted',
-    message: `Your withdrawal request for UGX ${numAmount.toLocaleString()} to ${recipientInfo || methodLabel} is pending administrator review and approval.`,
+    message: `Your withdrawal request for UGX ${numAmount.toLocaleString()} (${Math.round(feeRate * 100)}% Fee: UGX ${feeUGX.toLocaleString()}, Final Payout: UGX ${netAmountUGX.toLocaleString()}) to ${recipientInfo || methodLabel} is pending administrator review and approval.`,
     timestamp: 'Just now',
     read: false,
     type: 'info',
@@ -1106,13 +1186,15 @@ app.post('/api/wallet/withdraw', requireAuth, (req: Request, res: Response) => {
 
   const adminTask = {
     id: `task_${Date.now()}`,
-    title: `Pending Withdrawal Review: UGX ${numAmount.toLocaleString()}`,
-    description: `User @${userRecord.username} requested withdrawal of UGX ${numAmount.toLocaleString()} to ${recipientInfo || methodLabel}.`,
+    title: `Pending Withdrawal Review: UGX ${numAmount.toLocaleString()} (${Math.round(feeRate * 100)}% Fee: UGX ${feeUGX.toLocaleString()} | Payout: UGX ${netAmountUGX.toLocaleString()})`,
+    description: `User @${userRecord.username} requested withdrawal of UGX ${numAmount.toLocaleString()} (${Math.round(feeRate * 100)}% fee: UGX ${feeUGX.toLocaleString()}, Net: UGX ${netAmountUGX.toLocaleString()}) to ${recipientInfo || methodLabel}.`,
     urgency: 'high',
     category: 'Withdrawal Authorization',
     timestamp: 'Just now',
     status: 'pending',
     amountUGX: numAmount,
+    feeUGX: feeUGX,
+    netAmountUGX: netAmountUGX,
     transactionId: txId,
     userId: userId,
     username: userRecord.username,
@@ -1132,6 +1214,13 @@ app.post('/api/wallet/withdraw', requireAuth, (req: Request, res: Response) => {
     message: 'Withdrawal request submitted. Pending administrator approval.',
     transaction: newTx,
     wallet: record.data.wallet,
+    withdrawalSummary: {
+      withdrawalAmountUGX: numAmount,
+      feeRate: feeRate,
+      feeUGX: feeUGX,
+      finalAmountReceivedUGX: netAmountUGX,
+      totalDeductionUGX: numAmount,
+    },
   });
 });
 
@@ -1211,11 +1300,14 @@ app.post('/api/admin/transactions/:id/approve', requireAuth, requireAdmin, (req:
     targetTx.status = 'approved';
     targetTx.approvedAt = new Date().toISOString();
     targetUserRecord.data.wallet.totalBalanceUGX += targetTx.amountUGX;
+    targetUserRecord.data.wallet.depositedBalanceUGX = (targetUserRecord.data.wallet.depositedBalanceUGX || 0) + targetTx.amountUGX;
+    targetUserRecord.data.wallet.bonusLocked = false;
+    targetUserRecord.data.wallet.withdrawableBalanceUGX = targetUserRecord.data.wallet.totalBalanceUGX;
 
     targetUserRecord.data.notifications.unshift({
       id: `notif_appr_${Date.now()}`,
       title: 'Deposit Approved & Credited!',
-      message: `Your deposit of UGX ${targetTx.amountUGX.toLocaleString()} has been approved. UGX ${targetTx.amountUGX.toLocaleString()} was credited to your balance.`,
+      message: `Your deposit of UGX ${targetTx.amountUGX.toLocaleString()} has been approved. UGX ${targetTx.amountUGX.toLocaleString()} was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.`,
       timestamp: 'Just now',
       read: false,
       type: 'success',
@@ -1228,14 +1320,22 @@ app.post('/api/admin/transactions/:id/approve', requireAuth, requireAdmin, (req:
       });
     }
 
+    const feeRate = targetTx.feeRate ?? (targetTx.isBonusWithdrawal ? 0.30 : 0.20);
+    const feeUGX = targetTx.feeUGX ?? Math.round(targetTx.amountUGX * feeRate);
+    const netPayout = targetTx.netAmountUGX ?? (targetTx.amountUGX - feeUGX);
+
     targetTx.status = 'approved';
     targetTx.approvedAt = new Date().toISOString();
     targetUserRecord.data.wallet.totalBalanceUGX -= targetTx.amountUGX;
+    targetUserRecord.data.wallet.withdrawableBalanceUGX = Math.max(
+      0,
+      (targetUserRecord.data.wallet.withdrawableBalanceUGX || userBalance) - targetTx.amountUGX
+    );
 
     targetUserRecord.data.notifications.unshift({
       id: `notif_appr_${Date.now()}`,
       title: 'Withdrawal Approved & Dispatched!',
-      message: `Your withdrawal of UGX ${targetTx.amountUGX.toLocaleString()} has been authorized and dispatched to ${targetTx.recipientInfo || 'your destination'}.`,
+      message: `Your withdrawal of UGX ${targetTx.amountUGX.toLocaleString()} (${Math.round(feeRate * 100)}% Fee: UGX ${feeUGX.toLocaleString()}, Net Dispatched: UGX ${netPayout.toLocaleString()}) has been authorized and dispatched to ${targetTx.recipientInfo || 'your destination'}.`,
       timestamp: 'Just now',
       read: false,
       type: 'success',
@@ -1591,8 +1691,11 @@ app.post('/api/user/investments/buy', requireAuth, (req: Request, res: Response)
   const { machineId, title, category, image, minInvestUGX, dailyRewardUGX, hashrate, estYearlyROI, powerSource } = req.body;
   const cost = Math.round(Number(minInvestUGX));
 
-  if (!cost || cost <= 0) {
-    return res.status(400).json({ error: 'Invalid investment machine configuration.' });
+  const MIN_INVESTMENT_UGX = 15000;
+  if (!cost || cost < MIN_INVESTMENT_UGX) {
+    return res.status(400).json({
+      error: `Minimum Investment: The minimum investment amount is UGX ${MIN_INVESTMENT_UGX.toLocaleString()}.`,
+    });
   }
 
   const currentBalance = record.data.wallet.totalBalanceUGX || 0;

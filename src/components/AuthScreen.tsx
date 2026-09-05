@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { authService, UserAccountData, cleanReferralCode } from '../services/supabaseAuth';
 import { UserProfile } from '../types';
+import { VestraLogo } from './VestraLogo';
 
 interface AuthScreenProps {
   initialMode?: 'signin' | 'signup';
@@ -173,39 +174,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     <div className="w-full flex flex-col min-h-full bg-gradient-to-b from-[#F0F4FC] via-[#F8FAFC] to-white pb-8">
       {/* Brand Header Banner */}
       <div className="px-6 pt-6 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#312E81] via-[#1E40AF] to-[#2563EB] flex items-center justify-center shadow-md shadow-indigo-500/30">
-            {/* SolNova brand mark: golden sun with energy bolt */}
-            <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
-              <defs>
-                <linearGradient id="snSun" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="#FDE68A" />
-                  <stop offset="1" stopColor="#F59E0B" />
-                </linearGradient>
-              </defs>
-              <circle cx="12" cy="12" r="7.5" fill="none" stroke="#FBBF24" strokeOpacity="0.4" strokeWidth="1" />
-              <circle cx="12" cy="12" r="4.8" fill="url(#snSun)" />
-              <path d="M12.9 7.5 l-3.1 5.1 h2.2 l-0.9 3.7 l3.1 -5.1 h-2.2 z" fill="#FFFBEB" />
-            </svg>
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-[17px] font-black text-slate-900 tracking-tight leading-none">
-                SOLNOVA CAPITAL
-              </h1>
-              <span className="text-[9.5px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-sm">
-                DS
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 font-medium">
-              Solar Mining & Investment (UGX)
-            </p>
-          </div>
-        </div>
+        <VestraLogo size="md" showText={true} />
 
-        <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800 shadow-2xs">
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-[11px] font-bold text-emerald-800 shadow-2xs">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Secure Platform</span>
+          <span>Sovereign Security</span>
         </div>
       </div>
 

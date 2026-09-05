@@ -290,7 +290,7 @@ class AuthService {
     }
 
     const accountData = serverRes.data || {
-      wallet: { totalBalanceUGX: 4000, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+      wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
       transactions: [],
       machines: [],
       adminTasks: [],
@@ -371,7 +371,7 @@ class AuthService {
             this.setCurrentUser(profile, authData.session.access_token);
             const dataRes = await this.refreshUserData();
             const userData = dataRes.data || {
-              wallet: { totalBalanceUGX: 4000, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+              wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
               transactions: [],
               machines: [],
               adminTasks: [],
@@ -401,7 +401,7 @@ class AuthService {
     }
 
     const userData = serverRes.data || {
-      wallet: { totalBalanceUGX: 4000, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+      wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
       transactions: [],
       machines: [],
       adminTasks: [],
@@ -664,7 +664,7 @@ class AuthService {
       if (serverRes && !serverRes.error && serverRes.user) {
         this.currentUser = serverRes.user;
         const userData: UserAccountData = serverRes.data || {
-          wallet: serverRes.wallet || { totalBalanceUGX: 4000, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+          wallet: serverRes.wallet || { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
           transactions: serverRes.transactions || [],
           machines: serverRes.machines || [],
           adminTasks: serverRes.adminTasks || [],
@@ -1171,8 +1171,8 @@ class AuthService {
   }
 
   /**
-   * Claim one-time UGX 4,000 Welcome Bonus via Supabase RPC claim_welcome_bonus().
-   * Requires an approved/completed deposit. 0% transaction fee.
+   * Claim one-time UGX 5,000 Welcome Bonus via Supabase RPC claim_welcome_bonus().
+   * Requires an approved/completed deposit.
    */
   public async claimWelcomeBonus(): Promise<{
     success: boolean;
@@ -1200,7 +1200,7 @@ class AuthService {
           return { success: false, error: 'Welcome bonus has already been claimed for this account.' };
         }
         if (errMsg.toLowerCase().includes('deposit') || errMsg.includes('DEPOSIT_REQUIRED')) {
-          return { success: false, error: 'An approved deposit is required to unlock your UGX 4,000 Welcome Bonus.' };
+          return { success: false, error: 'An approved deposit is required to unlock your UGX 5,000 Welcome Bonus.' };
         }
 
         // Direct fallback if RPC is not yet registered in database
@@ -1215,9 +1215,9 @@ class AuthService {
         };
       }
 
-      const claimedUGX = Number(data?.claimed_ugx ?? 4000);
+      const claimedUGX = Number(data?.claimed_ugx ?? 5000);
       const currentBal = this.getUserData(this.currentUser.id)?.wallet?.totalBalanceUGX || 0;
-      const newBalance = Number(data?.new_balance ?? (currentBal + 4000));
+      const newBalance = Number(data?.new_balance ?? (currentBal + 5000));
 
       // Refresh local user profile and wallet data directly from Supabase
       await this.refreshUserData();
@@ -1226,7 +1226,7 @@ class AuthService {
         success: true,
         claimedUGX,
         newBalance,
-        message: data?.message || 'Welcome Bonus Claimed! UGX 4,000 has been added to your wallet.',
+        message: data?.message || 'Welcome Bonus Claimed! UGX 5,000 has been added to your wallet.',
       };
     } catch (err: any) {
       console.warn('claimWelcomeBonus error:', err);
@@ -1267,7 +1267,7 @@ class AuthService {
         .in('status', ['completed', 'approved']);
 
       if (!deposits || deposits.length === 0) {
-        return { success: false, error: 'Make and complete your first deposit to unlock your UGX 4,000 Welcome Bonus.' };
+        return { success: false, error: 'Make and complete your first deposit to unlock your UGX 5,000 Welcome Bonus.' };
       }
 
       // Update profile
@@ -1276,10 +1276,10 @@ class AuthService {
         updated_at: new Date().toISOString(),
       }).eq('id', userId);
 
-      // Credit wallet + 4000
+      // Credit wallet + 5000
       const { data: wallet } = await this.client.from('wallets').select('total_balance_ugx').eq('user_id', userId).single();
       const currentBal = Number(wallet?.total_balance_ugx || 0);
-      const newBal = currentBal + 4000;
+      const newBal = currentBal + 5000;
       await this.client.from('wallets').update({
         total_balance_ugx: newBal,
         updated_at: new Date().toISOString(),
@@ -1291,10 +1291,10 @@ class AuthService {
         id: txId,
         user_id: userId,
         type: 'bonus',
-        amount_ugx: 4000,
+        amount_ugx: 5000,
         currency: 'UGX',
         status: 'completed',
-        description: 'Welcome Bonus — UGX 4,000 claimed (0% Fee)',
+        description: 'Welcome Bonus — UGX 5,000 claimed (New User Bonus)',
         is_credit: true,
         timestamp: Date.now(),
         created_at: new Date().toISOString(),
@@ -1304,8 +1304,8 @@ class AuthService {
       await this.client.from('notifications').upsert({
         id: `notif_welcome_${userId}`,
         user_id: userId,
-        title: 'Welcome Bonus Claimed (UGX 4,000)',
-        message: 'UGX 4,000 Welcome Bonus has been credited to your wallet balance with 0% transaction fee!',
+        title: 'Welcome Bonus Claimed (UGX 5,000)',
+        message: 'UGX 5,000 Welcome Bonus has been credited to your wallet balance!',
         read: false,
         type: 'success',
         created_at: new Date().toISOString(),
@@ -1315,9 +1315,9 @@ class AuthService {
 
       return {
         success: true,
-        claimedUGX: 4000,
+        claimedUGX: 5000,
         newBalance: newBal,
-        message: 'Welcome Bonus Claimed! UGX 4,000 has been added to your wallet.',
+        message: 'Welcome Bonus Claimed! UGX 5,000 has been added to your wallet.',
       };
     } catch (e: any) {
       return { success: false, error: e?.message || 'Failed to claim welcome bonus' };
@@ -1377,7 +1377,8 @@ class AuthService {
     amountUGX: number,
     paymentMethod: string,
     recipientInfo: string,
-    description?: string
+    description?: string,
+    isBonusWithdrawal?: boolean
   ) {
     const res = await supabaseAdmin.submitTransaction({
       type: 'withdraw',
@@ -1385,6 +1386,7 @@ class AuthService {
       description: description || `Withdrawal — UGX ${amountUGX.toLocaleString()} — Pending`,
       paymentMethod,
       recipientInfo,
+      isBonusWithdrawal,
     });
 
     if (res.success && res.transaction && this.currentUser) {

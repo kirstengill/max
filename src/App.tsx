@@ -287,7 +287,8 @@ export default function App() {
     type: 'deposit' | 'withdraw',
     description: string,
     paymentMethod?: string,
-    recipientInfo?: string
+    recipientInfo?: string,
+    isBonusWithdrawal?: boolean
   ): Promise<{ success: boolean; error?: string }> => {
     if (isBlocked) {
       return { success: false, error: 'Your account is currently restricted. Please contact administrator.' };
@@ -308,7 +309,8 @@ export default function App() {
           amountUGX,
           paymentMethod || 'MTN Mobile Money',
           recipientInfo || 'Mobile Wallet',
-          description
+          description,
+          isBonusWithdrawal
         );
       }
       if (!res.success) {

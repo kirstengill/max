@@ -1,6 +1,6 @@
 {
-  "name": "SolNova Capital — Solar Mining & Investment",
-  "description": "Clean, modern mobile solar asset investment dashboard and mining hardware portfolio with real-time analytics, consolidated UGX wallet, and mining node management.",
+  "name": "VESTRA — Intelligent Asset Vaults & Daily Yields",
+  "description": "Institutional-grade digital yield platform and sovereign asset vault network delivering automated daily returns in UGX.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

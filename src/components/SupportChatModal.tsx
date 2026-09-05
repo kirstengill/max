@@ -12,7 +12,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     {
       id: 'm1',
       sender: 'support',
-      text: 'Hello! Welcome to SolNova Capital — Solar Mining & Investment. How can I assist you with investment plans, MTN MoMo deposits (0766495353 - ELIX OWOMUZINYA), withdrawals, referral earnings, or WhatsApp support today?',
+      text: 'Hello! Welcome to VESTRA — Sovereign Institutional Yields. How can I assist you with yield vault allocations, MTN MoMo / Airtel deposits (0766495353 - ELIX OWOMUZINYA), withdrawals, affiliate commissions, or WhatsApp support today?',
       timestamp: 'Just now',
     },
   ]);
@@ -20,12 +20,12 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
   const [isTyping, setIsTyping] = useState(false);
 
   const quickQuestions = [
-    'Chat with WhatsApp Helpdesk',
-    'What are the investment plans & daily earnings?',
+    'Chat with WhatsApp Concierge',
+    'What are the VESTRA yield vaults & daily earnings?',
     'How do I deposit via USSD (0766495353 - ELIX OWOMUZINYA)?',
     'What is the minimum withdrawal & 15% fee?',
-    'How does the 15% referral bonus work?',
-    'How do I harvest/claim daily mining yields?',
+    'How does the 20% affiliate commission work?',
+    'How do daily yields credit to my wallet?',
   ];
 
   const handleSend = (textToSend?: string) => {
@@ -44,59 +44,63 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     setIsTyping(true);
 
     setTimeout(() => {
-      let reply = "Our support team is here to assist! You can ask about our solar mining investment plans (starting from UGX 15,000), MTN MoMo deposits to 0766495353, withdrawals (min UGX 10,000), or join our official WhatsApp Helpdesk & Community.";
+      let reply = "Our support team is here to assist! You can ask about VESTRA institutional yield vaults (starting from UGX 15,000), MTN MoMo deposits to 0766495353 (min UGX 20,000), withdrawals (min UGX 5,000), or join our official WhatsApp Concierge & Community.";
 
       const lower = text.toLowerCase();
 
       if (lower.includes('whatsapp') || lower.includes('chat') || lower.includes('human') || lower.includes('agent') || lower.includes('desk') || lower.includes('group')) {
-        reply = "You can contact our live support desk and community on WhatsApp anytime!\n\n" +
-          "Official WhatsApp Help & Community Link:\n" +
+        reply = "You can contact our live concierge desk and community on WhatsApp anytime!\n\n" +
+          "Official WhatsApp Concierge Link:\n" +
           WHATSAPP_HELP_URL + "\n\n" +
           "Tap the 'Join WhatsApp Helpdesk' banner at the top of this modal to open WhatsApp directly.";
-      } else if (lower.includes('plan') || lower.includes('tier') || lower.includes('catalog') || lower.includes('invest') || lower.includes('cost') || lower.includes('price')) {
-        reply = "Here is our current SolNova Solar Mining catalog:\n\n" +
-          "• Starter Plan: UGX 15,000 → UGX 3,500/day\n" +
-          "• Solar-Mech 10: UGX 20,000 → UGX 4,300/day\n" +
-          "• DS-Mining Shoe: UGX 30,000 → UGX 6,750/day\n" +
-          "• Clean Hydro Turbine X500: UGX 50,000 → UGX 11,500/day\n" +
-          "• Quantum Grid VIP-9000: UGX 100,000 → UGX 24,000/day\n\n" +
-          "Each active node earns daily yields that you can harvest directly to your wallet!";
-      } else if (lower.includes('starter')) {
-        reply = "The Starter Plan (Solar Miner Mini) costs UGX 15,000 and generates UGX 3,500 daily rewards (est. 8,517% annual ROI). It is the perfect entry-level solar mining node!";
-      } else if (lower.includes('solar-mech') || lower.includes('mech 10') || lower.includes('mower')) {
-        reply = "The Solar-Mech 10 costs UGX 20,000 and generates UGX 4,300 daily rewards with dual kinetic mowers and zero grid power costs.";
-      } else if (lower.includes('shoe') || lower.includes('ds-mining shoe')) {
-        reply = "The DS-Mining Shoe (Series 1) costs UGX 30,000 and generates UGX 6,750 daily rewards using kinetic-electro hybrid dynamos paired with ASIC processors.";
-      } else if (lower.includes('hydro') || lower.includes('turbine')) {
-        reply = "The Clean Hydro Turbine X500 costs UGX 50,000 and generates UGX 11,500 daily rewards (118.0 TH/s hashrate).";
-      } else if (lower.includes('quantum') || lower.includes('vip')) {
-        reply = "The Quantum Grid VIP-9000 costs UGX 100,000 and generates UGX 24,000 daily rewards (1,250.0 TH/s institutional hashrate).";
+      } else if (lower.includes('plan') || lower.includes('tier') || lower.includes('catalog') || lower.includes('vault') || lower.includes('invest') || lower.includes('cost') || lower.includes('price')) {
+        reply = "Here is our current VESTRA Institutional Yield Catalog:\n\n" +
+          "• VESTRA Liquid Arbitrage Vault: UGX 15,000 → UGX 4,500/day (30 Days)\n" +
+          "• VESTRA Horizon Liquid Reserve: UGX 20,000 → UGX 6,200/day (45 Days)\n" +
+          "• VESTRA Sovereign AI Cluster: UGX 30,000 → UGX 9,600/day (60 Days)\n" +
+          "• VESTRA Quantum Alpha Fund: UGX 60,000 → UGX 20,000/day (90 Days)\n" +
+          "• VESTRA Clean Grid Infrastructure: UGX 120,000 → UGX 42,000/day (120 Days)\n" +
+          "• VESTRA Apex VIP Syndicate: UGX 300,000 → UGX 110,000/day (180 Days)\n\n" +
+          "Each deployed vault generates automated daily yields in UGX directly into your wallet balance!";
+      } else if (lower.includes('liquid') || lower.includes('starter') || lower.includes('arbitrage')) {
+        reply = "The VESTRA Liquid Arbitrage Vault requires UGX 15,000 and generates UGX 4,500 daily rewards for a 30-day term. Perfect entry point into automated yields!";
+      } else if (lower.includes('horizon') || lower.includes('reserve')) {
+        reply = "The VESTRA Horizon Liquid Reserve costs UGX 20,000 and produces UGX 6,200 daily rewards across a 45-day operational cycle.";
+      } else if (lower.includes('ai') || lower.includes('cluster') || lower.includes('gpu')) {
+        reply = "The VESTRA Sovereign AI Cluster allocates UGX 30,000 into enterprise GPU compute, delivering UGX 9,600 daily returns for 60 days.";
+      } else if (lower.includes('alpha') || lower.includes('quantum')) {
+        reply = "The VESTRA Quantum Alpha Fund costs UGX 60,000 with UGX 20,000 daily yield over 90 days.";
+      } else if (lower.includes('clean') || lower.includes('grid') || lower.includes('hydro')) {
+        reply = "The VESTRA Clean Grid Infrastructure allocates UGX 120,000, paying UGX 42,000 daily rewards over 120 continuous days.";
+      } else if (lower.includes('syndicate') || lower.includes('vip') || lower.includes('apex')) {
+        reply = "The VESTRA Apex VIP Syndicate allocates UGX 300,000, paying UGX 110,000 daily rewards over 180 continuous days.";
       } else if (lower.includes('deposit') || lower.includes('mtn') || lower.includes('airtel') || lower.includes('momo') || lower.includes('pay') || lower.includes('phone') || lower.includes('number') || lower.includes('0766495353') || lower.includes('elix') || lower.includes('owomuzinya')) {
         reply = "Step-by-Step Deposit Instructions:\n\n" +
-          "1. Dial *165# (MTN) or *185# (Airtel) on your phone.\n" +
-          "2. Select 1 (Send Money) → 1 (To Mobile User).\n" +
-          "3. Enter Recipient Number: 0766495353\n" +
-          "4. Enter your Deposit Amount in UGX.\n" +
-          "5. Confirm recipient name shows ELIX OWOMUZINYA and enter your PIN.\n" +
-          "6. Return to the app and tap 'Confirm Deposit' to submit your request for fast approval!\n\n" +
+          "1. Minimum Deposit: UGX 20,000.\n" +
+          "2. Dial *165# (MTN) or *185# (Airtel) on your phone.\n" +
+          "3. Select 1 (Send Money) → 1 (To Mobile User).\n" +
+          "4. Enter Recipient Number: 0766495353\n" +
+          "5. Enter your Deposit Amount in UGX (min UGX 20,000).\n" +
+          "6. Confirm recipient name shows ELIX OWOMUZINYA and enter your PIN.\n" +
+          "7. Return to VESTRA and tap 'Confirm Deposit' to submit your request for fast approval!\n\n" +
           "• Quick MTN USSD: *165*1*1*0766495353*[AMOUNT]#\n" +
           "• Quick Airtel USSD: *185*1*1*0766495353*[AMOUNT]#";
       } else if (lower.includes('withdraw') || lower.includes('cash out') || lower.includes('fee') || lower.includes('minimum')) {
         reply = "Withdrawal Guidelines:\n\n" +
-          "• Welcome Bonus: UGX 4,000 withdrawable at 0% transaction fee once you make any deposit and it is approved by the admin!\n" +
-          "• Minimum Standard Withdrawal: UGX 10,000.\n" +
+          "• Welcome Bonus: UGX 4,000 withdrawable at 0% transaction fee once you make your first approved deposit!\n" +
+          "• Minimum Standard Withdrawal: UGX 5,000.\n" +
           "• Standard Transaction Fee: 15% processing fee.\n" +
           "• Channels: MTN MoMo, Airtel Money, or Stanbic Bank.\n" +
-          "• Approvals: Requests are reviewed by administrators and dispatched directly to your mobile money number or bank account.";
-      } else if (lower.includes('referral') || lower.includes('invite') || lower.includes('commission') || lower.includes('bonus') || lower.includes('friend')) {
-        reply = "SolNova Referral Program & Welcome Bonus:\n\n" +
-          "• Welcome Bonus: Every new user can withdraw their UGX 4,000 Welcome Bonus at 0% transaction fee (or claim to wallet) once they deposit any amount and it is approved by the admin!\n" +
-          "• Referral Commission: You earn 20% commission on every approved deposit made by users who register using your referral link/code!\n" +
-          "• Example: If your friend deposits UGX 100,000 and it is approved, you receive UGX 20,000 directly into your wallet.";
+          "• Approvals: Admin reviewed and disbursed directly to your mobile money number or bank account.";
+      } else if (lower.includes('referral') || lower.includes('affiliate') || lower.includes('commission') || lower.includes('bonus') || lower.includes('friend')) {
+        reply = "VESTRA Affiliate Program & Welcome Bonus:\n\n" +
+          "• Welcome Bonus: Every new user receives a UGX 4,000 Welcome Bonus, which can be claimed to your wallet upon first approved deposit!\n" +
+          "• Affiliate Commission: You earn 20% commission on every approved deposit made by users registered with your referral link/code!\n" +
+          "• Example: If your invited partner deposits UGX 100,000 and it is approved, you receive UGX 20,000 immediately into your wallet.";
       } else if (lower.includes('harvest') || lower.includes('claim') || lower.includes('reward') || lower.includes('yield') || lower.includes('payout')) {
-        reply = "Daily yields accumulate continuously on your active mining nodes. Simply tap the 'Harvest' or 'Claim' button on any active machine in your Dashboard or Machines tab to credit the UGX directly into your Consolidated Wallet!";
+        reply = "Daily yields accumulate continuously in your active VESTRA vaults. Simply tap the 'Harvest' button on any active contract or use 'Claim All Yields' to instantly credit your balance!";
       } else if (lower.includes('bank') || lower.includes('stanbic')) {
-        reply = "Bank Transfer Details (Withdrawals):\n• Bank: Stanbic Bank Uganda Limited\n• Account Number: 9030018829104\n• Account Name: SolNova Capital Uganda Ltd\n• Branch: Forest Mall Lugogo, Kampala\n\nNote: Deposits are processed via MTN MoMo and Airtel Money to 0766495353.";
+        reply = "Bank Transfer Details (Withdrawals):\n• Bank: Stanbic Bank Uganda Limited\n• Account Number: 9030018829104\n• Account Name: VESTRA Capital Uganda Ltd\n• Branch: Forest Mall Lugogo, Kampala\n\nNote: Deposits are processed via MTN MoMo and Airtel Money to 0766495353.";
       }
 
       setMessages((prev) => [
@@ -113,125 +117,124 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl w-full max-w-md h-[560px] shadow-2xl border border-slate-100 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+      <div className="bg-white rounded-3xl w-full max-w-md h-[560px] shadow-2xl border border-slate-200 flex flex-col animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-600 to-[#1657D9] text-white rounded-t-3xl">
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900 text-white rounded-t-3xl">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-xs">
-              <Bot className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">
+              <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-[15px] font-bold leading-tight">
-                SolNova Support Desk
+              <h3 className="text-sm font-black tracking-tight leading-tight flex items-center gap-1.5">
+                <span>VESTRA Concierge Desk</span>
               </h3>
-              <p className="text-[11px] text-blue-100 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                24/7 AI & WhatsApp Concierge
+              <p className="text-[10.5px] text-slate-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                24/7 Algorithmic & WhatsApp Support
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-white/20 transition-colors cursor-pointer"
+            className="p-1 rounded-full hover:bg-slate-800 transition-colors cursor-pointer text-slate-400 hover:text-white"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Direct WhatsApp Callout Banner */}
-        <div className="bg-emerald-50 px-4 py-2.5 border-b border-emerald-100 flex items-center justify-between">
+        {/* WhatsApp Banner */}
+        <a
+          href={WHATSAPP_HELP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200/80 px-4 py-2 flex items-center justify-between hover:bg-emerald-100/50 transition-colors group cursor-pointer"
+        >
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-2xs">
-              <MessageCircle className="w-4 h-4 fill-white/20" />
+            <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center">
+              <MessageCircle className="w-3.5 h-3.5" />
             </div>
-            <div>
-              <span className="text-[12px] font-extrabold text-emerald-900 block leading-tight">
-                WhatsApp Support & Community
-              </span>
-              <span className="text-[10px] text-emerald-700">Instant direct assistance</span>
-            </div>
+            <span className="text-xs font-bold text-slate-800">
+              Live Human Concierge via WhatsApp
+            </span>
           </div>
-          <a
-            id="btn-whatsapp-chat-modal"
-            href={WHATSAPP_HELP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1 bg-[#25D366] hover:bg-[#20bd5a] text-white text-[11px] font-bold rounded-lg shadow-2xs flex items-center gap-1 active:scale-95 transition-all"
-          >
-            <span>Open</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
+          <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+            Chat Live <ExternalLink className="w-3 h-3" />
+          </span>
+        </a>
 
-        {/* Message stream */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#F8FAFC]">
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`flex items-start gap-2 ${
-                m.sender === 'user' ? 'flex-row-reverse' : ''
-              }`}
-            >
+        {/* Messages Body */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
+          {messages.map((msg) => {
+            const isUser = msg.sender === 'user';
+            return (
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${
-                  m.sender === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-slate-200 text-blue-600 shadow-xs'
-                }`}
+                key={msg.id}
+                className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
               >
-                {m.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                {!isUser && (
+                  <div className="w-7 h-7 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 text-xs">
+                    <Bot className="w-3.5 h-3.5" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] rounded-2xl p-3 text-xs leading-relaxed ${
+                    isUser
+                      ? 'bg-slate-900 text-white rounded-tr-xs'
+                      : 'bg-white text-slate-800 border border-slate-200/80 shadow-2xs rounded-tl-xs whitespace-pre-line'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+                {isUser && (
+                  <div className="w-7 h-7 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 text-xs">
+                    <User className="w-3.5 h-3.5" />
+                  </div>
+                )}
               </div>
-              <div
-                className={`max-w-[80%] rounded-2xl p-3 text-[13px] leading-relaxed whitespace-pre-line ${
-                  m.sender === 'user'
-                    ? 'bg-[#1657D9] text-white rounded-tr-xs'
-                    : 'bg-white text-slate-800 border border-slate-200/80 shadow-xs rounded-tl-xs'
-                }`}
-              >
-                {m.text}
-              </div>
-            </div>
-          ))}
-
+            );
+          })}
           {isTyping && (
-            <div className="flex items-center gap-2 text-slate-400 text-xs pl-9">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce"></span>
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:0.2s]"></span>
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:0.4s]"></span>
+            <div className="flex gap-2 items-center text-xs text-slate-400">
+              <div className="w-7 h-7 rounded-xl bg-slate-900 text-emerald-400 flex items-center justify-center">
+                <Bot className="w-3.5 h-3.5 animate-pulse" />
+              </div>
+              <span className="italic">VESTRA Concierge is researching...</span>
             </div>
           )}
         </div>
 
-        {/* Quick prompt suggestions */}
-        <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 flex gap-1.5 overflow-x-auto no-scrollbar">
+        {/* Quick Questions */}
+        <div className="px-3 py-2 border-t border-slate-100 bg-white overflow-x-auto whitespace-nowrap flex gap-1.5 scrollbar-none">
           {quickQuestions.map((q, idx) => (
             <button
               key={idx}
               onClick={() => handleSend(q)}
-              className="text-[11px] whitespace-nowrap bg-white border border-slate-200 text-slate-700 hover:border-blue-300 hover:bg-blue-50/50 px-2.5 py-1 rounded-full shrink-0 transition-colors cursor-pointer"
+              className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors cursor-pointer shrink-0 border border-slate-200/60"
             >
               {q}
             </button>
           ))}
         </div>
 
-        {/* Input bar */}
-        <div className="p-3 bg-white border-t border-slate-100 flex items-center gap-2 rounded-b-3xl">
+        {/* Input Bar */}
+        <div className="p-3 border-t border-slate-100 bg-white flex items-center gap-2 rounded-b-3xl">
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type your message or question..."
-            className="flex-1 px-3.5 py-2 text-[13px] bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSend();
+            }}
+            placeholder="Type your question about VESTRA..."
+            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all"
           />
           <button
             onClick={() => handleSend()}
             disabled={!inputText.trim()}
-            className="p-2 rounded-xl bg-[#1657D9] hover:bg-blue-700 disabled:opacity-50 text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-emerald-400 flex items-center justify-center transition-all cursor-pointer shrink-0"
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

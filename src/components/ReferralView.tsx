@@ -64,7 +64,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
 
   const getReferralUrl = useCallback((): string => {
     if (!referralCode) return '';
-    if (typeof window === 'undefined') return `https://solnovacapital.com/?ref=${referralCode}`;
+    if (typeof window === 'undefined') return `https://vestrayields.com/?ref=${referralCode}`;
     const base = `${window.location.origin}${window.location.pathname}`;
     const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
     return `${cleanBase}?ref=${referralCode}`;
@@ -231,8 +231,8 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
 
   const handleNativeShare = async () => {
     const shareData = {
-      title: 'SolNova Capital — Solar Mining & Investment',
-      text: `Join SolNova Capital using my invitation code ${referralCode}. Start earning daily yields in Uganda (UGX) today!`,
+      title: 'VESTRA — Institutional Yield Vaults',
+      text: `Join VESTRA using my invitation code ${referralCode}. Start earning automated daily yields in Uganda (UGX) today!`,
       url: referralUrl,
     };
 
@@ -548,7 +548,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
                 type="text"
                 value={inviterInput}
                 onChange={(e) => setInviterInput(e.target.value.toUpperCase())}
-                placeholder="Enter Inviter Code (e.g. SC-B35B2A)"
+                placeholder="Enter Partner Code (e.g. VESTRA-7F9A)"
                 className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               />
               <button
@@ -693,8 +693,8 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
         </p>
         <div className="grid grid-cols-3 gap-2 pt-1.5 text-center text-[11px]">
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
-            <span className="text-slate-500 block">UGX 15,000 Dep</span>
-            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 3,000</span>
+            <span className="text-slate-500 block">UGX 20,000 Dep</span>
+            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 4,000</span>
           </div>
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
             <span className="text-slate-500 block">UGX 50,000 Dep</span>
@@ -774,7 +774,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
 
       {/* Footer Info */}
       <div className="text-center pt-2 text-[11px] text-slate-400">
-        SolNova Capital Referral Program • Supabase Cloud Verified
+        VESTRA Partner Syndicate • Institutional Yield Network
       </div>
     </div>
   );

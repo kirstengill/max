@@ -2,12 +2,15 @@ export interface Machine {
   id: string;
   title: string;
   subtitle?: string;
-  category: 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All';
+  description?: string;
+  category: 'Alpha Vaults' | 'Infrastructure' | 'Private Wealth' | 'Liquid Yield' | 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All' | string;
   image: string;
   dailyRewardUGX: number;
   status: 'Active' | 'Maintenance' | 'Pending' | 'Reserved';
   estYearlyROI: number;
   minInvestUGX: number;
+  maxInvestUGX?: number;
+  durationDays?: number;
   hashrate: string;
   powerSource: string;
   uptime: string;
@@ -24,7 +27,8 @@ export interface UserInvestment {
   machineId: string;
   title: string;
   subtitle?: string;
-  category: 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All';
+  description?: string;
+  category: 'Alpha Vaults' | 'Infrastructure' | 'Private Wealth' | 'Liquid Yield' | 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All' | string;
   image: string;
   amountInvestedUGX: number;
   investedDate: string;
@@ -32,7 +36,8 @@ export interface UserInvestment {
   dailyRewardUGX: number;
   estYearlyROI: number;
   hashrate: string;
-  period: string; // e.g. "365 Days / Continuous Sovereign Yield"
+  period: string; // e.g. "30 Days / Daily Distribution"
+  durationDays?: number;
   totalMinedUGX: number;
   unclaimedRewardsUGX: number;
   isBoosted?: boolean;
@@ -40,6 +45,10 @@ export interface UserInvestment {
 
 export interface WalletState {
   totalBalanceUGX: number;
+  welcomeBonusUGX?: number;
+  withdrawableBalanceUGX?: number;
+  depositedBalanceUGX?: number;
+  bonusLocked?: boolean;
   dailyPnlUGX: number;
   activeMachinesCount: number;
   pendingTasksCount: number;
@@ -52,8 +61,13 @@ export interface Transaction {
   userId?: string;
   username?: string;
   userFullName?: string;
-  type: 'deposit' | 'withdraw' | 'reward' | 'investment' | 'reinvest';
+  type: 'deposit' | 'withdraw' | 'reward' | 'investment' | 'reinvest' | 'bonus';
   amountUGX: number;
+  feeUGX?: number;
+  netAmountUGX?: number;
+  feeRate?: number;
+  totalDeductionUGX?: number;
+  isBonusWithdrawal?: boolean;
   currency: 'UGX';
   date: string;
   timestamp?: string | number;

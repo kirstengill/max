@@ -144,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
                 Account Access
               </h3>
               <p className="text-[11px] text-slate-500">
-                SolNova Capital · Solar Mining & Investment
+                VESTRA · Sovereign Institutional Yields
               </p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
                 : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Sign Up (UGX 4,000 Bonus)
+            Sign Up (UGX 5,000 Bonus)
           </button>
         </div>
 
@@ -205,7 +205,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-center gap-2">
                   <Gift className="w-4 h-4 text-amber-600 shrink-0" />
                   <span className="text-[11px] font-bold text-amber-950">
-                    UGX 4,000 Welcome Bonus is reserved and unlocks with 0% fee upon your first approved deposit.
+                    UGX 5,000 Welcome Bonus is automatically credited to your account upon registration!
                   </span>
                 </div>
                 <div>

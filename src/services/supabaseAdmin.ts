@@ -22,6 +22,7 @@ export interface SubmitTransactionInput {
   description?: string;
   paymentMethod?: string;
   recipientInfo?: string;
+  isBonusWithdrawal?: boolean;
 }
 
 export const supabaseAdmin = {
@@ -38,7 +39,12 @@ export const supabaseAdmin = {
         const res = await apiClient.submitDeposit(numericAmount, input.paymentMethod || 'Manual', input.recipientInfo);
         return { success: !res.error, transaction: res.transaction, error: res.error };
       } else {
-        const res = await apiClient.submitWithdrawal(numericAmount, input.paymentMethod || 'Manual', input.recipientInfo || '');
+        const res = await apiClient.submitWithdrawal(
+          numericAmount,
+          input.paymentMethod || 'Manual',
+          input.recipientInfo || '',
+          input.isBonusWithdrawal
+        );
         return { success: !res.error, transaction: res.transaction, error: res.error };
       }
     }
@@ -106,9 +112,20 @@ export const supabaseAdmin = {
         return { success: false, error: 'Your account is currently restricted. Please contact administrator.' };
       }
 
+      // Check minimum for deposits
+      if (input.type === 'deposit') {
+        const MIN_DEPOSIT_UGX = 20000;
+        if (numericAmount < MIN_DEPOSIT_UGX) {
+          return {
+            success: false,
+            error: `Minimum Deposit: The minimum deposit amount is UGX ${MIN_DEPOSIT_UGX.toLocaleString()}.`,
+          };
+        }
+      }
+
       // Check balance and minimum for withdrawals
       if (input.type === 'withdraw') {
-        const MIN_WITHDRAWAL_UGX = 10000;
+        const MIN_WITHDRAWAL_UGX = 5000;
         if (numericAmount < MIN_WITHDRAWAL_UGX) {
           return {
             success: false,
@@ -122,6 +139,23 @@ export const supabaseAdmin = {
           return {
             success: false,
             error: `Insufficient balance: requested UGX ${numericAmount.toLocaleString()}, available UGX ${availableBalance.toLocaleString()}`,
+          };
+        }
+
+        // Check qualifying deposit and bonus restriction
+        const { data: deposits } = await sb
+          .from('transactions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('type', 'deposit')
+          .in('status', ['completed', 'approved']);
+        const hasApprovedDeposit = deposits && deposits.length > 0;
+        const nonBonusFunds = hasApprovedDeposit ? availableBalance : Math.max(0, availableBalance - 5000);
+
+        if (!hasApprovedDeposit && (input.isBonusWithdrawal || numericAmount > nonBonusFunds)) {
+          return {
+            success: false,
+            error: 'Welcome Bonus Restriction: The UGX 5,000 welcome bonus cannot be withdrawn until you have made a qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.',
           };
         }
       }
@@ -239,8 +273,12 @@ export const supabaseAdmin = {
         : machineOrId;
 
     const cost = Number(machineObj.minInvestUGX || amountUGX || 0);
-    if (!cost || cost <= 0) {
-      return { success: false, error: 'Invalid investment machine amount.' };
+    const MIN_INVESTMENT_UGX = 15000;
+    if (!cost || cost < MIN_INVESTMENT_UGX) {
+      return {
+        success: false,
+        error: `Minimum Investment: The minimum investment amount is UGX ${MIN_INVESTMENT_UGX.toLocaleString()}.`,
+      };
     }
 
     if (!sb) {
@@ -468,11 +506,12 @@ export const supabaseAdmin = {
       // business schedule. If a core plan still carries a stale signature, sync
       // it to the corrected values. Admin-created custom plans are untouched.
       const CANONICAL: Record<string, { min: number; daily: number; roi: number }> = {
-        mach_starter_15k: { min: 15000, daily: 3500, roi: 8517 },
-        mach_solar_mech_10: { min: 20000, daily: 4300, roi: 7848 },
-        mach_ds_mining_shoe: { min: 30000, daily: 6750, roi: 8213 },
-        mach_hydro_turbine_x500: { min: 50000, daily: 11500, roi: 8395 },
-        mach_quantum_vip_9000: { min: 100000, daily: 24000, roi: 8760 },
+        mach_starter_15k: { min: 15000, daily: 4500, roi: 10950 },
+        mach_horizon_liquid_res: { min: 20000, daily: 6200, roi: 11315 },
+        mach_solar_mech_10: { min: 30000, daily: 9600, roi: 11680 },
+        mach_ds_mining_shoe: { min: 60000, daily: 20000, roi: 12166 },
+        mach_hydro_turbine_x500: { min: 120000, daily: 42000, roi: 12775 },
+        mach_quantum_vip_9000: { min: 300000, daily: 110000, roi: 13383 },
       };
       const STALE_MIN_INVEST = new Set([5000000, 25000000, 10000000, 100000000]);
       const corrections = mappedMachines
@@ -480,10 +519,8 @@ export const supabaseAdmin = {
           const canon = CANONICAL[m.id];
           if (!canon) return false;
           if (m.minInvestUGX !== canon.min && STALE_MIN_INVEST.has(m.minInvestUGX)) return true;
-          // Starter plan: old 1,250 reward or any wrong reward at the correct minimum
-          if (m.id === 'mach_starter_15k' && m.minInvestUGX === canon.min && m.dailyRewardUGX !== canon.daily) return true;
-          // Plans corrected in the first migration round but with outdated rewards
-          if (m.minInvestUGX === canon.min && m.dailyRewardUGX !== canon.daily && [850, 1440, 3590, 4500].includes(m.dailyRewardUGX)) return true;
+          // Sync any plan with outdated daily rewards or minimum investment
+          if (m.dailyRewardUGX !== canon.daily || m.minInvestUGX !== canon.min) return true;
           return false;
         })
         .map((m) => {

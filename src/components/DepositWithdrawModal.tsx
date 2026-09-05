@@ -22,8 +22,9 @@ import confetti from 'canvas-confetti';
 import { WHATSAPP_HELP_URL } from '../constants/links';
 import { authService } from '../services/supabaseAuth';
 
-// Withdrawal rules
-const MIN_WITHDRAWAL_UGX = 10000;
+// Withdrawal & Deposit rules
+const MIN_WITHDRAWAL_UGX = 5000;
+const MIN_DEPOSIT_UGX = 20000;
 const WITHDRAWAL_FEE_RATE = 0.15; // 15% standard transaction fee
 
 // Helper to calculate maximum receive amount after 15% fee from a given balance
@@ -82,7 +83,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
       }
       return MIN_WITHDRAWAL_UGX.toString();
     }
-    return '50000';
+    return MIN_DEPOSIT_UGX.toString();
   });
 
   const [depositorPhone, setDepositorPhone] = useState<string>(() => currentUser?.phone || '');
@@ -156,6 +157,12 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
     }
 
     if (mode === 'deposit') {
+      if (numUGX < MIN_DEPOSIT_UGX) {
+        setErrorMessage(
+          `Minimum Deposit: The minimum deposit amount is UGX ${MIN_DEPOSIT_UGX.toLocaleString()}.`
+        );
+        return;
+      }
       const cleanPhone = depositorPhone.trim().replace(/\s+/g, '');
       if (!cleanPhone || cleanPhone.length < 9) {
         setErrorMessage('Please enter the phone number you are depositing from (minimum 9 digits).');
@@ -524,6 +531,11 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                       Min: UGX {MIN_WITHDRAWAL_UGX.toLocaleString()}
                     </span>
                   )}
+                  {mode === 'deposit' && (
+                    <span className="ml-1.5 text-[10.5px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                      Min: UGX {MIN_DEPOSIT_UGX.toLocaleString()}
+                    </span>
+                  )}
                 </span>
                 <span className="text-[11px] font-medium text-emerald-600 font-mono">
                   UGX {numUGX.toLocaleString()}
@@ -538,7 +550,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                   value={amountUGXStr}
                   disabled={isWelcomeBonus}
                   onChange={(e) => setAmountUGXStr(e.target.value)}
-                  placeholder={mode === 'deposit' ? '50000' : '10000'}
+                  placeholder={mode === 'deposit' ? '20000' : '5000'}
                   className={`w-full pl-12 pr-4 py-2.5 rounded-xl font-bold text-[16px] focus:outline-none focus:ring-2 focus:ring-blue-500/30 font-mono ${
                     isWelcomeBonus
                       ? 'bg-emerald-50/50 border border-emerald-300 text-emerald-900 cursor-not-allowed'
@@ -596,8 +608,8 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
               {!isWelcomeBonus && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {(mode === 'withdraw'
-                    ? [10000, 20000, 50000, 100000, 200000]
-                    : [15000, 20000, 30000, 50000, 100000]
+                    ? [5000, 10000, 20000, 50000, 100000]
+                    : [20000, 30000, 50000, 100000, 200000]
                   ).map((preset) => (
                     <button
                       key={preset}

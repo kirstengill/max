@@ -202,10 +202,26 @@ class ApiClient {
     });
   }
 
-  public async submitWithdrawal(amountUGX: number, paymentMethod: string, recipientInfo: string) {
-    return this.request<{ success: boolean; transaction: Transaction; wallet: WalletState }>('/api/wallet/withdraw', {
+  public async submitWithdrawal(
+    amountUGX: number,
+    paymentMethod: string,
+    recipientInfo: string,
+    isBonusWithdrawal?: boolean
+  ) {
+    return this.request<{
+      success: boolean;
+      transaction: Transaction;
+      wallet: WalletState;
+      withdrawalSummary?: {
+        withdrawalAmountUGX: number;
+        feeRate: number;
+        feeUGX: number;
+        finalAmountReceivedUGX: number;
+        totalDeductionUGX: number;
+      };
+    }>('/api/wallet/withdraw', {
       method: 'POST',
-      body: JSON.stringify({ amountUGX, paymentMethod, recipientInfo }),
+      body: JSON.stringify({ amountUGX, paymentMethod, recipientInfo, isBonusWithdrawal }),
     });
   }
 

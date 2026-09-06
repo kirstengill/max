@@ -311,7 +311,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
                 ? 'Processing...'
                 : tab === 'signin'
                 ? 'Sign In to Dashboard'
-                : 'Create Account & Claim UGX 4,000'}
+                : 'Create Account & Claim UGX 5,000'}
             </button>
           </form>
         </div>

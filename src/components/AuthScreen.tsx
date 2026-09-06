@@ -160,7 +160,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         setLoading(false);
         return;
       }
-      setSuccessMsg('Account created successfully! Complete your first deposit to unlock your UGX 4,000 Welcome Bonus.');
+      setSuccessMsg('Account created successfully! Complete your first deposit to unlock your UGX 5,000 Welcome Bonus.');
       setTimeout(() => {
         onAuthSuccess(res.user!, res.data);
       }, 600);
@@ -328,18 +328,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           ) : (
             /* SIGN UP / REGISTER FORM */
             <form onSubmit={handleSignUpSubmit} className="space-y-3.5">
-              {/* Starter Bonus Banner (UGX 4,000 Guaranteed) */}
+              {/* Starter Bonus Banner (UGX 5,000 Guaranteed) */}
               <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/80 rounded-2xl p-3 flex items-center gap-2.5">
                 <Gift className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div>
                   <div className="text-[12px] font-extrabold text-emerald-950 flex items-center gap-1">
-                    UGX 4,000 Starting Credit Included
+                    UGX 5,000 Starting Credit Included
                     <span className="text-[9px] bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded-full font-bold">
                       AUTOMATIC
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-800 leading-snug">
-                    New accounts receive <span className="font-bold">UGX 4,000</span> directly in their wallet upon registration.
+                    New accounts receive <span className="font-bold">UGX 5,000</span> directly in their wallet upon registration.
                   </p>
                 </div>
               </div>
@@ -540,7 +540,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <span>Create Account & Claim UGX 4,000</span>
+                    <span>Create Account & Claim UGX 5,000</span>
                     <Sparkles className="w-4 h-4 text-amber-300" />
                   </>
                 )}

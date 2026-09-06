@@ -89,6 +89,10 @@ interface ServerUserStore {
         dailyPnlUGX: number;
         activeMachinesCount: number;
         pendingTasksCount: number;
+        welcomeBonusUGX?: number;
+        withdrawableBalanceUGX?: number;
+        depositedBalanceUGX?: number;
+        bonusLocked?: boolean;
       };
       transactions: any[];
       machines: any[];

@@ -25,16 +25,12 @@ import { authService } from '../services/supabaseAuth';
 // Withdrawal & Deposit rules
 const MIN_WITHDRAWAL_UGX = 5000;
 const MIN_DEPOSIT_UGX = 20000;
-const WITHDRAWAL_FEE_RATE = 0.15; // 15% standard transaction fee
+const WITHDRAWAL_FEE_RATE = 0.20; // 20% normal withdrawal fee
+const BONUS_WITHDRAWAL_FEE_RATE = 0.30; // 30% bonus-withdrawal protection charge
 
-// Helper to calculate maximum receive amount after 15% fee from a given balance
+// Helper to calculate maximum withdrawal amount for a given balance
 export const calculateMaxWithdrawal = (balance: number): number => {
-  if (balance <= 0) return 0;
-  let max = Math.floor(balance / (1 + WITHDRAWAL_FEE_RATE));
-  while (max > 0 && max + Math.round(max * WITHDRAWAL_FEE_RATE) > balance) {
-    max--;
-  }
-  return max;
+  return Math.max(0, balance);
 };
 
 // Deposit receiving line details
@@ -54,7 +50,8 @@ interface DepositWithdrawModalProps {
     type: 'deposit' | 'withdraw',
     description: string,
     paymentMethod?: string,
-    recipientInfo?: string
+    recipientInfo?: string,
+    isBonusWithdrawal?: boolean
   ) => Promise<{ success: boolean; error?: string } | void> | void;
 }
 
@@ -74,7 +71,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
 
   const [amountUGXStr, setAmountUGXStr] = useState<string>(() => {
     if (initialIsWelcomeBonus) {
-      return '4000';
+      return '5000';
     }
     if (mode === 'withdraw') {
       const maxPossible = calculateMaxWithdrawal(balanceUGX);
@@ -110,33 +107,32 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
   const handleToggleWelcomeBonus = (enable: boolean) => {
     setIsWelcomeBonus(enable);
     if (enable) {
-      setAmountUGXStr('4000');
+      setAmountUGXStr('5000');
     }
   };
 
   const numUGX = parseFloat(amountUGXStr) || 0;
 
-  // Effective balance includes the 4,000 welcome bonus if not yet credited into balance
+  // Effective balance includes the 5,000 welcome bonus if not yet credited into balance
   const effectiveAvailableBalance =
     mode === 'withdraw' && isWelcomeBonus && !welcomeBonusClaimed && hasApprovedDeposit
-      ? balanceUGX + 4000
+      ? balanceUGX + 5000
       : balanceUGX;
 
   // Fee calculation:
-  // When isWelcomeBonus is true, 0% fee applies.
-  // Otherwise standard 15% fee applies.
+  // When isWelcomeBonus is true, 30% bonus protection charge applies.
+  // Otherwise standard 20% withdrawal fee applies.
+  const feeRate = isWelcomeBonus ? BONUS_WITHDRAWAL_FEE_RATE : WITHDRAWAL_FEE_RATE;
   const requestedWithdrawalUGX = mode === 'withdraw' ? numUGX : 0;
   const withdrawalFeeUGX =
     mode === 'withdraw'
-      ? isWelcomeBonus
-        ? 0
-        : Math.round(requestedWithdrawalUGX * WITHDRAWAL_FEE_RATE)
+      ? Math.round(requestedWithdrawalUGX * feeRate)
       : 0;
-  const totalDeductionUGX =
+  const youReceiveUGX =
     mode === 'withdraw'
-      ? requestedWithdrawalUGX + withdrawalFeeUGX
+      ? Math.max(0, requestedWithdrawalUGX - withdrawalFeeUGX)
       : numUGX;
-  const youReceiveUGX = requestedWithdrawalUGX;
+  const totalDeductionUGX = requestedWithdrawalUGX;
 
   const depositUssd =
     activeTab === 'airtel'
@@ -179,16 +175,22 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
         return;
       }
 
-      if (isWelcomeBonus) {
-        if (!hasApprovedDeposit) {
-          setErrorMessage('An approved deposit is required to unlock 0% fee Welcome Bonus withdrawal.');
-          return;
-        }
-      } else {
-        // Standard withdrawal balance validation
-        if (totalDeductionUGX > balanceUGX) {
+      // Check balance
+      if (requestedWithdrawalUGX > balanceUGX) {
+        setErrorMessage(
+          `Insufficient balance. Requested UGX ${requestedWithdrawalUGX.toLocaleString()} exceeds your available balance of UGX ${balanceUGX.toLocaleString()}.`
+        );
+        return;
+      }
+
+      // Welcome Bonus Withdrawal Restriction:
+      // The UGX 5,000 welcome bonus must not be immediately withdrawable.
+      // If a user attempts to withdraw money that comes from the welcome bonus before making a qualifying deposit, prevent the withdrawal.
+      if (!hasApprovedDeposit) {
+        const nonBonusFunds = Math.max(0, balanceUGX - 5000);
+        if (isWelcomeBonus || requestedWithdrawalUGX > nonBonusFunds) {
           setErrorMessage(
-            `Insufficient balance. You need UGX ${totalDeductionUGX.toLocaleString()} including the 15% transaction fee.`
+            'Welcome Bonus Restriction: The UGX 5,000 welcome bonus cannot be withdrawn until you have made a qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.'
           );
           return;
         }
@@ -220,8 +222,8 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
         mode === 'deposit'
           ? `Deposit UGX ${numUGX.toLocaleString()} (Sender: ${cleanSender})`
           : isWelcomeBonus
-            ? `Welcome Bonus Withdrawal (0% Fee) — UGX ${requestedWithdrawalUGX.toLocaleString()} (Receive: UGX ${requestedWithdrawalUGX.toLocaleString()} | 0% Fee)`
-            : `Withdrawal of UGX ${requestedWithdrawalUGX.toLocaleString()} (Receive: UGX ${requestedWithdrawalUGX.toLocaleString()} | Fee: UGX ${withdrawalFeeUGX.toLocaleString()} | Total Deduction: UGX ${totalDeductionUGX.toLocaleString()})`;
+            ? `Welcome Bonus Withdrawal — UGX ${requestedWithdrawalUGX.toLocaleString()} (Fee: UGX ${withdrawalFeeUGX.toLocaleString()} [30%] | Receive: UGX ${youReceiveUGX.toLocaleString()})`
+            : `Withdrawal of UGX ${requestedWithdrawalUGX.toLocaleString()} (Fee: UGX ${withdrawalFeeUGX.toLocaleString()} [20%] | Receive: UGX ${youReceiveUGX.toLocaleString()})`;
 
       const referenceInfo =
         mode === 'deposit'
@@ -230,7 +232,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
 
       // Pass requested withdrawal amount (or deposit amount) directly to transaction handler
       const submissionAmount = mode === 'withdraw' ? requestedWithdrawalUGX : numUGX;
-      const res = await onSuccess(submissionAmount, mode, desc, channelName, referenceInfo);
+      const res = await onSuccess(submissionAmount, mode, desc, channelName, referenceInfo, isWelcomeBonus);
       setIsProcessing(false);
 
       if (res && res.success === false) {
@@ -246,7 +248,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
         amount: mode === 'withdraw' ? requestedWithdrawalUGX : numUGX,
         fee: withdrawalFeeUGX,
         totalDeduction: totalDeductionUGX,
-        netAmount: mode === 'withdraw' ? requestedWithdrawalUGX : numUGX,
+        netAmount: mode === 'withdraw' ? youReceiveUGX : numUGX,
         channel: channelName,
         recipient: referenceInfo,
         isWelcomeBonus,
@@ -328,7 +330,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
               <div className="flex justify-between items-center text-slate-600">
                 <span>Transaction Type</span>
                 <span className="font-bold text-slate-900">
-                  {successInfo.isWelcomeBonus ? 'Welcome Bonus Withdrawal (0% Fee)' : 'Withdrawal'}
+                  {successInfo.isWelcomeBonus ? 'Welcome Bonus Withdrawal (30% Charge)' : 'Withdrawal (20% Fee)'}
                 </span>
               </div>
               {mode === 'withdraw' ? (
@@ -340,25 +342,25 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-slate-500">
-                    <span>Transaction Fee</span>
+                    <span>{successInfo.isWelcomeBonus ? 'Bonus Protection Charge' : 'Withdrawal Fee'}</span>
                     {successInfo.isWelcomeBonus ? (
-                      <span className="font-extrabold text-emerald-600 font-mono bg-emerald-100/70 px-2 py-0.5 rounded text-[11px]">
-                        0% FEE (UGX 0)
+                      <span className="font-extrabold text-amber-700 font-mono bg-amber-100/70 px-2 py-0.5 rounded text-[11px]">
+                        - UGX {successInfo.fee.toLocaleString()} (30%)
                       </span>
                     ) : (
                       <span className="font-semibold text-amber-600 font-mono">
-                        + UGX {successInfo.fee.toLocaleString()} (15%)
+                        - UGX {successInfo.fee.toLocaleString()} (20%)
                       </span>
                     )}
                   </div>
                   <div className="flex justify-between items-center text-slate-700 font-bold border-t border-slate-200/60 pt-1.5">
                     <span>Total Wallet Deduction</span>
-                    <span className="text-rose-600 font-mono">
+                    <span className="text-slate-900 font-mono">
                       UGX {successInfo.totalDeduction.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-slate-900 font-bold bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 mt-1">
-                    <span className="text-emerald-900">You Receive</span>
+                    <span className="text-emerald-900">Final Amount You Receive</span>
                     <span className="text-emerald-700 font-mono text-[14px]">
                       UGX {successInfo.netAmount.toLocaleString()}
                     </span>
@@ -401,7 +403,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
           </div>
         ) : (
           <div className="p-5 space-y-4">
-            {/* Mode Toggle for Withdraw: Standard vs Welcome Bonus 0% Fee */}
+            {/* Mode Toggle for Withdraw: Standard vs Welcome Bonus */}
             {mode === 'withdraw' && (
               hasApprovedDeposit ? (
                 <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 p-1 rounded-2xl border border-blue-200/80 shadow-2xs flex gap-1">
@@ -415,7 +417,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     }`}
                   >
                     <Gift className="w-3.5 h-3.5" />
-                    <span>Welcome Bonus (0% Fee)</span>
+                    <span>Welcome Bonus (30% Charge)</span>
                   </button>
                   <button
                     type="button"
@@ -426,7 +428,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                         : 'text-slate-700 hover:bg-white/60'
                     }`}
                   >
-                    <span>Standard (15% Fee)</span>
+                    <span>Standard (20% Fee)</span>
                   </button>
                 </div>
               ) : (
@@ -437,10 +439,10 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[11.5px] font-bold text-slate-800 leading-tight">
-                        UGX 4,000 Welcome Bonus Locked
+                        UGX 5,000 Welcome Bonus Restricted
                       </p>
                       <p className="text-[10.5px] text-slate-500 leading-tight truncate">
-                        Complete your first deposit to unlock 0% fee withdrawal.
+                        Make a qualifying deposit (min UGX 20,000) to unlock withdrawal.
                       </p>
                     </div>
                   </div>
@@ -569,35 +571,40 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[12.5px]">
-                    <span className="text-slate-600 font-medium">Transaction Fee</span>
-                    {isWelcomeBonus ? (
-                      <span className="font-mono font-extrabold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded text-[11px]">
-                        0% FEE (UGX 0)
-                      </span>
-                    ) : (
-                      <span className="font-mono font-bold text-amber-600">
-                        + UGX {withdrawalFeeUGX.toLocaleString()} (15%)
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between text-[12.5px] border-t border-slate-200/80 pt-1.5">
-                    <span className="text-slate-700 font-bold">Total Wallet Deduction</span>
-                    <span className="font-mono font-bold text-rose-600">
-                      UGX {totalDeductionUGX.toLocaleString()}
+                    <span className="text-slate-600 font-medium">
+                      {isWelcomeBonus ? 'Bonus Protection Charge (30%)' : 'Withdrawal Fee (20%)'}
+                    </span>
+                    <span className="font-mono font-bold text-amber-600">
+                      - UGX {withdrawalFeeUGX.toLocaleString()} ({isWelcomeBonus ? '30%' : '20%'})
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[13px] bg-emerald-50 border border-emerald-200/80 rounded-xl px-3 py-2 mt-1">
-                    <span className="text-emerald-900 font-bold">You Receive</span>
+                    <span className="text-emerald-900 font-bold">Final Amount You Receive</span>
                     <span className="font-mono font-black text-emerald-700 text-[14px]">
                       UGX {youReceiveUGX.toLocaleString()}
                     </span>
                   </div>
-                  {!isWelcomeBonus && totalDeductionUGX > balanceUGX && (
+                  <div className="flex items-center justify-between text-[12px] text-slate-500 pt-1">
+                    <span>Total Wallet Deduction</span>
+                    <span className="font-mono font-semibold text-slate-700">
+                      UGX {totalDeductionUGX.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {!hasApprovedDeposit && (isWelcomeBonus || requestedWithdrawalUGX > Math.max(0, balanceUGX - 5000)) && (
+                    <div className="text-[11.5px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-start gap-2 mt-1">
+                      <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                      <span>
+                        Welcome Bonus Restriction: The UGX 5,000 welcome bonus cannot be withdrawn until you have made an approved qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.
+                      </span>
+                    </div>
+                  )}
+
+                  {totalDeductionUGX > balanceUGX && (
                     <div className="text-[11px] font-semibold text-rose-600 flex items-center gap-1.5 pt-1 border-t border-rose-100">
                       <ShieldAlert className="w-3.5 h-3.5 shrink-0 text-rose-600" />
                       <span>
-                        Insufficient balance. You need UGX {totalDeductionUGX.toLocaleString()}{' '}
-                        including the 15% transaction fee.
+                        Insufficient balance. Requested UGX {requestedWithdrawalUGX.toLocaleString()} exceeds your available balance of UGX {balanceUGX.toLocaleString()}.
                       </span>
                     </div>
                   )}
@@ -628,7 +635,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                         setAmountUGXStr(maxRec.toString());
                       }}
                       className="px-2.5 py-1 text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors cursor-pointer border border-blue-200"
-                      title="Select maximum amount you can receive after 15% fee"
+                      title="Select maximum balance"
                     >
                       Max ({calculateMaxWithdrawal(balanceUGX).toLocaleString()} UGX)
                     </button>
@@ -866,23 +873,21 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
 
                 {/* Withdrawal Fee Notice */}
                 {isWelcomeBonus ? (
-                  <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-200 flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-emerald-800 leading-snug">
-                      <span className="font-bold">Welcome Bonus Benefit:</span> Your UGX 4,000
-                      Welcome Bonus is processed with a{' '}
-                      <span className="font-extrabold underline">0% transaction fee</span>. You
-                      will receive the full UGX 4,000 upon administrator approval.
+                  <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-amber-900 leading-snug">
+                      <span className="font-bold">Welcome Bonus Policy:</span> A{' '}
+                      <span className="font-extrabold underline">30% bonus protection charge</span> applies to welcome bonus withdrawals (Fee: UGX 1,500, You Receive: UGX 3,500). An approved qualifying deposit (min UGX 20,000) is required before withdrawal.
                     </p>
                   </div>
                 ) : (
-                  <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 flex items-start gap-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-amber-800 leading-snug">
-                      <span className="font-bold">Fee & Approval Process:</span> A{' '}
-                      <span className="font-semibold underline">15% transaction fee</span> is
-                      added to standard withdrawals. The total wallet deduction will be processed
-                      upon administrator review and approval.
+                  <div className="bg-blue-50 rounded-xl p-3 border border-blue-200 flex items-start gap-2">
+                    <ShieldAlert className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-blue-900 leading-snug">
+                      <span className="font-bold">Normal Withdrawal Fee (20%):</span> A{' '}
+                      <span className="font-semibold underline">20% withdrawal fee</span> is
+                      deducted from your requested withdrawal. You will receive the net amount (80%)
+                      after administrator review and approval.
                     </p>
                   </div>
                 )}
@@ -912,8 +917,8 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                 : mode === 'deposit'
                   ? `Confirm Deposit of UGX ${numUGX.toLocaleString()}`
                   : isWelcomeBonus
-                    ? 'Submit Welcome Bonus Withdrawal (0% Fee)'
-                    : `Submit Withdrawal of UGX ${requestedWithdrawalUGX.toLocaleString()}`}
+                    ? `Submit Welcome Bonus Withdrawal (UGX 5,000 | Receive UGX 3,500)`
+                    : `Submit Withdrawal of UGX ${requestedWithdrawalUGX.toLocaleString()} (Receive UGX ${youReceiveUGX.toLocaleString()})`}
             </button>
 
             {/* Quick WhatsApp Help */}

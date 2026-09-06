@@ -123,7 +123,88 @@ async function run() {
       }),
     });
     const signupData = await signupRes.json();
-    assert(signupRes.ok && signupData.user?.username === newUname && signupData.data?.wallet?.totalBalanceUGX === 4000, '12. Brand new user signs up with welcome bonus of UGX 4,000');
+    assert(signupRes.ok && signupData.user?.username === newUname && signupData.data?.wallet?.totalBalanceUGX === 5000, '12. Brand new user signs up with welcome bonus of UGX 5,000');
+    const newUserToken = signupData.token;
+
+    // 13. Verify that new user CANNOT withdraw without qualifying deposit
+    const blockedWithdrawalRes = await fetch(`${BASE}/api/wallet/withdraw`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${newUserToken}`,
+      },
+      body: JSON.stringify({
+        amountUGX: 5000,
+        paymentMethod: 'MTN Mobile Money',
+        recipientInfo: '0772000111',
+      }),
+    });
+    const blockedData = await blockedWithdrawalRes.json();
+    assert(
+      blockedWithdrawalRes.status === 400 && blockedData.restrictionActive === true && blockedData.error?.includes('Welcome Bonus Restriction'),
+      '13. Server blocks welcome bonus withdrawal before qualifying deposit is approved'
+    );
+
+    // 14. Make qualifying deposit of UGX 20,000 for this new user
+    const depRes = await fetch(`${BASE}/api/wallet/deposit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${newUserToken}`,
+      },
+      body: JSON.stringify({
+        amountUGX: 20000,
+        paymentMethod: 'MTN Mobile Money',
+        recipientInfo: '0772000111',
+      }),
+    });
+    const depData = await depRes.json();
+    const qualifyingTxId = depData.transaction?.id;
+
+    // Admin approves the qualifying deposit
+    await fetch(`${BASE}/api/admin/transactions/${qualifyingTxId}/approve`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+
+    // 15. Verify withdrawal with 20% fee after qualifying deposit
+    const withdrawRes = await fetch(`${BASE}/api/wallet/withdraw`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${newUserToken}`,
+      },
+      body: JSON.stringify({
+        amountUGX: 10000,
+        paymentMethod: 'MTN Mobile Money',
+        recipientInfo: '0772000111',
+      }),
+    });
+    const withdrawData = await withdrawRes.json();
+    assert(
+      withdrawRes.ok && withdrawData.transaction?.feeUGX === 2000 && withdrawData.transaction?.netAmountUGX === 8000,
+      '14. Normal withdrawal applies exact 20% withdrawal fee (Fee: UGX 2,000 on UGX 10,000, Net: UGX 8,000)'
+    );
+
+    // 16. Verify bonus withdrawal applies 30% bonus protection charge
+    const bonusWithdrawRes = await fetch(`${BASE}/api/wallet/withdraw`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${newUserToken}`,
+      },
+      body: JSON.stringify({
+        amountUGX: 5000,
+        isBonusWithdrawal: true,
+        paymentMethod: 'MTN Mobile Money',
+        recipientInfo: '0772000111',
+      }),
+    });
+    const bonusWithdrawData = await bonusWithdrawRes.json();
+    assert(
+      bonusWithdrawRes.ok && bonusWithdrawData.transaction?.feeUGX === 1500 && bonusWithdrawData.transaction?.netAmountUGX === 3500,
+      '15. Welcome bonus withdrawal applies 30% bonus protection charge (Fee: UGX 1,500 on UGX 5,000, Net: UGX 3,500)'
+    );
 
     console.log(`\n============================`);
     console.log(`Result: ${passCount}/${totalCount} tests passed!`);

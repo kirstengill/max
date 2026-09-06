@@ -23,7 +23,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     'Chat with WhatsApp Concierge',
     'What are the VESTRA yield vaults & daily earnings?',
     'How do I deposit via USSD (0766495353 - ELIX OWOMUZINYA)?',
-    'What is the minimum withdrawal & 15% fee?',
+    'What is the minimum withdrawal & 20% fee?',
     'How does the 20% affiliate commission work?',
     'How do daily yields credit to my wallet?',
   ];
@@ -87,14 +87,14 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
           "• Quick Airtel USSD: *185*1*1*0766495353*[AMOUNT]#";
       } else if (lower.includes('withdraw') || lower.includes('cash out') || lower.includes('fee') || lower.includes('minimum')) {
         reply = "Withdrawal Guidelines:\n\n" +
-          "• Welcome Bonus: UGX 4,000 withdrawable at 0% transaction fee once you make your first approved deposit!\n" +
+          "• Welcome Bonus: UGX 5,000 is restricted from immediate withdrawal until a qualifying deposit (min UGX 20,000) is made. A 30% bonus protection charge applies to bonus withdrawals!\n" +
           "• Minimum Standard Withdrawal: UGX 5,000.\n" +
-          "• Standard Transaction Fee: 15% processing fee.\n" +
+          "• Standard Withdrawal Fee: 20% normal withdrawal fee.\n" +
           "• Channels: MTN MoMo, Airtel Money, or Stanbic Bank.\n" +
           "• Approvals: Admin reviewed and disbursed directly to your mobile money number or bank account.";
       } else if (lower.includes('referral') || lower.includes('affiliate') || lower.includes('commission') || lower.includes('bonus') || lower.includes('friend')) {
         reply = "VESTRA Affiliate Program & Welcome Bonus:\n\n" +
-          "• Welcome Bonus: Every new user receives a UGX 4,000 Welcome Bonus, which can be claimed to your wallet upon first approved deposit!\n" +
+          "• Welcome Bonus: Every new user receives an automatic UGX 5,000 Welcome Bonus upon account creation, clearly recorded in your wallet!\n" +
           "• Affiliate Commission: You earn 20% commission on every approved deposit made by users registered with your referral link/code!\n" +
           "• Example: If your invited partner deposits UGX 100,000 and it is approved, you receive UGX 20,000 immediately into your wallet.";
       } else if (lower.includes('harvest') || lower.includes('claim') || lower.includes('reward') || lower.includes('yield') || lower.includes('payout')) {

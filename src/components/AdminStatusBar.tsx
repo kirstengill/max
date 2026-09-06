@@ -33,7 +33,7 @@ export const AdminStatusBar: React.FC<AdminStatusBarProps> = ({ user, onOpenAdmi
           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
           <span className="text-[12px] font-medium text-emerald-950">
             Account Status:{' '}
-            <span className="text-emerald-700 font-bold">Standard Investor (UGX 4,000 Welcome Credit Active)</span>
+            <span className="text-emerald-700 font-bold">Standard Investor (UGX 5,000 Welcome Credit Active)</span>
           </span>
         </>
       )}

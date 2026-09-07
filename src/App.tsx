@@ -8,7 +8,7 @@ import { TopHeader } from './components/TopHeader';
 import { ConsolidatedWalletCard } from './components/ConsolidatedWalletCard';
 import { CategoryPills, CategoryType } from './components/CategoryPills';
 import { AnalyticsGrid } from './components/AnalyticsGrid';
-import { WhatsAppHelpCard } from './components/WhatsAppHelpCard';
+import { TelegramHelpCard } from './components/TelegramHelpCard';
 import { InvestmentCard } from './components/InvestmentCard';
 import { BottomNavigation, NavTab } from './components/BottomNavigation';
 import { FloatingChatButton } from './components/FloatingChatButton';
@@ -551,8 +551,8 @@ export default function App() {
                     activeMachinesCount={wallet.activeMachinesCount}
                   />
 
-                  {/* WhatsApp Help Option Card */}
-                  <WhatsAppHelpCard />
+                  {/* Telegram Helpline Card */}
+                  <TelegramHelpCard />
 
                   {/* Main Investment Feed */}
                   <div className="px-5 space-y-3">

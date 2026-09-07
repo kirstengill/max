@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserProfile } from '../types';
-import { WHATSAPP_HELP_URL } from '../constants/links';
+import { TELEGRAM_HELP_URL } from '../constants/links';
 import {
   ShieldCheck,
   LogOut,
@@ -11,7 +11,7 @@ import {
   Lock,
   Globe,
   FileText,
-  MessageCircle,
+  Send,
   ExternalLink
 } from 'lucide-react';
 
@@ -160,29 +160,29 @@ export const MeProfileView: React.FC<MeProfileViewProps> = ({
         )}
 
         <a
-          id="btn-whatsapp-profile-option"
-          href={WHATSAPP_HELP_URL}
+          id="btn-telegram-profile-option"
+          href={TELEGRAM_HELP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-emerald-50/50 transition-colors cursor-pointer text-left group"
+          className="w-full px-4 py-3.5 flex items-center justify-between hover:bg-sky-50/50 transition-colors cursor-pointer text-left group"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#25D366] flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 fill-emerald-600/20" />
+            <div className="w-8 h-8 rounded-xl bg-sky-100 text-[#0088cc] flex items-center justify-center">
+              <Send className="w-4 h-4 -translate-x-0.5 translate-y-0.5" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[13px] font-bold text-slate-900 block">
-                  Official WhatsApp Helpdesk
+                  Official Telegram Helpline
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">
+                <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-sky-100 text-sky-800">
                   Live
                 </span>
               </div>
-              <span className="text-[11px] text-emerald-700 font-medium">Direct support, verification & community</span>
+              <span className="text-[11px] text-sky-700 font-medium">Direct support, verification & community</span>
             </div>
           </div>
-          <ExternalLink className="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+          <ExternalLink className="w-4 h-4 text-sky-600 group-hover:translate-x-0.5 transition-transform" />
         </a>
 
         <button

@@ -11,7 +11,7 @@ import {
   UserCheck,
   PhoneCall,
   CheckCircle2,
-  MessageCircle,
+  Send,
   ExternalLink,
   Gift,
   Sparkles,
@@ -19,7 +19,7 @@ import {
   Percent
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { WHATSAPP_HELP_URL } from '../constants/links';
+import { TELEGRAM_HELP_URL } from '../constants/links';
 import { authService } from '../services/supabaseAuth';
 
 // Withdrawal & Deposit rules
@@ -921,20 +921,20 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     : `Submit Withdrawal of UGX ${requestedWithdrawalUGX.toLocaleString()} (Receive UGX ${youReceiveUGX.toLocaleString()})`}
             </button>
 
-            {/* Quick WhatsApp Help */}
+            {/* Quick Telegram Help */}
             <div className="text-center pt-1">
               <a
-                id="link-deposit-whatsapp-help"
-                href={WHATSAPP_HELP_URL}
+                id="link-deposit-telegram-help"
+                href={TELEGRAM_HELP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-emerald-700 hover:text-emerald-800 transition-colors"
+                className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-sky-700 hover:text-sky-800 transition-colors"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600/20" />
+                <Send className="w-3.5 h-3.5 text-sky-600 -translate-x-0.5" />
                 <span>
-                  Need help with {mode === 'deposit' ? 'depositing' : 'withdrawing'}? Chat on WhatsApp
+                  Need help with {mode === 'deposit' ? 'depositing' : 'withdrawing'}? Chat on Telegram
                 </span>
-                <ExternalLink className="w-3 h-3 text-emerald-500" />
+                <ExternalLink className="w-3 h-3 text-sky-500" />
               </a>
             </div>
           </div>

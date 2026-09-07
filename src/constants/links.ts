@@ -1,1 +1,3 @@
-export const WHATSAPP_HELP_URL = 'https://chat.whatsapp.com/HMTrPvLyrQH4MhD5lZVD11?s=cl&p=i&mlu=4';
+export const TELEGRAM_HELP_URL = 'https://t.me/Vestracapitalinvestment';
+// Backward-compatible alias for any legacy references
+export const WHATSAPP_HELP_URL = TELEGRAM_HELP_URL;

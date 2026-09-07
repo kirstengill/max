@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, Send, Bot, User, Sparkles, HelpCircle, MessageCircle, ExternalLink } from 'lucide-react';
+import { X, Send, Bot, User, Sparkles, HelpCircle, ExternalLink } from 'lucide-react';
 import { ChatMessage } from '../types';
-import { WHATSAPP_HELP_URL } from '../constants/links';
+import { TELEGRAM_HELP_URL } from '../constants/links';
 
 interface SupportChatModalProps {
   onClose: () => void;
@@ -12,7 +12,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     {
       id: 'm1',
       sender: 'support',
-      text: 'Hello! Welcome to VESTRA — Sovereign Institutional Yields. How can I assist you with yield vault allocations, MTN MoMo / Airtel deposits (0763445008 - HUZAIRU SSALI), withdrawals, affiliate commissions, or WhatsApp support today?',
+      text: 'Hello! Welcome to VESTRA — Sovereign Institutional Yields. How can I assist you with yield vault allocations, MTN MoMo / Airtel deposits (0763445008 - HUZAIRU SSALI), withdrawals, affiliate commissions, or Telegram support today?',
       timestamp: 'Just now',
     },
   ]);
@@ -20,7 +20,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
   const [isTyping, setIsTyping] = useState(false);
 
   const quickQuestions = [
-    'Chat with WhatsApp Concierge',
+    'Chat with Telegram Concierge',
     'What are the VESTRA yield vaults & daily earnings?',
     'How do I deposit via USSD (0763445008 - HUZAIRU SSALI)?',
     'What is the minimum withdrawal & 20% fee?',
@@ -44,15 +44,15 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     setIsTyping(true);
 
     setTimeout(() => {
-      let reply = "Our support team is here to assist! You can ask about VESTRA institutional yield vaults (starting from UGX 15,000), MTN MoMo deposits to 0763445008 (min UGX 20,000), withdrawals (min UGX 5,000), or join our official WhatsApp Concierge & Community.";
+      let reply = "Our support team is here to assist! You can ask about VESTRA institutional yield vaults (starting from UGX 15,000), MTN MoMo deposits to 0763445008 (min UGX 20,000), withdrawals (min UGX 5,000), or join our official Telegram Concierge & Community.";
 
       const lower = text.toLowerCase();
 
-      if (lower.includes('whatsapp') || lower.includes('chat') || lower.includes('human') || lower.includes('agent') || lower.includes('desk') || lower.includes('group')) {
-        reply = "You can contact our live concierge desk and community on WhatsApp anytime!\n\n" +
-          "Official WhatsApp Concierge Link:\n" +
-          WHATSAPP_HELP_URL + "\n\n" +
-          "Tap the 'Join WhatsApp Helpdesk' banner at the top of this modal to open WhatsApp directly.";
+      if (lower.includes('telegram') || lower.includes('whatsapp') || lower.includes('chat') || lower.includes('human') || lower.includes('agent') || lower.includes('desk') || lower.includes('group')) {
+        reply = "You can contact our live concierge desk and community on Telegram anytime!\n\n" +
+          "Official Telegram Helpline:\n" +
+          TELEGRAM_HELP_URL + "\n\n" +
+          "Tap the 'Join Telegram Helpdesk' banner at the top of this modal to open Telegram directly.";
       } else if (lower.includes('plan') || lower.includes('tier') || lower.includes('catalog') || lower.includes('vault') || lower.includes('invest') || lower.includes('cost') || lower.includes('price')) {
         reply = "Here is our current VESTRA Institutional Yield Catalog:\n\n" +
           "• VESTRA Liquid Arbitrage Vault: UGX 15,000 → UGX 4,500/day (30 Days)\n" +
@@ -130,8 +130,8 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
                 <span>VESTRA Concierge Desk</span>
               </h3>
               <p className="text-[10.5px] text-slate-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                24/7 Algorithmic & WhatsApp Support
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+                24/7 Algorithmic & Telegram Support
               </p>
             </div>
           </div>
@@ -143,22 +143,22 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
           </button>
         </div>
 
-        {/* WhatsApp Banner */}
+        {/* Telegram Banner */}
         <a
-          href={WHATSAPP_HELP_URL}
+          href={TELEGRAM_HELP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200/80 px-4 py-2 flex items-center justify-between hover:bg-emerald-100/50 transition-colors group cursor-pointer"
+          className="bg-gradient-to-r from-sky-50 to-blue-50 border-b border-sky-200/80 px-4 py-2 flex items-center justify-between hover:bg-sky-100/50 transition-colors group cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center">
-              <MessageCircle className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-full bg-[#0088cc] text-white flex items-center justify-center shadow-xs">
+              <Send className="w-3.5 h-3.5 -translate-x-0.2 translate-y-0.2" />
             </div>
             <span className="text-xs font-bold text-slate-800">
-              Live Human Concierge via WhatsApp
+              Live Human Concierge via Telegram
             </span>
           </div>
-          <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+          <span className="text-[11px] font-bold text-sky-700 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
             Chat Live <ExternalLink className="w-3 h-3" />
           </span>
         </a>

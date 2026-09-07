@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bell, LogIn, MessageCircle, Shield, ShieldCheck } from 'lucide-react';
+import { Bell, LogIn, Send, Shield, ShieldCheck } from 'lucide-react';
 import { AppNotification, UserProfile } from '../types';
-import { WHATSAPP_HELP_URL } from '../constants/links';
+import { TELEGRAM_HELP_URL } from '../constants/links';
 import { VestraLogo } from './VestraLogo';
 
 interface TopHeaderProps {
@@ -44,18 +44,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           </button>
         )}
 
-        {/* WhatsApp VIP Concierge Option */}
+        {/* Telegram VIP Helpline Option */}
         <a
-          id="btn-whatsapp-header"
-          href={WHATSAPP_HELP_URL}
+          id="btn-telegram-header"
+          href={TELEGRAM_HELP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border border-emerald-200 transition-all text-[11px] font-bold shadow-2xs active:scale-95"
-          title="Direct VIP WhatsApp Concierge"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-50 hover:bg-sky-100/80 text-sky-800 border border-sky-200 transition-all text-[11px] font-bold shadow-2xs active:scale-95"
+          title="Direct VIP Telegram Helpline"
         >
-          <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <Send className="w-3.5 h-3.5 text-sky-600 -translate-x-0.5" />
           <span className="hidden sm:inline">Desk</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
         </a>
 
         {/* Notifications */}

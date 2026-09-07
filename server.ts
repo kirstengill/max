@@ -6,8 +6,33 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const app = express();
 const PORT = 3000;
+const DB_FILE = path.join(process.cwd(), 'server-database.json');
 
 app.use(express.json());
+
+function loadDatabaseFromDisk(): ServerUserStore {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const raw = fs.readFileSync(DB_FILE, 'utf8');
+      const data = JSON.parse(raw);
+      if (data && typeof data === 'object') {
+        return data as ServerUserStore;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load database from disk:', e);
+  }
+  return {} as ServerUserStore;
+}
+
+function saveDatabaseToDisk() {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(serverDatabase, null, 2));
+  } catch (e) {
+    console.warn('Failed to save database to disk:', e);
+  }
+  syncDatabaseCloud();
+}
 
 // Server-side Supabase client (Lazy initialized with project credentials)
 let supabaseAdmin: SupabaseClient | null = null;
@@ -106,139 +131,147 @@ interface ServerUserStore {
 const defaultAdminId = '95bf6171-7258-49e6-b5aa-477c4266b9a4';
 const defaultUserId = 'usr_demo_solnova';
 
-const serverDatabase: ServerUserStore = {
-  [defaultAdminId]: {
-    user: {
-      id: defaultAdminId,
-      username: 'coolman',
-      passwordHash: 'TestPass123!',
-      fullName: 'Cool Man (Platform Admin)',
-      phone: '+256700000000',
-      status: 'active',
-      role: 'admin',
-      isAdmin: true,
-      tier: 'VIP 2 Elite',
-      referralCode: 'SC-ADMIN01',
-      referralCount: 3,
-      referralEarningsUGX: 120000,
-      referrals: [],
-      welcomeBonusClaimed: true,
-      memberSince: 'August 2026',
-      createdAt: new Date().toISOString(),
-    },
-    data: {
-      wallet: {
-        totalBalanceUGX: 25000000,
-        dailyPnlUGX: 250000,
-        activeMachinesCount: 2,
-        pendingTasksCount: 1,
-      },
-      transactions: [
-        {
-          id: 'tx_init_1',
-          userId: defaultAdminId,
-          username: 'coolman',
-          type: 'deposit',
-          amountUGX: 25000000,
-          currency: 'UGX',
-          status: 'completed',
-          date: new Date().toLocaleString(),
-          timestamp: Date.now(),
-          created_at: new Date().toISOString(),
-          description: 'Initial Capital Injection',
-          paymentMethod: 'Bank Transfer',
-        },
-      ],
-      machines: [],
-      adminTasks: [
-        {
-          id: 'task_init_1',
-          userId: defaultUserId,
-          title: 'Deposit Verification: UGX 50,000',
-          description: 'User demouser requested deposit of UGX 50,000 via MTN Mobile Money',
-          priority: 'high',
-          category: 'Deposit Verification',
-          type: 'deposit',
-          status: 'pending',
-          amountUGX: 50000,
-          date: new Date().toLocaleString(),
-          timestamp: Date.now(),
-          createdAt: new Date().toISOString(),
-        },
-      ],
-      notifications: [
-        {
-          id: 'notif_init_1',
-          userId: defaultAdminId,
-          title: 'Welcome to SolNova Capital Admin',
-          message: 'You have administrator privileges to review transactions, manage catalog nodes, and adjust balances.',
-          type: 'system',
-          read: false,
-          date: 'Just now',
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    },
+const defaultAdminRecord: ServerUserStore[string] = {
+  user: {
+    id: defaultAdminId,
+    username: 'coolman',
+    passwordHash: 'TestPass123!',
+    fullName: 'Cool Man (Platform Admin)',
+    phone: '+256700000000',
+    status: 'active',
+    role: 'admin',
+    isAdmin: true,
+    tier: 'VIP 2 Elite',
+    referralCode: 'SC-ADMIN01',
+    referralCount: 3,
+    referralEarningsUGX: 120000,
+    referrals: [],
+    welcomeBonusClaimed: true,
+    memberSince: 'August 2026',
+    createdAt: new Date().toISOString(),
   },
-  [defaultUserId]: {
-    user: {
-      id: defaultUserId,
-      username: 'demouser',
-      passwordHash: 'TestPass123!',
-      fullName: 'Demo Investor',
-      phone: '+256711111111',
-      status: 'active',
-      role: 'user',
-      isAdmin: false,
-      tier: 'Standard',
-      referralCode: 'SC-DEMO01',
-      referralCount: 1,
-      referralEarningsUGX: 15000,
-      referrals: [],
-      welcomeBonusClaimed: true,
-      memberSince: 'August 2026',
-      createdAt: new Date().toISOString(),
+  data: {
+    wallet: {
+      totalBalanceUGX: 25000000,
+      dailyPnlUGX: 250000,
+      activeMachinesCount: 2,
+      pendingTasksCount: 1,
     },
-    data: {
-      wallet: {
-        totalBalanceUGX: 75000,
-        dailyPnlUGX: 3500,
-        activeMachinesCount: 1,
-        pendingTasksCount: 0,
+    transactions: [
+      {
+        id: 'tx_init_1',
+        userId: defaultAdminId,
+        username: 'coolman',
+        type: 'deposit',
+        amountUGX: 25000000,
+        currency: 'UGX',
+        status: 'completed',
+        date: new Date().toLocaleString(),
+        timestamp: Date.now(),
+        created_at: new Date().toISOString(),
+        description: 'Initial Capital Injection',
+        paymentMethod: 'Bank Transfer',
       },
-      transactions: [
-        {
-          id: 'tx_demo_bonus',
-          userId: defaultUserId,
-          username: 'demouser',
-          type: 'bonus',
-          amountUGX: 5000,
-          currency: 'UGX',
-          status: 'completed',
-          date: new Date().toLocaleString(),
-          timestamp: Date.now(),
-          created_at: new Date().toISOString(),
-          description: 'Welcome Bonus — UGX 5,000 (New Account Activation)',
-          paymentMethod: 'System',
-        },
-      ],
-      machines: [],
-      adminTasks: [],
-      notifications: [
-        {
-          id: 'notif_demo_1',
-          userId: defaultUserId,
-          title: 'Welcome Bonus Credited!',
-          message: 'UGX 5,000 Welcome Bonus has been credited to your account.',
-          type: 'success',
-          read: false,
-          date: 'Just now',
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    },
+    ],
+    machines: [],
+    adminTasks: [
+      {
+        id: 'task_init_1',
+        userId: defaultUserId,
+        title: 'Deposit Verification: UGX 50,000',
+        description: 'User demouser requested deposit of UGX 50,000 via MTN Mobile Money',
+        priority: 'high',
+        category: 'Deposit Verification',
+        type: 'deposit',
+        status: 'pending',
+        amountUGX: 50000,
+        date: new Date().toLocaleString(),
+        timestamp: Date.now(),
+        createdAt: new Date().toISOString(),
+      },
+    ],
+    notifications: [
+      {
+        id: 'notif_init_1',
+        userId: defaultAdminId,
+        title: 'Welcome to SolNova Capital Admin',
+        message: 'You have administrator privileges to review transactions, manage catalog nodes, and adjust balances.',
+        type: 'system',
+        read: false,
+        date: 'Just now',
+        timestamp: new Date().toISOString(),
+      },
+    ],
   },
 };
+
+const defaultUserRecord: ServerUserStore[string] = {
+  user: {
+    id: defaultUserId,
+    username: 'demouser',
+    passwordHash: 'TestPass123!',
+    fullName: 'Demo Investor',
+    phone: '+256711111111',
+    status: 'active',
+    role: 'user',
+    isAdmin: false,
+    tier: 'Standard',
+    referralCode: 'SC-DEMO01',
+    referralCount: 1,
+    referralEarningsUGX: 15000,
+    referrals: [],
+    welcomeBonusClaimed: true,
+    memberSince: 'August 2026',
+    createdAt: new Date().toISOString(),
+  },
+  data: {
+    wallet: {
+      totalBalanceUGX: 75000,
+      dailyPnlUGX: 3500,
+      activeMachinesCount: 1,
+      pendingTasksCount: 0,
+    },
+    transactions: [
+      {
+        id: 'tx_demo_bonus',
+        userId: defaultUserId,
+        username: 'demouser',
+        type: 'bonus',
+        amountUGX: 5000,
+        currency: 'UGX',
+        status: 'completed',
+        date: new Date().toLocaleString(),
+        timestamp: Date.now(),
+        created_at: new Date().toISOString(),
+        description: 'Welcome Bonus — UGX 5,000 (New Account Activation)',
+        paymentMethod: 'System',
+      },
+    ],
+    machines: [],
+    adminTasks: [],
+    notifications: [
+      {
+        id: 'notif_demo_1',
+        userId: defaultUserId,
+        title: 'Welcome Bonus Credited!',
+        message: 'UGX 5,000 Welcome Bonus has been credited to your account.',
+        type: 'success',
+        read: false,
+        date: 'Just now',
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  },
+};
+
+let serverDatabase: ServerUserStore = loadDatabaseFromDisk();
+
+if (!serverDatabase[defaultAdminId]) {
+  serverDatabase[defaultAdminId] = defaultAdminRecord;
+}
+if (!serverDatabase[defaultUserId]) {
+  serverDatabase[defaultUserId] = defaultUserRecord;
+}
 
 const activeTokens: { [token: string]: string } = {
   'tok_admin_coolman': defaultAdminId,
@@ -364,7 +397,7 @@ let catalogDatabase: CatalogMachine[] = [
   },
 ];
 
-// Cloud Database Synchronization (No local disk persistence)
+// Cloud Database Synchronization (Supabase is the single source of truth)
 async function syncDatabaseCloud(userId?: string) {
   if (!supabaseAdmin) return;
   try {
@@ -378,14 +411,26 @@ async function syncDatabaseCloud(userId?: string) {
         pending_tasks_count: u.data.wallet.pendingTasksCount,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
+
+      await supabaseAdmin.from('profiles').upsert({
+        id: userId,
+        username: u.user.username,
+        full_name: u.user.fullName,
+        phone: u.user.phone || null,
+        role: u.user.role,
+        status: u.user.status,
+        tier: u.user.tier,
+        referral_code: u.user.referralCode,
+        referred_by: u.user.referredBy || null,
+        referral_count: u.user.referralCount,
+        referral_earnings_ugx: u.user.referralEarningsUGX,
+        welcome_bonus_claimed: u.user.welcomeBonusClaimed,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
     }
   } catch (e) {
     // Supabase cloud sync notice
   }
-}
-
-function saveDatabaseToDisk() {
-  // Local device disk persistence removed. All persistent data is hosted in Supabase.
 }
 
 function generateToken(userId: string): string {
@@ -400,24 +445,7 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
   const token = authHeader?.replace(/^Bearer\s+/i, '');
 
-  if (token && activeTokens[token]) {
-    const userId = activeTokens[token];
-    const record = serverDatabase[userId];
-    if (record) {
-      (req as any).userId = userId;
-      (req as any).userRecord = record.user;
-      return next();
-    }
-  }
-
-  const userIdHeader = req.headers['x-user-id'] as string;
-  if (userIdHeader && serverDatabase[userIdHeader]) {
-    (req as any).userId = userIdHeader;
-    (req as any).userRecord = serverDatabase[userIdHeader].user;
-    return next();
-  }
-
-  if (supabaseAdmin && token) {
+  if (token && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin.auth.getUser(token);
       if (!error && data?.user) {
@@ -470,8 +498,25 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
         return next();
       }
     } catch (e) {
-      // remote auth fallback
+      // remote auth fallback to local token
     }
+  }
+
+  if (token && activeTokens[token]) {
+    const userId = activeTokens[token];
+    const record = serverDatabase[userId];
+    if (record) {
+      (req as any).userId = userId;
+      (req as any).userRecord = record.user;
+      return next();
+    }
+  }
+
+  const userIdHeader = req.headers['x-user-id'] as string;
+  if (userIdHeader && serverDatabase[userIdHeader]) {
+    (req as any).userId = userIdHeader;
+    (req as any).userRecord = serverDatabase[userIdHeader].user;
+    return next();
   }
 
   return res.status(401).json({ error: 'Unauthorized: Valid authentication token required.' });

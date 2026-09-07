@@ -1,0 +1,949 @@
+{
+  "95bf6171-7258-49e6-b5aa-477c4266b9a4": {
+    "user": {
+      "id": "95bf6171-7258-49e6-b5aa-477c4266b9a4",
+      "username": "coolman",
+      "passwordHash": "TestPass123!",
+      "fullName": "Cool Man (Platform Admin)",
+      "phone": "+256700000000",
+      "status": "active",
+      "role": "admin",
+      "isAdmin": true,
+      "tier": "VIP 2 Elite",
+      "referralCode": "SC-ADMIN01",
+      "referralCount": 3,
+      "referralEarningsUGX": 120000,
+      "referrals": [],
+      "welcomeBonusClaimed": true,
+      "memberSince": "August 2026",
+      "createdAt": "2026-09-07T20:05:21.305Z"
+    },
+    "data": {
+      "wallet": {
+        "totalBalanceUGX": 25000000,
+        "dailyPnlUGX": 250000,
+        "activeMachinesCount": 2,
+        "pendingTasksCount": 8
+      },
+      "transactions": [
+        {
+          "id": "tx_init_1",
+          "userId": "95bf6171-7258-49e6-b5aa-477c4266b9a4",
+          "username": "coolman",
+          "type": "deposit",
+          "amountUGX": 25000000,
+          "currency": "UGX",
+          "status": "completed",
+          "date": "9/7/2026, 11:05:21 PM",
+          "timestamp": 1788811521372,
+          "created_at": "2026-09-07T20:05:21.372Z",
+          "description": "Initial Capital Injection",
+          "paymentMethod": "Bank Transfer"
+        }
+      ],
+      "machines": [],
+      "adminTasks": [
+        {
+          "id": "task_1788812430171",
+          "title": "Pending Withdrawal Review: UGX 5,000 (30% Fee: UGX 1,500 | Payout: UGX 3,500)",
+          "description": "User @auto_mtroqgp0 requested withdrawal of UGX 5,000 (30% fee: UGX 1,500, Net: UGX 3,500) to 0772000111.",
+          "urgency": "high",
+          "category": "Withdrawal Authorization",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 5000,
+          "feeUGX": 1500,
+          "netAmountUGX": 3500,
+          "transactionId": "tx_wth_1788812430170_pjla",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0"
+        },
+        {
+          "id": "task_1788812430150",
+          "title": "Pending Withdrawal Review: UGX 10,000 (20% Fee: UGX 2,000 | Payout: UGX 8,000)",
+          "description": "User @auto_mtroqgp0 requested withdrawal of UGX 10,000 (20% fee: UGX 2,000, Net: UGX 8,000) to 0772000111.",
+          "urgency": "high",
+          "category": "Withdrawal Authorization",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 10000,
+          "feeUGX": 2000,
+          "netAmountUGX": 8000,
+          "transactionId": "tx_wth_1788812430149_kac6",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0"
+        },
+        {
+          "id": "task_1788812430123",
+          "title": "Pending Deposit Review: UGX 20,000",
+          "description": "User @auto_mtroqgp0 (Automated Test User) submitted a deposit request via MTN Mobile Money.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "approved",
+          "amountUGX": 20000,
+          "transactionId": "tx_dep_1788812430123_v3sk",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0"
+        },
+        {
+          "id": "task_1788812430044",
+          "title": "Pending Deposit Review: UGX 25,000",
+          "description": "User @demouser (Demo Investor) submitted a deposit request via MTN Mobile Money.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "approved",
+          "amountUGX": 25000,
+          "transactionId": "tx_dep_1788812430043_7qbq",
+          "userId": "usr_demo_solnova",
+          "username": "demouser"
+        },
+        {
+          "id": "task_1788812132763",
+          "title": "Pending Deposit Review: UGX 50,000",
+          "description": "User @persist_test_user (Persistence Test) submitted a deposit request via Test.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 50000,
+          "transactionId": "tx_dep_1788812132762_khjq",
+          "userId": "usr_1788812132672_e10ut",
+          "username": "persist_test_user"
+        },
+        {
+          "id": "task_1788812112181",
+          "title": "Pending Withdrawal Review: UGX 5,000 (30% Fee: UGX 1,500 | Payout: UGX 3,500)",
+          "description": "User @auto_mtrojnbs requested withdrawal of UGX 5,000 (30% fee: UGX 1,500, Net: UGX 3,500) to 0772000111.",
+          "urgency": "high",
+          "category": "Withdrawal Authorization",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 5000,
+          "feeUGX": 1500,
+          "netAmountUGX": 3500,
+          "transactionId": "tx_wth_1788812112181_6e8e",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs"
+        },
+        {
+          "id": "task_1788812112167",
+          "title": "Pending Withdrawal Review: UGX 10,000 (20% Fee: UGX 2,000 | Payout: UGX 8,000)",
+          "description": "User @auto_mtrojnbs requested withdrawal of UGX 10,000 (20% fee: UGX 2,000, Net: UGX 8,000) to 0772000111.",
+          "urgency": "high",
+          "category": "Withdrawal Authorization",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 10000,
+          "feeUGX": 2000,
+          "netAmountUGX": 8000,
+          "transactionId": "tx_wth_1788812112166_xdeu",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs"
+        },
+        {
+          "id": "task_1788812112138",
+          "title": "Pending Deposit Review: UGX 20,000",
+          "description": "User @auto_mtrojnbs (Automated Test User) submitted a deposit request via MTN Mobile Money.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "approved",
+          "amountUGX": 20000,
+          "transactionId": "tx_dep_1788812112138_6vrp",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs"
+        },
+        {
+          "id": "task_1788812112060",
+          "title": "Pending Deposit Review: UGX 25,000",
+          "description": "User @demouser (Demo Investor) submitted a deposit request via MTN Mobile Money.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "approved",
+          "amountUGX": 25000,
+          "transactionId": "tx_dep_1788812112049_lro7",
+          "userId": "usr_demo_solnova",
+          "username": "demouser"
+        },
+        {
+          "id": "task_1788811538050",
+          "title": "Pending Withdrawal Review: UGX 5,000 (30% Fee: UGX 1,500 | Payout: UGX 3,500)",
+          "description": "User @auto_mtro7cbq requested withdrawal of UGX 5,000 (30% fee: UGX 1,500, Net: UGX 3,500) to 0772000111.",
+          "urgency": "high",
+          "category": "Withdrawal Authorization",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 5000,
+          "feeUGX": 1500,
+          "netAmountUGX": 3500,
+          "transactionId": "tx_wth_1788811538050_d0u9",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq"
+        },
+        {
+          "id": "task_1788811538037",
+          "title": "Pending Withdrawal Review: UGX 10,000 (20% Fee: UGX 2,000 | Payout: UGX 8,000)",
+          "description": "User @auto_mtro7cbq requested withdrawal of UGX 10,000 (20% fee: UGX 2,000, Net: UGX 8,000) to 0772000111.",
+          "urgency": "high",
+          "category": "Withdrawal Authorization",
+          "timestamp": "Just now",
+          "status": "pending",
+          "amountUGX": 10000,
+          "feeUGX": 2000,
+          "netAmountUGX": 8000,
+          "transactionId": "tx_wth_1788811538037_3rph",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq"
+        },
+        {
+          "id": "task_1788811538007",
+          "title": "Pending Deposit Review: UGX 20,000",
+          "description": "User @auto_mtro7cbq (Automated Test User) submitted a deposit request via MTN Mobile Money.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "approved",
+          "amountUGX": 20000,
+          "transactionId": "tx_dep_1788811538006_rsrs",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq"
+        },
+        {
+          "id": "task_1788811537927",
+          "title": "Pending Deposit Review: UGX 25,000",
+          "description": "User @demouser (Demo Investor) submitted a deposit request via MTN Mobile Money.",
+          "urgency": "high",
+          "category": "Deposit Verification",
+          "timestamp": "Just now",
+          "status": "approved",
+          "amountUGX": 25000,
+          "transactionId": "tx_dep_1788811537913_6suc",
+          "userId": "usr_demo_solnova",
+          "username": "demouser"
+        },
+        {
+          "id": "task_init_1",
+          "userId": "usr_demo_solnova",
+          "title": "Deposit Verification: UGX 50,000",
+          "description": "User demouser requested deposit of UGX 50,000 via MTN Mobile Money",
+          "priority": "high",
+          "category": "Deposit Verification",
+          "type": "deposit",
+          "status": "pending",
+          "amountUGX": 50000,
+          "date": "9/7/2026, 11:05:21 PM",
+          "timestamp": 1788811521372,
+          "createdAt": "2026-09-07T20:05:21.372Z"
+        }
+      ],
+      "notifications": [
+        {
+          "id": "notif_init_1",
+          "userId": "95bf6171-7258-49e6-b5aa-477c4266b9a4",
+          "title": "Welcome to SolNova Capital Admin",
+          "message": "You have administrator privileges to review transactions, manage catalog nodes, and adjust balances.",
+          "type": "system",
+          "read": false,
+          "date": "Just now",
+          "timestamp": "2026-09-07T20:05:21.372Z"
+        }
+      ]
+    }
+  },
+  "usr_demo_solnova": {
+    "user": {
+      "id": "usr_demo_solnova",
+      "username": "demouser",
+      "passwordHash": "TestPass123!",
+      "fullName": "Demo Investor",
+      "phone": "+256711111111",
+      "status": "active",
+      "role": "user",
+      "isAdmin": false,
+      "tier": "Standard",
+      "referralCode": "SC-DEMO01",
+      "referralCount": 1,
+      "referralEarningsUGX": 15000,
+      "referrals": [],
+      "welcomeBonusClaimed": true,
+      "memberSince": "August 2026",
+      "createdAt": "2026-09-07T20:05:21.372Z"
+    },
+    "data": {
+      "wallet": {
+        "totalBalanceUGX": 150000,
+        "dailyPnlUGX": 3500,
+        "activeMachinesCount": 1,
+        "pendingTasksCount": 0,
+        "depositedBalanceUGX": 75000,
+        "bonusLocked": false,
+        "withdrawableBalanceUGX": 150000
+      },
+      "transactions": [
+        {
+          "id": "tx_dep_1788812430043_7qbq",
+          "userId": "usr_demo_solnova",
+          "username": "demouser",
+          "userFullName": "Demo Investor",
+          "type": "deposit",
+          "amountUGX": 25000,
+          "currency": "UGX",
+          "date": "11:20 PM Today",
+          "timestamp": 1788812430044,
+          "status": "approved",
+          "description": "MTN Mobile Money Deposit Request",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0x531eaf92...dep",
+          "approvedAt": "2026-09-07T20:20:30.071Z"
+        },
+        {
+          "id": "tx_dep_1788812112049_lro7",
+          "userId": "usr_demo_solnova",
+          "username": "demouser",
+          "userFullName": "Demo Investor",
+          "type": "deposit",
+          "amountUGX": 25000,
+          "currency": "UGX",
+          "date": "11:15 PM Today",
+          "timestamp": 1788812112050,
+          "status": "approved",
+          "description": "MTN Mobile Money Deposit Request",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0x4bcfc959...dep",
+          "approvedAt": "2026-09-07T20:15:12.081Z"
+        },
+        {
+          "id": "tx_dep_1788811537913_6suc",
+          "userId": "usr_demo_solnova",
+          "username": "demouser",
+          "userFullName": "Demo Investor",
+          "type": "deposit",
+          "amountUGX": 25000,
+          "currency": "UGX",
+          "date": "11:05 PM Today",
+          "timestamp": 1788811537914,
+          "status": "approved",
+          "description": "MTN Mobile Money Deposit Request",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0xe847e353...dep",
+          "approvedAt": "2026-09-07T20:05:37.955Z"
+        },
+        {
+          "id": "tx_demo_bonus",
+          "userId": "usr_demo_solnova",
+          "username": "demouser",
+          "type": "bonus",
+          "amountUGX": 5000,
+          "currency": "UGX",
+          "status": "completed",
+          "date": "9/7/2026, 11:05:21 PM",
+          "timestamp": 1788811521372,
+          "created_at": "2026-09-07T20:05:21.372Z",
+          "description": "Welcome Bonus — UGX 5,000 (New Account Activation)",
+          "paymentMethod": "System"
+        }
+      ],
+      "machines": [],
+      "adminTasks": [],
+      "notifications": [
+        {
+          "id": "notif_appr_1788812430072",
+          "title": "Deposit Approved & Credited!",
+          "message": "Your deposit of UGX 25,000 has been approved. UGX 25,000 was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        },
+        {
+          "id": "notif_1788812430044",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 25,000 via MTN Mobile Money has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_appr_1788812112081",
+          "title": "Deposit Approved & Credited!",
+          "message": "Your deposit of UGX 25,000 has been approved. UGX 25,000 was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        },
+        {
+          "id": "notif_1788812112050",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 25,000 via MTN Mobile Money has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_appr_1788811537955",
+          "title": "Deposit Approved & Credited!",
+          "message": "Your deposit of UGX 25,000 has been approved. UGX 25,000 was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        },
+        {
+          "id": "notif_1788811537914",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 25,000 via MTN Mobile Money has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_demo_1",
+          "userId": "usr_demo_solnova",
+          "title": "Welcome Bonus Credited!",
+          "message": "UGX 5,000 Welcome Bonus has been credited to your account.",
+          "type": "success",
+          "read": false,
+          "date": "Just now",
+          "timestamp": "2026-09-07T20:05:21.372Z"
+        }
+      ]
+    }
+  },
+  "usr_1788811537966_ac3ut": {
+    "user": {
+      "id": "usr_1788811537966_ac3ut",
+      "username": "auto_mtro7cbq",
+      "passwordHash": "TestPass123!",
+      "fullName": "Automated Test User",
+      "status": "active",
+      "role": "user",
+      "isAdmin": false,
+      "tier": "Standard",
+      "referralCode": "SC-ZRNJOB",
+      "referralCount": 0,
+      "referralEarningsUGX": 0,
+      "referrals": [],
+      "welcomeBonusClaimed": true,
+      "memberSince": "August 2026",
+      "createdAt": "2026-09-07T20:05:37.966Z"
+    },
+    "data": {
+      "wallet": {
+        "totalBalanceUGX": 25000,
+        "welcomeBonusUGX": 5000,
+        "withdrawableBalanceUGX": 25000,
+        "depositedBalanceUGX": 20000,
+        "bonusLocked": false,
+        "dailyPnlUGX": 0,
+        "activeMachinesCount": 0,
+        "pendingTasksCount": 0
+      },
+      "transactions": [
+        {
+          "id": "tx_wth_1788811538050_d0u9",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq",
+          "userFullName": "Automated Test User",
+          "type": "withdraw",
+          "amountUGX": 5000,
+          "feeUGX": 1500,
+          "netAmountUGX": 3500,
+          "feeRate": 0.3,
+          "totalDeductionUGX": 5000,
+          "isBonusWithdrawal": true,
+          "currency": "UGX",
+          "date": "11:05 PM Today",
+          "timestamp": 1788811538050,
+          "status": "pending",
+          "description": "Bonus Withdrawal of UGX 5,000 (30% Charge: UGX 1,500 | You Receive: UGX 3,500) to 0772000111",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "0772000111",
+          "txHash": "0xfdbd6a19...wth"
+        },
+        {
+          "id": "tx_wth_1788811538037_3rph",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq",
+          "userFullName": "Automated Test User",
+          "type": "withdraw",
+          "amountUGX": 10000,
+          "feeUGX": 2000,
+          "netAmountUGX": 8000,
+          "feeRate": 0.2,
+          "totalDeductionUGX": 10000,
+          "isBonusWithdrawal": false,
+          "currency": "UGX",
+          "date": "11:05 PM Today",
+          "timestamp": 1788811538037,
+          "status": "pending",
+          "description": "Normal Withdrawal of UGX 10,000 (20% Fee: UGX 2,000 | You Receive: UGX 8,000) to 0772000111",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "0772000111",
+          "txHash": "0xadbd28eb...wth"
+        },
+        {
+          "id": "tx_dep_1788811538006_rsrs",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq",
+          "userFullName": "Automated Test User",
+          "type": "deposit",
+          "amountUGX": 20000,
+          "currency": "UGX",
+          "date": "11:05 PM Today",
+          "timestamp": 1788811538007,
+          "status": "approved",
+          "description": "MTN Mobile Money Deposit Request",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0xc2bdebd9...dep",
+          "approvedAt": "2026-09-07T20:05:38.016Z"
+        },
+        {
+          "id": "tx_welcome_1788811537966",
+          "userId": "usr_1788811537966_ac3ut",
+          "username": "auto_mtro7cbq",
+          "userFullName": "Automated Test User",
+          "type": "bonus",
+          "amountUGX": 5000,
+          "currency": "UGX",
+          "date": "Just now",
+          "timestamp": 1788811537966,
+          "status": "completed",
+          "description": "Welcome Bonus — UGX 5,000 (New Account Activation)",
+          "txHash": "0x05f11564...5000"
+        }
+      ],
+      "machines": [],
+      "adminTasks": [],
+      "notifications": [
+        {
+          "id": "notif_1788811538050",
+          "title": "Withdrawal Request Submitted",
+          "message": "Your withdrawal request for UGX 5,000 (30% Fee: UGX 1,500, Final Payout: UGX 3,500) to 0772000111 is pending administrator review and approval.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_1788811538037",
+          "title": "Withdrawal Request Submitted",
+          "message": "Your withdrawal request for UGX 10,000 (20% Fee: UGX 2,000, Final Payout: UGX 8,000) to 0772000111 is pending administrator review and approval.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_appr_1788811538017",
+          "title": "Deposit Approved & Credited!",
+          "message": "Your deposit of UGX 20,000 has been approved. UGX 20,000 was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        },
+        {
+          "id": "notif_1788811538007",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 20,000 via MTN Mobile Money has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_welcome_1788811537966",
+          "title": "Welcome Bonus Credited",
+          "message": "UGX 5,000 Welcome Bonus deposited into your consolidated wallet.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  "usr_1788812112107_ygs1w": {
+    "user": {
+      "id": "usr_1788812112107_ygs1w",
+      "username": "auto_mtrojnbs",
+      "passwordHash": "TestPass123!",
+      "fullName": "Automated Test User",
+      "status": "active",
+      "role": "user",
+      "isAdmin": false,
+      "tier": "Standard",
+      "referralCode": "SC-JE1CL1",
+      "referralCount": 0,
+      "referralEarningsUGX": 0,
+      "referrals": [],
+      "welcomeBonusClaimed": true,
+      "memberSince": "August 2026",
+      "createdAt": "2026-09-07T20:15:12.107Z"
+    },
+    "data": {
+      "wallet": {
+        "totalBalanceUGX": 25000,
+        "welcomeBonusUGX": 5000,
+        "withdrawableBalanceUGX": 25000,
+        "depositedBalanceUGX": 20000,
+        "bonusLocked": false,
+        "dailyPnlUGX": 0,
+        "activeMachinesCount": 0,
+        "pendingTasksCount": 0
+      },
+      "transactions": [
+        {
+          "id": "tx_wth_1788812112181_6e8e",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs",
+          "userFullName": "Automated Test User",
+          "type": "withdraw",
+          "amountUGX": 5000,
+          "feeUGX": 1500,
+          "netAmountUGX": 3500,
+          "feeRate": 0.3,
+          "totalDeductionUGX": 5000,
+          "isBonusWithdrawal": true,
+          "currency": "UGX",
+          "date": "11:15 PM Today",
+          "timestamp": 1788812112181,
+          "status": "pending",
+          "description": "Bonus Withdrawal of UGX 5,000 (30% Charge: UGX 1,500 | You Receive: UGX 3,500) to 0772000111",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "0772000111",
+          "txHash": "0x5c709c01...wth"
+        },
+        {
+          "id": "tx_wth_1788812112166_xdeu",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs",
+          "userFullName": "Automated Test User",
+          "type": "withdraw",
+          "amountUGX": 10000,
+          "feeUGX": 2000,
+          "netAmountUGX": 8000,
+          "feeRate": 0.2,
+          "totalDeductionUGX": 10000,
+          "isBonusWithdrawal": false,
+          "currency": "UGX",
+          "date": "11:15 PM Today",
+          "timestamp": 1788812112167,
+          "status": "pending",
+          "description": "Normal Withdrawal of UGX 10,000 (20% Fee: UGX 2,000 | You Receive: UGX 8,000) to 0772000111",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "0772000111",
+          "txHash": "0x71a70ada...wth"
+        },
+        {
+          "id": "tx_dep_1788812112138_6vrp",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs",
+          "userFullName": "Automated Test User",
+          "type": "deposit",
+          "amountUGX": 20000,
+          "currency": "UGX",
+          "date": "11:15 PM Today",
+          "timestamp": 1788812112138,
+          "status": "approved",
+          "description": "MTN Mobile Money Deposit Request",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0xf1d28265...dep",
+          "approvedAt": "2026-09-07T20:15:12.150Z"
+        },
+        {
+          "id": "tx_welcome_1788812112107",
+          "userId": "usr_1788812112107_ygs1w",
+          "username": "auto_mtrojnbs",
+          "userFullName": "Automated Test User",
+          "type": "bonus",
+          "amountUGX": 5000,
+          "currency": "UGX",
+          "date": "Just now",
+          "timestamp": 1788812112107,
+          "status": "completed",
+          "description": "Welcome Bonus — UGX 5,000 (New Account Activation)",
+          "txHash": "0x09c46cea...5000"
+        }
+      ],
+      "machines": [],
+      "adminTasks": [],
+      "notifications": [
+        {
+          "id": "notif_1788812112181",
+          "title": "Withdrawal Request Submitted",
+          "message": "Your withdrawal request for UGX 5,000 (30% Fee: UGX 1,500, Final Payout: UGX 3,500) to 0772000111 is pending administrator review and approval.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_1788812112167",
+          "title": "Withdrawal Request Submitted",
+          "message": "Your withdrawal request for UGX 10,000 (20% Fee: UGX 2,000, Final Payout: UGX 8,000) to 0772000111 is pending administrator review and approval.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_appr_1788812112150",
+          "title": "Deposit Approved & Credited!",
+          "message": "Your deposit of UGX 20,000 has been approved. UGX 20,000 was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        },
+        {
+          "id": "notif_1788812112138",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 20,000 via MTN Mobile Money has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_welcome_1788812112107",
+          "title": "Welcome Bonus Credited",
+          "message": "UGX 5,000 Welcome Bonus deposited into your consolidated wallet.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  "usr_1788812132672_e10ut": {
+    "user": {
+      "id": "usr_1788812132672_e10ut",
+      "username": "persist_test_user",
+      "passwordHash": "TestPass123!",
+      "fullName": "Persistence Test",
+      "status": "active",
+      "role": "user",
+      "isAdmin": false,
+      "tier": "Standard",
+      "referralCode": "SC-QFFBMN",
+      "referralCount": 0,
+      "referralEarningsUGX": 0,
+      "referrals": [],
+      "welcomeBonusClaimed": true,
+      "memberSince": "August 2026",
+      "createdAt": "2026-09-07T20:15:32.673Z"
+    },
+    "data": {
+      "wallet": {
+        "totalBalanceUGX": 5000,
+        "welcomeBonusUGX": 5000,
+        "withdrawableBalanceUGX": 0,
+        "depositedBalanceUGX": 0,
+        "bonusLocked": true,
+        "dailyPnlUGX": 0,
+        "activeMachinesCount": 0,
+        "pendingTasksCount": 0
+      },
+      "transactions": [
+        {
+          "id": "tx_dep_1788812132762_khjq",
+          "userId": "usr_1788812132672_e10ut",
+          "username": "persist_test_user",
+          "userFullName": "Persistence Test",
+          "type": "deposit",
+          "amountUGX": 50000,
+          "currency": "UGX",
+          "date": "11:15 PM Today",
+          "timestamp": 1788812132763,
+          "status": "pending",
+          "description": "Test Deposit Request",
+          "paymentMethod": "Test",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0xc9325eb4...dep"
+        },
+        {
+          "id": "tx_welcome_1788812132673",
+          "userId": "usr_1788812132672_e10ut",
+          "username": "persist_test_user",
+          "userFullName": "Persistence Test",
+          "type": "bonus",
+          "amountUGX": 5000,
+          "currency": "UGX",
+          "date": "Just now",
+          "timestamp": 1788812132673,
+          "status": "completed",
+          "description": "Welcome Bonus — UGX 5,000 (New Account Activation)",
+          "txHash": "0xc4be6c39...5000"
+        }
+      ],
+      "machines": [],
+      "adminTasks": [],
+      "notifications": [
+        {
+          "id": "notif_1788812132763",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 50,000 via Test has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_welcome_1788812132673",
+          "title": "Welcome Bonus Credited",
+          "message": "UGX 5,000 Welcome Bonus deposited into your consolidated wallet.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  "usr_1788812430091_ftlj7": {
+    "user": {
+      "id": "usr_1788812430091_ftlj7",
+      "username": "auto_mtroqgp0",
+      "passwordHash": "TestPass123!",
+      "fullName": "Automated Test User",
+      "status": "active",
+      "role": "user",
+      "isAdmin": false,
+      "tier": "Standard",
+      "referralCode": "SC-OU7Y81",
+      "referralCount": 0,
+      "referralEarningsUGX": 0,
+      "referrals": [],
+      "welcomeBonusClaimed": true,
+      "memberSince": "August 2026",
+      "createdAt": "2026-09-07T20:20:30.091Z"
+    },
+    "data": {
+      "wallet": {
+        "totalBalanceUGX": 25000,
+        "welcomeBonusUGX": 5000,
+        "withdrawableBalanceUGX": 25000,
+        "depositedBalanceUGX": 20000,
+        "bonusLocked": false,
+        "dailyPnlUGX": 0,
+        "activeMachinesCount": 0,
+        "pendingTasksCount": 0
+      },
+      "transactions": [
+        {
+          "id": "tx_wth_1788812430170_pjla",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0",
+          "userFullName": "Automated Test User",
+          "type": "withdraw",
+          "amountUGX": 5000,
+          "feeUGX": 1500,
+          "netAmountUGX": 3500,
+          "feeRate": 0.3,
+          "totalDeductionUGX": 5000,
+          "isBonusWithdrawal": true,
+          "currency": "UGX",
+          "date": "11:20 PM Today",
+          "timestamp": 1788812430171,
+          "status": "pending",
+          "description": "Bonus Withdrawal of UGX 5,000 (30% Charge: UGX 1,500 | You Receive: UGX 3,500) to 0772000111",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "0772000111",
+          "txHash": "0x43541b59...wth"
+        },
+        {
+          "id": "tx_wth_1788812430149_kac6",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0",
+          "userFullName": "Automated Test User",
+          "type": "withdraw",
+          "amountUGX": 10000,
+          "feeUGX": 2000,
+          "netAmountUGX": 8000,
+          "feeRate": 0.2,
+          "totalDeductionUGX": 10000,
+          "isBonusWithdrawal": false,
+          "currency": "UGX",
+          "date": "11:20 PM Today",
+          "timestamp": 1788812430150,
+          "status": "pending",
+          "description": "Normal Withdrawal of UGX 10,000 (20% Fee: UGX 2,000 | You Receive: UGX 8,000) to 0772000111",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "0772000111",
+          "txHash": "0x5a3f98ff...wth"
+        },
+        {
+          "id": "tx_dep_1788812430123_v3sk",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0",
+          "userFullName": "Automated Test User",
+          "type": "deposit",
+          "amountUGX": 20000,
+          "currency": "UGX",
+          "date": "11:20 PM Today",
+          "timestamp": 1788812430123,
+          "status": "approved",
+          "description": "MTN Mobile Money Deposit Request",
+          "paymentMethod": "MTN Mobile Money",
+          "recipientInfo": "Sunrise Capital Treasury",
+          "txHash": "0xb5f24278...dep",
+          "approvedAt": "2026-09-07T20:20:30.139Z"
+        },
+        {
+          "id": "tx_welcome_1788812430091",
+          "userId": "usr_1788812430091_ftlj7",
+          "username": "auto_mtroqgp0",
+          "userFullName": "Automated Test User",
+          "type": "bonus",
+          "amountUGX": 5000,
+          "currency": "UGX",
+          "date": "Just now",
+          "timestamp": 1788812430091,
+          "status": "completed",
+          "description": "Welcome Bonus — UGX 5,000 (New Account Activation)",
+          "txHash": "0x9a41acb4...5000"
+        }
+      ],
+      "machines": [],
+      "adminTasks": [],
+      "notifications": [
+        {
+          "id": "notif_1788812430171",
+          "title": "Withdrawal Request Submitted",
+          "message": "Your withdrawal request for UGX 5,000 (30% Fee: UGX 1,500, Final Payout: UGX 3,500) to 0772000111 is pending administrator review and approval.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_1788812430150",
+          "title": "Withdrawal Request Submitted",
+          "message": "Your withdrawal request for UGX 10,000 (20% Fee: UGX 2,000, Final Payout: UGX 8,000) to 0772000111 is pending administrator review and approval.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_appr_1788812430140",
+          "title": "Deposit Approved & Credited!",
+          "message": "Your deposit of UGX 20,000 has been approved. UGX 20,000 was credited to your balance and your welcome-bonus withdrawal privileges are unlocked.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        },
+        {
+          "id": "notif_1788812430123",
+          "title": "Deposit Submitted (Pending Approval)",
+          "message": "Your deposit request for UGX 20,000 via MTN Mobile Money has been submitted. Funds will be credited once verified by administrator.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "info"
+        },
+        {
+          "id": "notif_welcome_1788812430091",
+          "title": "Welcome Bonus Credited",
+          "message": "UGX 5,000 Welcome Bonus deposited into your consolidated wallet.",
+          "timestamp": "Just now",
+          "read": false,
+          "type": "success"
+        }
+      ]
+    }
+  }
+}

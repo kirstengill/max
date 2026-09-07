@@ -34,8 +34,8 @@ export const calculateMaxWithdrawal = (balance: number): number => {
 };
 
 // Deposit receiving line details
-const DEPOSIT_PHONE = '0766495353';
-const RECIPIENT_NAME = 'ELIX OWOMUZINYA';
+const DEPOSIT_PHONE = '0763445008';
+const RECIPIENT_NAME = 'HUZAIRU SSALI';
 
 interface DepositWithdrawModalProps {
   mode: 'deposit' | 'withdraw';
@@ -710,7 +710,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                   <div className="flex items-center justify-between border-t border-white/10 pt-2">
                     <div>
                       <span className="text-[10.5px] text-slate-300 block font-medium">
-                        MTN Phone Number
+                        {activeTab === 'mtn' ? 'MTN MoMo Deposit Number' : 'Deposit Phone Number'}
                       </span>
                       <span className="text-[14px] font-black text-white font-mono block">
                         {DEPOSIT_PHONE}

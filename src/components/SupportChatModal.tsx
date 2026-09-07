@@ -12,7 +12,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     {
       id: 'm1',
       sender: 'support',
-      text: 'Hello! Welcome to VESTRA — Sovereign Institutional Yields. How can I assist you with yield vault allocations, MTN MoMo / Airtel deposits (0766495353 - ELIX OWOMUZINYA), withdrawals, affiliate commissions, or WhatsApp support today?',
+      text: 'Hello! Welcome to VESTRA — Sovereign Institutional Yields. How can I assist you with yield vault allocations, MTN MoMo / Airtel deposits (0763445008 - HUZAIRU SSALI), withdrawals, affiliate commissions, or WhatsApp support today?',
       timestamp: 'Just now',
     },
   ]);
@@ -22,7 +22,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
   const quickQuestions = [
     'Chat with WhatsApp Concierge',
     'What are the VESTRA yield vaults & daily earnings?',
-    'How do I deposit via USSD (0766495353 - ELIX OWOMUZINYA)?',
+    'How do I deposit via USSD (0763445008 - HUZAIRU SSALI)?',
     'What is the minimum withdrawal & 20% fee?',
     'How does the 20% affiliate commission work?',
     'How do daily yields credit to my wallet?',
@@ -44,7 +44,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
     setIsTyping(true);
 
     setTimeout(() => {
-      let reply = "Our support team is here to assist! You can ask about VESTRA institutional yield vaults (starting from UGX 15,000), MTN MoMo deposits to 0766495353 (min UGX 20,000), withdrawals (min UGX 5,000), or join our official WhatsApp Concierge & Community.";
+      let reply = "Our support team is here to assist! You can ask about VESTRA institutional yield vaults (starting from UGX 15,000), MTN MoMo deposits to 0763445008 (min UGX 20,000), withdrawals (min UGX 5,000), or join our official WhatsApp Concierge & Community.";
 
       const lower = text.toLowerCase();
 
@@ -74,17 +74,17 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
         reply = "The VESTRA Clean Grid Infrastructure allocates UGX 120,000, paying UGX 42,000 daily rewards over 120 continuous days.";
       } else if (lower.includes('syndicate') || lower.includes('vip') || lower.includes('apex')) {
         reply = "The VESTRA Apex VIP Syndicate allocates UGX 300,000, paying UGX 110,000 daily rewards over 180 continuous days.";
-      } else if (lower.includes('deposit') || lower.includes('mtn') || lower.includes('airtel') || lower.includes('momo') || lower.includes('pay') || lower.includes('phone') || lower.includes('number') || lower.includes('0766495353') || lower.includes('elix') || lower.includes('owomuzinya')) {
+      } else if (lower.includes('deposit') || lower.includes('mtn') || lower.includes('airtel') || lower.includes('momo') || lower.includes('pay') || lower.includes('phone') || lower.includes('number') || lower.includes('0763445008') || lower.includes('huzairu') || lower.includes('ssali')) {
         reply = "Step-by-Step Deposit Instructions:\n\n" +
           "1. Minimum Deposit: UGX 20,000.\n" +
           "2. Dial *165# (MTN) or *185# (Airtel) on your phone.\n" +
           "3. Select 1 (Send Money) → 1 (To Mobile User).\n" +
-          "4. Enter Recipient Number: 0766495353\n" +
+          "4. Enter Recipient Number: 0763445008\n" +
           "5. Enter your Deposit Amount in UGX (min UGX 20,000).\n" +
-          "6. Confirm recipient name shows ELIX OWOMUZINYA and enter your PIN.\n" +
+          "6. Confirm recipient name shows HUZAIRU SSALI and enter your PIN.\n" +
           "7. Return to VESTRA and tap 'Confirm Deposit' to submit your request for fast approval!\n\n" +
-          "• Quick MTN USSD: *165*1*1*0766495353*[AMOUNT]#\n" +
-          "• Quick Airtel USSD: *185*1*1*0766495353*[AMOUNT]#";
+          "• Quick MTN USSD: *165*1*1*0763445008*[AMOUNT]#\n" +
+          "• Quick Airtel USSD: *185*1*1*0763445008*[AMOUNT]#";
       } else if (lower.includes('withdraw') || lower.includes('cash out') || lower.includes('fee') || lower.includes('minimum')) {
         reply = "Withdrawal Guidelines:\n\n" +
           "• Welcome Bonus: UGX 5,000 is restricted from immediate withdrawal until a qualifying deposit (min UGX 20,000) is made. A 30% bonus protection charge applies to bonus withdrawals!\n" +
@@ -100,7 +100,7 @@ export const SupportChatModal: React.FC<SupportChatModalProps> = ({ onClose }) =
       } else if (lower.includes('harvest') || lower.includes('claim') || lower.includes('reward') || lower.includes('yield') || lower.includes('payout')) {
         reply = "Daily yields accumulate continuously in your active VESTRA vaults. Simply tap the 'Harvest' button on any active contract or use 'Claim All Yields' to instantly credit your balance!";
       } else if (lower.includes('bank') || lower.includes('stanbic')) {
-        reply = "Bank Transfer Details (Withdrawals):\n• Bank: Stanbic Bank Uganda Limited\n• Account Number: 9030018829104\n• Account Name: VESTRA Capital Uganda Ltd\n• Branch: Forest Mall Lugogo, Kampala\n\nNote: Deposits are processed via MTN MoMo and Airtel Money to 0766495353.";
+        reply = "Bank Transfer Details (Withdrawals):\n• Bank: Stanbic Bank Uganda Limited\n• Account Number: 9030018829104\n• Account Name: VESTRA Capital Uganda Ltd\n• Branch: Forest Mall Lugogo, Kampala\n\nNote: Deposits are processed via MTN MoMo and Airtel Money to 0763445008 (HUZAIRU SSALI).";
       }
 
       setMessages((prev) => [

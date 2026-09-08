@@ -13,6 +13,7 @@ import {
   BalanceAdjustment,
   Machine,
 } from '../types';
+import { calculateDailyReturnUGX } from './investmentReturns';
 
 export interface SubmitTransactionInput {
   type: 'deposit' | 'withdraw';
@@ -280,7 +281,7 @@ export const supabaseAdmin = {
         p_category: machineObj.category || 'DS-Mining',
         p_image: machineObj.image || '/images/precious-metals-portfolio.svg',
         p_amount_ugx: cost,
-        p_daily_reward_ugx: Number(machineObj.dailyRewardUGX || 0),
+        p_daily_reward_ugx: calculateDailyReturnUGX(cost),
         p_hashrate: machineObj.hashrate || '10.0 TH/s',
         p_power_source: machineObj.powerSource || 'Clean Energy Array',
         p_est_roi: Number(machineObj.estYearlyROI || 120),

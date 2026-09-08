@@ -3,6 +3,7 @@ import { X, Check, AlertCircle, ArrowUpRight, ShieldCheck, Zap, Wallet, Sparkles
 import confetti from 'canvas-confetti';
 import { Machine } from '../types';
 import { ProjectImage } from './ProjectImage';
+import { calculateDailyReturnUGX } from '../services/investmentReturns';
 
 interface InvestmentPurchaseModalProps {
   machine: Machine | null;
@@ -28,7 +29,7 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
 
   const durationDays = machine.durationDays || 30;
   const isInsufficient = userBalanceUGX < amountUGX;
-  const estDailyYield = Math.round((amountUGX / machine.minInvestUGX) * machine.dailyRewardUGX);
+  const estDailyYield = calculateDailyReturnUGX(amountUGX);
   const estTermYield = estDailyYield * durationDays;
   const totalReturn = amountUGX + estTermYield;
 

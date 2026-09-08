@@ -3,6 +3,7 @@ import { X, Zap, Cpu, Activity, Thermometer, ShieldCheck, ArrowUpRight, CheckCir
 import confetti from 'canvas-confetti';
 import { Machine } from '../types';
 import { ProjectImage } from './ProjectImage';
+import { calculateDailyReturnUGX } from '../services/investmentReturns';
 
 interface ManageMachineModalProps {
   machine: Machine | null;
@@ -48,7 +49,7 @@ export const ManageMachineModal: React.FC<ManageMachineModalProps> = ({
     }, 600);
   };
 
-  const formattedReward = new Intl.NumberFormat('en-US').format(machine.dailyRewardUGX);
+  const formattedReward = new Intl.NumberFormat('en-US').format(calculateDailyReturnUGX(machine.minInvestUGX));
   const formattedUnclaimed = new Intl.NumberFormat('en-US').format(liveReward);
   const formattedTotalMined = new Intl.NumberFormat('en-US').format(machine.totalMinedUGX);
   const formattedMinInvest = new Intl.NumberFormat('en-US').format(machine.minInvestUGX);

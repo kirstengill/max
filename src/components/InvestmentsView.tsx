@@ -2,6 +2,7 @@ import React from 'react';
 import { Machine } from '../types';
 import { InvestmentCard } from './InvestmentCard';
 import { Zap, Activity, Cpu, ArrowUpRight, Plus, Sparkles, Layers, Clock, CheckCircle, TrendingUp, Coins, ShieldCheck } from 'lucide-react';
+import { calculateDailyReturnUGX } from '../services/investmentReturns';
 
 interface InvestmentsViewProps {
   machines: Machine[];
@@ -20,7 +21,7 @@ export const InvestmentsView: React.FC<InvestmentsViewProps> = ({
   const activeMachines = machines.filter(
     (m) => m.status === 'Active' || m.status === 'Maintenance'
   );
-  const totalDailyUGX = activeMachines.reduce((sum, m) => sum + m.dailyRewardUGX, 0);
+  const totalDailyUGX = activeMachines.reduce((sum, m) => sum + calculateDailyReturnUGX(m.minInvestUGX), 0);
   const totalInvestedUGX = activeMachines.reduce((sum, m) => sum + m.minInvestUGX, 0);
   const totalUnclaimedUGX = activeMachines.reduce((sum, m) => sum + (m.unclaimedRewardsUGX || 0), 0);
 

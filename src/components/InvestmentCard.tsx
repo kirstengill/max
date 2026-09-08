@@ -2,6 +2,7 @@ import React from 'react';
 import { Machine } from '../types';
 import { ProjectImage } from './ProjectImage';
 import { ArrowUpRight, ShieldCheck, Sparkles, TrendingUp, Zap, Clock } from 'lucide-react';
+import { calculateDailyReturnUGX } from '../services/investmentReturns';
 
 interface InvestmentCardProps {
   machine: Machine;
@@ -14,13 +15,14 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
   onManage,
   buttonVariant = 'solid',
 }) => {
-  const formattedReward = new Intl.NumberFormat('en-US').format(machine.dailyRewardUGX);
+  const dailyReturnUGX = calculateDailyReturnUGX(machine.minInvestUGX);
+  const formattedReward = new Intl.NumberFormat('en-US').format(dailyReturnUGX);
   const formattedMinInvest = new Intl.NumberFormat('en-US').format(machine.minInvestUGX);
   const isOutline = buttonVariant === 'outline';
 
   // Calculate daily percentage return
   const dailyYieldPercent = machine.minInvestUGX > 0
-    ? ((machine.dailyRewardUGX / machine.minInvestUGX) * 100).toFixed(1)
+    ? ((dailyReturnUGX / machine.minInvestUGX) * 100).toFixed(1)
     : '10.0';
 
   return (

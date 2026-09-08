@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A8A8A8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="platinumGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8E8E8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#C8C8D0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A8A8B8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bgGradient)"/>
+  <ellipse cx="400" cy="300" rx="350" ry="250" fill="url(#centerGlow)"/>
+  <!-- Central stack of mixed precious metals -->
+  <g transform="translate(280, 100)">
+    <!-- Gold bar -->
+    <rect x="0" y="0" width="240" height="60" rx="4" fill="url(#goldGradient)"/>
+    <rect x="0" y="0" width="240" height="60" rx="4" fill="none" stroke="#FFF8DC" stroke-width="1" opacity="0.4"/>
+    <rect x="20" y="10" width="200" height="12" rx="2" fill="#FFF8DC" opacity="0.3"/>
+    <text x="120" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#8B6914">GOLD 999.9 • 1 KG</text>
+    <text x="120" y="52" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#8B6914">LBMA GOOD DELIVERY</text>
+    
+    <!-- Silver bar -->
+    <rect x="0" y="75" width="240" height="55" rx="4" fill="url(#silverGradient)"/>
+    <rect x="0" y="75" width="240" height="55" rx="4" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.5"/>
+    <rect x="20" y="85" width="200" height="10" rx="2" fill="#FFFFFF" opacity="0.4"/>
+    <text x="120" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#4A4A4A">SILVER 999 • 1000 OZ</text>
+    <text x="120" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#4A4A4A">LBMA GOOD DELIVERY</text>
+    
+    <!-- Platinum bar -->
+    <rect x="0" y="145" width="240" height="50" rx="4" fill="url(#platinumGradient)"/>
+    <rect x="0" y="145" width="240" height="50" rx="4" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+    <rect x="20" y="155" width="200" height="8" rx="2" fill="#FFFFFF" opacity="0.3"/>
+    <text x="120" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#5A5A7A">PLATINUM 999.5 • 1 KG</text>
+    
+    <!-- Palladium bar -->
+    <rect x="0" y="210" width="240" height="45" rx="4" fill="url(#platinumGradient)"/>
+    <rect x="0" y="210" width="240" height="45" rx="4" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.4"/>
+    <text x="120" y="238" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#5A5A7A">PALLADIUM 999.5 • 1 KG</text>
+  </g>
+  <!-- Side stacks -->
+  <g transform="translate(100, 150)">
+    <rect x="0" y="0" width="70" height="220" rx="3" fill="url(#goldGradient)"/>
+    <text x="35" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#8B6914" transform="rotate(-90, 35, 110)">GOLD BULLION</text>
+  </g>
+  <g transform="translate(630, 150)">
+    <rect x="0" y="0" width="70" height="220" rx="3" fill="url(#silverGradient)"/>
+    <text x="35" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#4A4A4A" transform="rotate(-90, 35, 110)">SILVER BULLION</text>
+  </g>
+  <!-- Investment chart elements -->
+  <g transform="translate(100, 450)" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.6">
+    <path d="M0,150 L50,120 L100,100 L150,80 L200,60 L250,40 L300,30 L350,20 L400,15 L450,10 L500,8"/>
+    <circle cx="500" cy="8" r="4" fill="#FFD700"/>
+  </g>
+  <g transform="translate(100, 450)" fill="none" stroke="#C0C0C0" stroke-width="2" opacity="0.5" stroke-dasharray="5,5">
+    <path d="M0,150 L50,110 L100,90 L150,75 L200,65 L250,55 L300,48 L350,42 L400,38 L450,35 L500,33"/>
+    <circle cx="500" cy="33" r="3" fill="#C0C0C0"/>
+  </g>
+  <!-- Percentage labels -->
+  <text x="620" y="300" text-anchor="end" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#FFD700">▲ +12.5% YTD</text>
+  <text x="620" y="330" text-anchor="end" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#C0C0C0">▲ +8.2% YTD</text>
+  <text x="620" y="360" text-anchor="end" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#E8E8E8">▲ +15.3% YTD</text>
+  <!-- Sparkles -->
+  <circle cx="350" cy="120" r="3" fill="#FFD700" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="550" cy="180" r="2" fill="#C0C0C0" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="250" cy="250" r="2.5" fill="#E8E8E8" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <text x="400" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#FFD700" opacity="0.8">PRECIOUS METALS INVESTMENT PORTFOLIO</text>
+</svg>

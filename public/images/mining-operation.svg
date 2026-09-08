@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0A0E1A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1A120A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2D1E0A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="rockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3D2B1F;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#4A3728;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#5D4E37;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2D1B12;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldVein" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE55C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F0C000;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="equipmentBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A4A4A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#373737;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1F1F1F;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="conveyorBelt" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2D2D2D;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1A1A1A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2D2D2D;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="3" dy="6" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <rect width="800" height="600" fill="url(#bgGradient)"/>
+  <ellipse cx="400" cy="350" rx="400" ry="180" fill="url(#goldGlow)"/>
+  <!-- Mine tunnel entrance with detailed rock face -->
+  <path d="M50,550 Q80,200 400,180 Q720,160 750,550 Z" fill="url(#rockGradient)" filter="url(#softShadow)"/>
+  <path d="M50,550 Q80,200 400,180 Q720,160 750,550" fill="none" stroke="#3D2B1F" stroke-width="2"/>
+  <!-- Gold veins in rock face -->
+  <g stroke="url(#goldVein)" stroke-width="3" stroke-linecap="round" filter="url(#glow)">
+    <path d="M120,480 Q150,420 180,460 Q210,500 250,470"/>
+    <path d="M300,520 Q340,450 380,490 Q420,530 460,500"/>
+    <path d="M520,470 Q560,400 600,440 Q640,480 680,450"/>
+    <path d="M180,550 Q220,480 260,520 Q300,560 340,530"/>
+    <path d="M480,560 Q520,490 560,530 Q600,570 640,540"/>
+  </g>
+  <!-- Thicker highlight veins -->
+  <g stroke="#FFE55C" stroke-width="1.5" stroke-linecap="round" opacity="0.8">
+    <path d="M120,480 Q150,420 180,460 Q210,500 250,470"/>
+    <path d="M300,520 Q340,450 380,490 Q420,530 460,500"/>
+    <path d="M520,470 Q560,400 600,440 Q640,480 680,450"/>
+  </g>
+  <!-- Excavator (detailed) -->
+  <g transform="translate(80, 380)" filter="url(#softShadow)">
+    <!-- Tracks -->
+    <rect x="0" y="65" width="140" height="25" rx="5" fill="#1A1A1A"/>
+    <rect x="5" y="70" width="130" height="15" rx="3" fill="#2D2D2D"/>
+    <g fill="#3D3D3D">
+      <rect x="8" y="72" width="12" height="11" rx="1"/>
+      <rect x="25" y="72" width="12" height="11" rx="1"/>
+      <rect x="42" y="72" width="12" height="11" rx="1"/>
+      <rect x="59" y="72" width="12" height="11" rx="1"/>
+      <rect x="76" y="72" width="12" height="11" rx="1"/>
+      <rect x="93" y="72" width="12" height="11" rx="1"/>
+      <rect x="110" y="72" width="12" height="11" rx="1"/>
+    </g>
+    <!-- Body -->
+    <rect x="10" y="15" width="120" height="50" rx="4" fill="url(#equipmentBody)"/>
+    <rect x="15" y="20" width="110" height="15" rx="2" fill="#2D2D2D"/>
+    <rect x="20" y="40" width="100" height="20" rx="2" fill="#252525"/>
+    <!-- Cab -->
+    <path d="M30,5 L70,5 L85,15 L15,15 Z" fill="#2D2D2D"/>
+    <rect x="35" y="8" width="30" height="12" rx="2" fill="#1A3A4A" opacity="0.8"/>
+    <!-- Boom -->
+    <path d="M65,15 Q120,-20 180,-30" fill="none" stroke="url(#equipmentBody)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M180,-30 Q200,-35 220,-25" fill="none" stroke="url(#equipmentBody)" stroke-width="10" stroke-linecap="round"/>
+    <!-- Bucket -->
+    <path d="M210,-35 L245,-20 L245,5 L210,5 Z" fill="#2D2D2D" stroke="#4A4A4A" stroke-width="2"/>
+    <path d="M215,-30 L240,-25" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.7"/>
+    <path d="M215,-20 L240,-15" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.5"/>
+    <!-- Hydraulics -->
+    <line x1="55" y1="20" x2="110" y2="-10" stroke="#3D3D3D" stroke-width="4"/>
+    <circle cx="110" cy="-10" r="5" fill="#3D3D3D"/>
+  </g>
+  <!-- Haul Truck -->
+  <g transform="translate(580, 400)" filter="url(#softShadow)">
+    <rect x="0" y="45" width="160" height="20" rx="4" fill="#1A1A1A"/>
+    <rect x="10" y="10" width="140" height="35" rx="3" fill="url(#equipmentBody)"/>
+    <rect x="15" y="15" width="130" height="10" rx="2" fill="#2D2D2D"/>
+    <rect x="20" y="30" width="120" height="12" rx="2" fill="#252525"/>
+    <!-- Cab -->
+    <path d="M130,10 L150,10 L155,30 L125,30 Z" fill="#2D2D2D"/>
+    <rect x="133" y="13" width="15" height="15" rx="1" fill="#1A3A4A" opacity="0.8"/>
+    <!-- Bed with ore -->
+    <path d="M10,45 L150,45 L150,65 L10,65 Z" fill="#3D2B1F"/>
+    <ellipse cx="80" cy="52" rx="50" ry="8" fill="#4A3728"/>
+    <ellipse cx="80" cy="50" rx="45" ry="6" fill="#FFD700" opacity="0.4"/>
+    <!-- Wheels -->
+    <circle cx="25" cy="65" r="15" fill="#1A1A1A"/>
+    <circle cx="135" cy="65" r="15" fill="#1A1A1A"/>
+    <circle cx="25" cy="65" r="8" fill="#2D2D2D"/>
+    <circle cx="135" cy="65" r="8" fill="#2D2D2D"/>
+  </g>
+  <!-- Conveyor system -->
+  <path d="M200,520 Q280,450 380,380 Q480,320 580,300 Q650,290 700,280" fill="none" stroke="url(#conveyorBelt)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M200,520 Q280,450 380,380 Q480,320 580,300 Q650,290 700,280" fill="none" stroke="#3D3D3D" stroke-width="6" stroke-linecap="round" stroke-dasharray="15,10" opacity="0.6"/>
+  <!-- Conveyor supports -->
+  <g stroke="#3D3D3D" stroke-width="4" stroke-linecap="round">
+    <line x1="250" y1="480" x2="250" y2="550"/>
+    <line x1="350" y1="410" x2="350" y2="550"/>
+    <line x1="450" y1="350" x2="450" y2="550"/>
+    <line x1="550" y1="320" x2="550" y2="550"/>
+    <line x1="650" y1="300" x2="650" y2="550"/>
+  </g>
+  <!-- Processing plant -->
+  <g transform="translate(320, 220)" filter="url(#softShadow)">
+    <rect x="-40" y="0" width="80" height="120" rx="4" fill="url(#equipmentBody)"/>
+    <rect x="-35" y="10" width="70" height="100" rx="2" fill="#2D2D2D"/>
+    <circle cx="0" cy="40" r="25" fill="#1A1A2E" stroke="#FFD700" stroke-width="2" opacity="0.5"/>
+    <circle cx="0" cy="40" r="20" fill="url(#goldVein)" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="0" y="85" text-anchor="middle" font-family="Georgia, serif" font-size="9" font-weight="bold" fill="#FFD700">CRUSHER</text>
+    <!-- Stack -->
+    <rect x="-8" y="-30" width="16" height="30" rx="2" fill="#2D2D2D"/>
+    <ellipse cx="0" cy="-30" rx="10" ry="5" fill="#1A1A1A"/>
+    <g opacity="0.4">
+      <ellipse cx="0" cy="-45" rx="18" ry="12" fill="#666">
+        <animate attributeName="cy" values="-45;-60;-45" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.4;0.1;0.4" dur="3s" repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+  </g>
+  <!-- Rock piles -->
+  <g fill="url(#rockGradient)" opacity="0.9">
+    <ellipse cx="100" cy="530" rx="35" ry="18"/>
+    <ellipse cx="180" cy="540" rx="28" ry="14"/>
+    <ellipse cx="680" cy="530" rx="40" ry="20"/>
+    <ellipse cx="580" cy="540" rx="25" ry="12"/>
+    <ellipse cx="50" cy="520" rx="20" ry="10"/>
+    <ellipse cx="730" cy="525" rx="22" ry="11"/>
+  </g>
+  <!-- Gold nuggets on conveyor -->
+  <g filter="url(#glow)">
+    <ellipse cx="300" cy="420" rx="6" ry="4" fill="url(#goldVein)">
+      <animate attributeName="cx" values="300;320;340;360;380;400;420;440;460;480;500;520;540;560;580;600;300" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="420;405;390;375;360;345;330;315;305;295;290;285;280;285;290;295;420" dur="8s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="340" cy="410" rx="5" ry="3" fill="url(#goldVein)">
+      <animate attributeName="cx" values="340;360;380;400;420;440;460;480;500;520;540;560;580;600;620;340" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="410;395;380;365;350;335;320;305;295;285;280;275;270;275;280;410" dur="8s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  <!-- Sparkles on gold veins -->
+  <g filter="url(#glow)">
+    <circle cx="160" cy="440" r="2.5" fill="#FFE55C" opacity="0.9">
+      <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="360" cy="470" r="2" fill="#FFE55C" opacity="0.85">
+      <animate attributeName="opacity" values="0.85;0.15;0.85" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="550" cy="430" r="3" fill="#FFE55C" opacity="0.9">
+      <animate attributeName="opacity" values="0.9;0.25;0.9" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="220" cy="510" r="2" fill="#FFE55C" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0.2;0.8" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="600" cy="500" r="2.5" fill="#FFE55C" opacity="0.85">
+      <animate attributeName="opacity" values="0.85;0.2;0.85" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <text x="400" y="540" text-anchor="middle" font-family="Georgia, serif" font-size="17" font-weight="bold" fill="#FFD700" opacity="0.9">DS MINING OPERATION • GOLD & COPPER EXTRACTION</text>
+  <text x="400" y="565" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#8B7A6A" opacity="0.7">2.5 PH/S HASHRATE • HYDROELECTRIC POWER • 99.5% UPTIME</text>
+</svg>

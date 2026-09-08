@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="vaultGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A1A2E;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#16213E;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#0F0F23;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0A0A1A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0F0F0;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#C0C0C0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A8A8A8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="doorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D2D44;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1A1A2E;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F0F1A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </linearGradient>
+    <radialGradient id="lightGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bgGradient)"/>
+  <!-- Vault room -->
+  <rect x="50" y="50" width="700" height="500" rx="8" fill="url(#vaultGradient)" stroke="#FFD700" stroke-width="2" opacity="0.3"/>
+  <!-- Vault door -->
+  <g transform="translate(50, 150)">
+    <circle cx="150" cy="150" r="150" fill="url(#doorGradient)" stroke="#FFD700" stroke-width="3"/>
+    <circle cx="150" cy="150" r="120" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.5"/>
+    <circle cx="150" cy="150" r="90" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
+    <!-- Door bolts -->
+    <g fill="#FFD700">
+      <circle cx="150" cy="30" r="8"/>
+      <circle cx="270" cy="150" r="8"/>
+      <circle cx="150" cy="270" r="8"/>
+      <circle cx="30" cy="150" r="8"/>
+    </g>
+    <!-- Center lock -->
+    <circle cx="150" cy="150" r="25" fill="#1A1A2E" stroke="#FFD700" stroke-width="2"/>
+    <rect x="142" y="135" width="16" height="30" rx="3" fill="none" stroke="#FFD700" stroke-width="2"/>
+    <rect x="145" y="140" width="10" height="20" rx="2" fill="#FFD700"/>
+  </g>
+  <!-- Gold bar shelves -->
+  <g transform="translate(350, 80)">
+    <!-- Shelf 1 - Gold -->
+    <rect x="0" y="0" width="400" height="12" fill="#1A1A2E" stroke="#FFD700" stroke-width="1" opacity="0.5"/>
+    <g transform="translate(20, -70)">
+      <rect x="0" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="40" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+      <rect x="100" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="140" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+      <rect x="200" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="240" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+      <rect x="300" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="340" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+    </g>
+    <!-- Shelf 2 - Gold -->
+    <rect x="0" y="100" width="400" height="12" fill="#1A1A2E" stroke="#FFD700" stroke-width="1" opacity="0.5"/>
+    <g transform="translate(20, 30)">
+      <rect x="0" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="40" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+      <rect x="100" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="140" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+      <rect x="200" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="240" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+      <rect x="300" y="0" width="80" height="40" rx="2" fill="url(#goldGradient)"/>
+      <text x="340" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#8B6914">999.9</text>
+    </g>
+    <!-- Shelf 3 - Silver -->
+    <rect x="0" y="200" width="400" height="12" fill="#1A1A2E" stroke="#C0C0C0" stroke-width="1" opacity="0.5"/>
+    <g transform="translate(20, 130)">
+      <rect x="0" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="40" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+      <rect x="100" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="140" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+      <rect x="200" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="240" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+      <rect x="300" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="340" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+    </g>
+    <!-- Shelf 4 - Silver -->
+    <rect x="0" y="300" width="400" height="12" fill="#1A1A2E" stroke="#C0C0C0" stroke-width="1" opacity="0.5"/>
+    <g transform="translate(20, 230)">
+      <rect x="0" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="40" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+      <rect x="100" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="140" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+      <rect x="200" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="240" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+      <rect x="300" y="0" width="80" height="40" rx="2" fill="url(#silverGradient)"/>
+      <text x="340" y="25" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4A4A4A">999</text>
+    </g>
+  </g>
+  <!-- Security cameras -->
+  <g fill="#374151">
+    <circle cx="100" cy="80" r="12"/>
+    <circle cx="700" cy="80" r="12"/>
+    <rect x="94" y="92" width="12" height="20" rx="2"/>
+    <rect x="694" y="92" width="12" height="20" rx="2"/>
+    <circle cx="100" cy="100" r="4" fill="#EF4444">
+      <animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="700" cy="100" r="4" fill="#EF4444">
+      <animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <!-- Light beams -->
+  <ellipse cx="400" cy="150" rx="200" ry="80" fill="url(#lightGlow)"/>
+  <ellipse cx="400" cy="350" rx="180" ry="60" fill="url(#lightGlow)"/>
+  <ellipse cx="400" cy="500" rx="150" ry="40" fill="url(#lightGlow)"/>
+  <!-- Sparkles -->
+  <circle cx="400" cy="150" r="3" fill="#FFD700" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="500" cy="100" r="2" fill="#FFD700" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="300" cy="400" r="2.5" fill="#C0C0C0" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.3;0.9" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <text x="400" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#FFD700" opacity="0.8">HIGH-SECURITY BULLION VAULT</text>
+</svg>

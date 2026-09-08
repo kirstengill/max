@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { X, Check, AlertCircle, ArrowUpRight, ShieldCheck, Zap, Wallet, Sparkles, Clock, Calculator } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Machine } from '../types';
@@ -22,6 +22,7 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
   if (!machine) return null;
 
   const [amountUGX, setAmountUGX] = useState<number>(machine.minInvestUGX);
+  const amountInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -32,17 +33,14 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
   const totalReturn = amountUGX + estTermYield;
 
   const presets = [
-    { label: 'Min', value: machine.minInvestUGX },
-    { label: '2x', value: machine.minInvestUGX * 2 },
-    { label: '5x', value: machine.minInvestUGX * 5 },
-    ...(userBalanceUGX >= machine.minInvestUGX
-      ? [{ label: 'Max', value: Math.floor(userBalanceUGX / 1000) * 1000 }]
-      : []),
+    { label: 'UGX 15,000', value: 15000 },
+    { label: 'UGX 20,000', value: 20000 },
+    { label: 'UGX 30,000', value: 30000 },
   ];
 
   const handleInvest = async () => {
-    if (amountUGX < machine.minInvestUGX || amountUGX < 15000) {
-      setErrorMessage(`Minimum Investment: The minimum investment amount is UGX ${Math.max(machine.minInvestUGX, 15000).toLocaleString()}`);
+    if (amountUGX < 15000) {
+      setErrorMessage('Minimum Investment: The minimum investment amount is UGX 15,000');
       return;
     }
     if (isInsufficient) {
@@ -122,7 +120,7 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
                 Allocation Amount (UGX)
               </label>
               <span className="text-[11px] text-slate-500 font-mono">
-                Min: UGX {machine.minInvestUGX.toLocaleString()}
+                Min: UGX 15,000
               </span>
             </div>
             <div className="relative">
@@ -132,7 +130,8 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
               <input
                 type="number"
                 value={amountUGX || ''}
-                min={machine.minInvestUGX}
+                ref={amountInputRef}
+                min={15000}
                 step={5000}
                 onChange={(e) => setAmountUGX(Number(e.target.value))}
                 className="w-full pl-14 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold font-mono text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all"
@@ -140,13 +139,13 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
             </div>
 
             {/* Quick Presets */}
-            <div className="flex gap-1.5 mt-2">
+            <div className="grid grid-cols-4 gap-1.5 mt-2">
               {presets.map((preset) => (
                 <button
                   key={preset.label}
                   type="button"
                   onClick={() => setAmountUGX(preset.value)}
-                  className={`flex-1 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                  className={`py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
                     amountUGX === preset.value
                       ? 'bg-slate-900 text-emerald-400 border-slate-900'
                       : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -155,6 +154,17 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
                   {preset.label}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => amountInputRef.current?.focus()}
+                className={`py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                  !presets.some((preset) => preset.value === amountUGX)
+                    ? 'bg-slate-900 text-emerald-400 border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                Custom Amount
+              </button>
             </div>
           </div>
 

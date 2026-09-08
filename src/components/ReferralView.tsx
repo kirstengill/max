@@ -694,7 +694,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
         <div className="grid grid-cols-3 gap-2 pt-1.5 text-center text-[11px]">
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
             <span className="text-slate-500 block">UGX 20,000 Dep</span>
-            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 4,000</span>
+            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 5,000</span>
           </div>
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
             <span className="text-slate-500 block">UGX 50,000 Dep</span>

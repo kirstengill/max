@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <linearGradient id="steelGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A4A4A;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#3D3D3D;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#2D2D2D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1A1A1A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="pipeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#555555;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3D3D3D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#222222;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="lightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bgGradient)"/>
+  <!-- Factory building structure -->
+  <path d="M50,500 L50,150 Q200,80 400,80 Q600,80 750,150 L750,500 Z" fill="url(#steelGradient)" stroke="#FFD700" stroke-width="1" opacity="0.3"/>
+  <!-- Roof vents -->
+  <g fill="#2D2D2D" stroke="#444" stroke-width="1">
+    <rect x="100" y="120" width="60" height="30" rx="3"/>
+    <rect x="220" y="120" width="60" height="30" rx="3"/>
+    <rect x="340" y="120" width="60" height="30" rx="3"/>
+    <rect x="460" y="120" width="60" height="30" rx="3"/>
+    <rect x="580" y="120" width="60" height="30" rx="3"/>
+  </g>
+  <!-- Windows with lights -->
+  <g fill="#1A1A2E">
+    <rect x="80" y="200" width="80" height="60" rx="4"/>
+    <rect x="80" y="280" width="80" height="60" rx="4"/>
+    <rect x="80" y="360" width="80" height="60" rx="4"/>
+    <rect x="200" y="200" width="80" height="60" rx="4"/>
+    <rect x="200" y="280" width="80" height="60" rx="4"/>
+    <rect x="200" y="360" width="80" height="60" rx="4"/>
+    <rect x="320" y="200" width="80" height="60" rx="4"/>
+    <rect x="320" y="280" width="80" height="60" rx="4"/>
+    <rect x="320" y="360" width="80" height="60" rx="4"/>
+    <rect x="440" y="200" width="80" height="60" rx="4"/>
+    <rect x="440" y="280" width="80" height="60" rx="4"/>
+    <rect x="440" y="360" width="80" height="60" rx="4"/>
+    <rect x="560" y="200" width="80" height="60" rx="4"/>
+    <rect x="560" y="280" width="80" height="60" rx="4"/>
+    <rect x="560" y="360" width="80" height="60" rx="4"/>
+  </g>
+  <!-- Lit windows (gold glow) -->
+  <g fill="url(#lightGradient)">
+    <rect x="84" y="204" width="72" height="52" rx="3" opacity="0.4"/>
+    <rect x="204" y="284" width="72" height="52" rx="3" opacity="0.4"/>
+    <rect x="324" y="364" width="72" height="52" rx="3" opacity="0.4"/>
+    <rect x="444" y="204" width="72" height="52" rx="3" opacity="0.4"/>
+    <rect x="564" y="364" width="72" height="52" rx="3" opacity="0.4"/>
+  </g>
+  <!-- Pipes -->
+  <g stroke="url(#pipeGradient)" stroke-width="8" fill="none" stroke-linecap="round">
+    <path d="M50,200 Q150,200 150,300 Q150,400 50,400"/>
+    <path d="M750,250 Q650,250 650,350 Q650,450 750,450"/>
+    <path d="M400,80 L400,150"/>
+    <path d="M250,80 L250,150"/>
+    <path d="M550,80 L550,150"/>
+  </g>
+  <!-- Pipe joints -->
+  <g fill="#3D3D3D" stroke="#555" stroke-width="2">
+    <circle cx="150" cy="200" r="10"/>
+    <circle cx="150" cy="300" r="10"/>
+    <circle cx="150" cy="400" r="10"/>
+    <circle cx="650" cy="250" r="10"/>
+    <circle cx="650" cy="350" r="10"/>
+    <circle cx="650" cy="450" r="10"/>
+    <circle cx="400" cy="150" r="8"/>
+    <circle cx="250" cy="150" r="8"/>
+    <circle cx="550" cy="150" r="8"/>
+  </g>
+  <!-- Valve wheels -->
+  <g fill="#4A4A4A" stroke="#666" stroke-width="1">
+    <circle cx="150" cy="200" r="16"/>
+    <circle cx="150" cy="200" r="10" fill="none"/>
+    <g stroke="#666" stroke-width="2">
+      <line x1="150" y1="186" x2="150" y2="214"/>
+      <line x1="136" y1="200" x2="164" y2="200"/>
+    </g>
+    
+    <circle cx="650" cy="350" r="16"/>
+    <circle cx="650" cy="350" r="10" fill="none"/>
+    <g stroke="#666" stroke-width="2">
+      <line x1="650" y1="336" x2="650" y2="364"/>
+      <line x1="636" y1="350" x2="664" y2="350"/>
+    </g>
+  </g>
+  <!-- Smokestack -->
+  <g transform="translate(700, 150)">
+    <rect x="0" y="0" width="30" height="100" rx="2" fill="url(#steelGradient)"/>
+    <ellipse cx="15" cy="0" rx="18" ry="8" fill="#1A1A1A"/>
+    <!-- Smoke -->
+    <g opacity="0.4">
+      <ellipse cx="15" cy="-20" rx="25" ry="15" fill="#666">
+        <animate attributeName="cy" values="-20;-40;-20" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.4;0.1;0.4" dur="3s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="15" cy="-40" rx="20" ry="12" fill="#888">
+        <animate attributeName="cy" values="-40;-60;-40" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2.5s" repeatCount="indefinite"/>
+      </ellipse>
+    </g>
+  </g>
+  <!-- Conveyor system -->
+  <path d="M50,480 Q150,420 250,400 Q350,380 450,400 Q550,420 650,450 Q750,480 750,500" fill="none" stroke="#3D3D3D" stroke-width="15" stroke-linecap="round"/>
+  <path d="M50,480 Q150,420 250,400 Q350,380 450,400 Q550,420 650,450 Q750,480 750,500" fill="none" stroke="#555" stroke-width="5" stroke-linecap="round" stroke-dasharray="20,10" opacity="0.6"/>
+  <!-- Gold processing tanks -->
+  <g transform="translate(320, 300)">
+    <circle cx="0" cy="0" r="60" fill="url(#steelGradient)" stroke="#FFD700" stroke-width="2" opacity="0.5"/>
+    <circle cx="0" cy="0" r="45" fill="#1A1A2E"/>
+    <circle cx="0" cy="0" r="40" fill="url(#goldGradient)" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="0" y="5" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#FFD700">REFINERY</text>
+  </g>
+  <!-- Sparkles -->
+  <circle cx="320" cy="250" r="3" fill="#FFD700" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.2;0.9" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="400" cy="150" r="2" fill="#FFD700" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.1;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="600" cy="300" r="2.5" fill="#FFD700" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.2;0.7" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <text x="400" y="550" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#FFD700" opacity="0.8">PRECIOUS METALS REFINING FACILITY</text>
+</svg>

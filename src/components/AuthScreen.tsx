@@ -55,18 +55,17 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Extract referral code from URL query parameters (?ref=CODE) or localStorage
+  // Extract referral code from the URL query parameters (?ref=CODE).
   useEffect(() => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
-      const refParam = searchParams.get('ref') || searchParams.get('referral') || localStorage.getItem('pending_referral_code');
+      const refParam = searchParams.get('ref') || searchParams.get('referral');
       if (refParam) {
         const cleanRef = cleanReferralCode(refParam);
         if (cleanRef) {
           setReferralCode(cleanRef);
           setHasUrlReferral(true);
           setMode('signup');
-          localStorage.setItem('pending_referral_code', cleanRef);
         }
       }
     } catch (e) {
@@ -94,8 +93,8 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
     try {
       const res = await authService.signInWithPassword(signInUsername.trim(), signInPassword);
-      if (res.error) {
-        setErrorMsg(res.error);
+      if (!res || res.error) {
+        setErrorMsg(res?.error || 'Unable to sign in. Please try again.');
         setLoading(false);
       } else {
         setSuccessMsg(`Welcome back, ${res.user.fullName}! Opening dashboard...`);

@@ -19,7 +19,6 @@ import {
 } from '../types';
 import { supabaseAdmin } from './supabaseAdmin';
 import { getSupabaseClient } from './supabase';
-import { apiClient } from './apiClient';
 
 export interface UserAccountData {
   wallet: WalletState;
@@ -89,7 +88,8 @@ class AuthService {
 
   private init() {
     const envUrl = import.meta.env.VITE_SUPABASE_URL as string;
-    const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const envKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      import.meta.env.VITE_SUPABASE_ANON_KEY) as string;
     if (envUrl && envKey) {
       try {
         // Supabase Auth: session persisted + auto refreshed; restored at startup.
@@ -144,10 +144,8 @@ class AuthService {
       if (accessToken !== undefined) {
         this.accessToken = accessToken;
       }
-      apiClient.setSession(this.accessToken, user.id);
     } else {
       this.accessToken = null;
-      apiClient.setSession(null, null);
     }
   }
 
@@ -198,23 +196,6 @@ class AuthService {
       }
     }
 
-    // Fallback: check local storage token for standalone / offline Express server mode
-    try {
-      const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('solnova_session_token') : null;
-      const storedUserId = typeof localStorage !== 'undefined' ? localStorage.getItem('solnova_session_user_id') : null;
-      if (storedToken && storedUserId) {
-        apiClient.setSession(storedToken, storedUserId);
-        const meRes = await apiClient.getSessionUser();
-        if (meRes.user && meRes.data) {
-          this.setCurrentUser(meRes.user, storedToken);
-          this.memoryUserData[meRes.user.id] = meRes.data;
-          return { user: meRes.user, data: meRes.data };
-        }
-      }
-    } catch (e) {
-      // no session
-    }
-
     this.currentUser = null;
     return { user: null, data: null };
   }
@@ -231,19 +212,27 @@ class AuthService {
   }> {
     const cleanInput = (usernameOrEmail || '').trim();
     if (!cleanInput || !password) {
-      return { error: 'Username/Email and password are required.' };
+      return { error: 'Username and password are required.' };
     }
 
-    // 1. Try Supabase Auth if client is configured
-    if (this.client) {
-      try {
+    if (!this.client) {
+      return { error: 'Authentication is unavailable. Please try again later.' };
+    }
+
+    try {
         const email = this.formatEmail(cleanInput);
-        const { data: authData, error: authError } = await this.client.auth.signInWithPassword({
+        const authResponse = await this.client.auth.signInWithPassword({
           email,
           password,
         });
+        const authData = authResponse?.data;
+        const authError = authResponse?.error;
 
-        if (!authError && authData.user && authData.session) {
+        if (authError) {
+          return { error: this.mapAuthError(authError) };
+        }
+
+        if (authData.user && authData.session) {
           const profile = await this.fetchProfileFromSupabase(authData.user);
           if (!profile) {
             await this.client.auth.signOut();
@@ -270,34 +259,10 @@ class AuthService {
           this.memoryUserData[profile.id] = accountData;
           return { user: profile, data: accountData };
         }
-      } catch (err) {
-        console.warn('Supabase sign-in error, trying server fallback:', err);
-      }
+        return { error: 'Authentication did not return a valid Supabase session.' };
+    } catch (err: any) {
+      return { error: this.mapAuthError(err) };
     }
-
-    // 2. Fallback to Express backend
-    const serverRes = await apiClient.signIn(cleanInput, password);
-    if (serverRes.error || !serverRes.user) {
-      return { error: serverRes.error || 'Invalid username or password.', isBlocked: serverRes.isBlocked };
-    }
-
-    this.setCurrentUser(serverRes.user, serverRes.token);
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem('solnova_session_token', serverRes.token);
-        localStorage.setItem('solnova_session_user_id', serverRes.user.id);
-      } catch {}
-    }
-
-    const accountData = serverRes.data || {
-      wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
-      transactions: [],
-      machines: [],
-      adminTasks: [],
-      notifications: [],
-    };
-    this.memoryUserData[serverRes.user.id] = accountData;
-    return { user: serverRes.user, data: accountData };
   }
 
   public async signUp(
@@ -319,9 +284,11 @@ class AuthService {
     }
     const cleanRef = cleanReferralCode(referralCode);
 
-    // 1. Try Supabase Auth if client is configured
-    if (this.client) {
-      try {
+    if (!this.client) {
+      return { error: 'Authentication is unavailable. Please try again later.' };
+    }
+
+    try {
         const email = `${cleanUsername}@sunrise-ds.com`;
         const { data: authData, error: authError } = await this.client.auth.signUp({
           email,
@@ -381,34 +348,9 @@ class AuthService {
             return { user: profile, data: userData };
           }
         }
-      } catch (err) {
-        console.warn('Supabase sign-up error, trying server fallback:', err);
-      }
+    } catch (err: any) {
+      return { error: this.mapAuthError(err) };
     }
-
-    // 2. Fallback to Express backend
-    const serverRes = await apiClient.signUp(cleanUsername, password, (fullName || cleanUsername).trim(), phone, cleanRef);
-    if (serverRes.error || !serverRes.user) {
-      return { error: serverRes.error || 'Sign up failed. Please try again.' };
-    }
-
-    this.setCurrentUser(serverRes.user, serverRes.token);
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem('solnova_session_token', serverRes.token);
-        localStorage.setItem('solnova_session_user_id', serverRes.user.id);
-      } catch {}
-    }
-
-    const userData = serverRes.data || {
-      wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
-      transactions: [],
-      machines: [],
-      adminTasks: [],
-      notifications: [],
-    };
-    this.memoryUserData[serverRes.user.id] = userData;
-    return { user: serverRes.user, data: userData };
   }
 
   /**
@@ -430,14 +372,6 @@ class AuthService {
         // Ignore signout error
       }
     }
-    await apiClient.signOut();
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.removeItem('solnova_session_token');
-        localStorage.removeItem('solnova_session_user_id');
-      } catch {}
-    }
-
     this.currentUser = null;
     this.accessToken = null;
     this.memoryUserData = {};
@@ -657,27 +591,6 @@ class AuthService {
         console.warn('refreshUserData failed:', e);
       }
     }
-
-    // 2. Fallback to Express backend data
-    try {
-      const serverRes = await apiClient.fetchUserData();
-      if (serverRes && !serverRes.error && serverRes.user) {
-        this.currentUser = serverRes.user;
-        const userData: UserAccountData = serverRes.data || {
-          wallet: serverRes.wallet || { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
-          transactions: serverRes.transactions || [],
-          machines: serverRes.machines || [],
-          adminTasks: serverRes.adminTasks || [],
-          notifications: serverRes.notifications || [],
-        };
-        this.memoryUserData[userId] = userData;
-        return {
-          user: this.currentUser,
-          data: userData,
-          isBlocked: this.currentUser.status === 'blocked',
-        };
-      }
-    } catch {}
 
     return {
       user: this.currentUser,

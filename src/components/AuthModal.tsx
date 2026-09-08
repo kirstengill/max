@@ -33,13 +33,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
         const urlRef = search.get('ref') || search.get('referral');
         if (urlRef) {
           const cleaned = cleanReferralCode(urlRef);
-          if (cleaned) {
-            localStorage.setItem('pending_referral_code', cleaned);
-            return cleaned;
-          }
+          if (cleaned) return cleaned;
         }
-        const cached = localStorage.getItem('pending_referral_code');
-        if (cached) return cleanReferralCode(cached);
       } catch {}
     }
     return '';
@@ -56,9 +51,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
       if (clean) {
         setReferralCode(clean);
         setTab('signup');
-        try {
-          localStorage.setItem('pending_referral_code', clean);
-        } catch {}
       }
     }
   }, [initialReferralCode]);
@@ -81,8 +73,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onAuthSuccess, in
       setLoading(true);
       try {
         const res = await authService.signInWithPassword(cleanUsername, password);
-        if (res.error) {
-          setErrorMsg(res.error);
+        if (!res || res.error) {
+          setErrorMsg(res?.error || 'Unable to sign in. Please try again.');
         } else {
           onAuthSuccess(res.user, res.data);
           onClose();

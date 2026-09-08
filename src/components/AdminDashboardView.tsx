@@ -53,7 +53,6 @@ import {
   BalanceAdjustment,
 } from '../types';
 import { authService } from '../services/supabaseAuth';
-import { apiClient } from '../services/apiClient';
 import { getSupabaseClient } from '../services/supabase';
 import { ProjectImage } from './ProjectImage';
 

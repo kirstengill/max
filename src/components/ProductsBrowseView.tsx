@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Machine } from '../types';
-import { AVAILABLE_CATALOG } from '../data/initialData';
 import { InvestmentCard } from './InvestmentCard';
 import { Search, Sparkles, Filter, ShieldCheck, Zap, ArrowUpDown, Layers } from 'lucide-react';
 
@@ -21,11 +20,7 @@ export const ProductsBrowseView: React.FC<ProductsBrowseViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'reward_desc' | 'min_asc' | 'duration'>('default');
 
-  const catalogList = (catalog && catalog.length > 0)
-    ? catalog
-    : AVAILABLE_CATALOG.length > 0
-    ? AVAILABLE_CATALOG
-    : machines;
+  const catalogList = catalog || [];
 
   // Extract unique categories dynamically
   const uniqueCategories = ['All', ...Array.from(new Set(catalogList.map((m) => m.category)))];

@@ -13,8 +13,6 @@ import {
   BalanceAdjustment,
   Machine,
 } from '../types';
-import { AVAILABLE_CATALOG } from '../data/initialData';
-import { apiClient } from './apiClient';
 
 export interface SubmitTransactionInput {
   type: 'deposit' | 'withdraw';
@@ -35,18 +33,7 @@ export const supabaseAdmin = {
     }
 
     if (!sb) {
-      if (input.type === 'deposit') {
-        const res = await apiClient.submitDeposit(numericAmount, input.paymentMethod || 'Manual', input.recipientInfo);
-        return { success: !res.error, transaction: res.transaction, error: res.error };
-      } else {
-        const res = await apiClient.submitWithdrawal(
-          numericAmount,
-          input.paymentMethod || 'Manual',
-          input.recipientInfo || '',
-          input.isBonusWithdrawal
-        );
-        return { success: !res.error, transaction: res.transaction, error: res.error };
-      }
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -282,13 +269,7 @@ export const supabaseAdmin = {
     }
 
     if (!sb) {
-      const res = await apiClient.buyInvestment(machineOrId, cost);
-      return {
-        success: !res.error,
-        investment: res.investment,
-        newBalance: res.wallet?.totalBalanceUGX,
-        error: res.error,
-      };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -331,8 +312,7 @@ export const supabaseAdmin = {
   async claimInvestmentYield(userMachineId: string): Promise<{ success: boolean; claimedUGX?: number; newBalance?: number; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.claimInvestmentYield(userMachineId);
-      return { success: !res.error, claimedUGX: res.claimedUGX, newBalance: res.wallet?.totalBalanceUGX, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -426,154 +406,55 @@ export const supabaseAdmin = {
   async fetchCatalogMachines(): Promise<{ machines: Machine[]; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.fetchCatalogMachines();
-      return { machines: res.machines && res.machines.length > 0 ? res.machines : AVAILABLE_CATALOG };
+      return { machines: [], error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
       const { data, error } = await sb
-        .from('catalog_machines')
+        .from('products')
         .select('*')
         .order('min_invest_ugx', { ascending: true });
-
       if (error) {
-        console.warn('[Supabase Admin] fetchCatalogMachines table notice:', error.message);
-        return { machines: AVAILABLE_CATALOG, error: error.message };
+        return { machines: [], error: error.message };
       }
-
       if (!data || data.length === 0) {
-        // Table exists but is unseeded — seed initial catalog into Supabase
-        console.log('[Supabase Admin] Seeding initial catalog machines to Supabase table...');
-        try {
-          const seedPayload = AVAILABLE_CATALOG.map((m) => ({
-            id: m.id,
-            title: m.title,
-            subtitle: m.subtitle || null,
-            category: m.category,
-            image: m.image,
-            daily_reward_ugx: m.dailyRewardUGX,
-            status: m.status || 'Active',
-            est_yearly_roi: m.estYearlyROI || 120,
-            min_invest_ugx: m.minInvestUGX,
-            hashrate: m.hashrate || '10.0 TH/s',
-            power_source: m.powerSource || 'Clean Energy',
-            uptime: m.uptime || '99.9%',
-            temperature: m.temperature || '36.0°C',
-            efficiency: m.efficiency || 98.5,
-            total_mined_ugx: m.totalMinedUGX || 0,
-            unclaimed_rewards_ugx: m.unclaimedRewardsUGX || 0,
-            is_boosted: Boolean(m.isBoosted),
-          }));
-          await sb.from('catalog_machines').upsert(seedPayload, { onConflict: 'id' });
-        } catch (seedErr) {
-          console.warn('[Supabase Admin] Seeding notice:', seedErr);
-        }
-        return { machines: AVAILABLE_CATALOG };
+        return { machines: [] };
       }
 
       const mappedMachines: Machine[] = data.map((m: any) => {
-        let resolvedImage = m.image;
-        if (!resolvedImage || (!resolvedImage.startsWith('http://') && !resolvedImage.startsWith('https://') && !resolvedImage.startsWith('data:'))) {
-          const defaultMatch = AVAILABLE_CATALOG.find((c) => c.id === m.id);
-          if (defaultMatch && defaultMatch.image) {
-            resolvedImage = defaultMatch.image;
-          }
-        }
+        const resolvedImage = m.image || '';
 
         return {
           id: m.id,
-          title: m.title,
+          title: m.name,
           subtitle: m.subtitle || undefined,
           category: m.category || 'DS-Mining',
-          image: resolvedImage || m.image || '',
-          dailyRewardUGX: Number(m.daily_reward_ugx || m.dailyRewardUGX || 0),
-          status: (m.status || 'Active') as Machine['status'],
-          estYearlyROI: Number(m.est_yearly_roi || m.estYearlyROI || 0),
-          minInvestUGX: Number(m.min_invest_ugx || m.minInvestUGX || 0),
+          image: m.image_url || '',
+          dailyRewardUGX: Number(m.daily_reward_ugx || 0),
+          status: m.status === 'active' ? 'Active' : 'Maintenance',
+          estYearlyROI: Number(m.expected_return || 0),
+          minInvestUGX: Number(m.minimum_investment || 0),
           hashrate: m.hashrate || '10.0 TH/s',
-          powerSource: m.power_source || m.powerSource || 'Clean Energy Array',
+          powerSource: m.power_source || 'Clean Energy Array',
           uptime: m.uptime || '99.9%',
           temperature: m.temperature || '36.0°C',
           efficiency: Number(m.efficiency || 98.5),
-          totalMinedUGX: Number(m.total_mined_ugx || m.totalMinedUGX || 0),
-          unclaimedRewardsUGX: Number(m.unclaimed_rewards_ugx || m.unclaimedRewardsUGX || 0),
-          isBoosted: Boolean(m.is_boosted || m.isBoosted),
+          totalMinedUGX: 0,
+          unclaimedRewardsUGX: 0,
+          isBoosted: false,
         };
       });
 
-      // One-time migrations: the old seeded catalog had an unrealistic jump from
-      // UGX 15,000 straight to millions, and rewards that didn't match the new
-      // business schedule. If a core plan still carries a stale signature, sync
-      // it to the corrected values. Admin-created custom plans are untouched.
-      const CANONICAL: Record<string, { min: number; daily: number; roi: number }> = {
-        mach_starter_15k: { min: 15000, daily: 4500, roi: 10950 },
-        mach_horizon_liquid_res: { min: 20000, daily: 6200, roi: 11315 },
-        mach_solar_mech_10: { min: 30000, daily: 9600, roi: 11680 },
-        mach_ds_mining_shoe: { min: 60000, daily: 20000, roi: 12166 },
-        mach_hydro_turbine_x500: { min: 120000, daily: 42000, roi: 12775 },
-        mach_quantum_vip_9000: { min: 300000, daily: 110000, roi: 13383 },
-      };
-      const STALE_MIN_INVEST = new Set([5000000, 25000000, 10000000, 100000000]);
-      const corrections = mappedMachines
-        .filter((m) => {
-          const canon = CANONICAL[m.id];
-          if (!canon) return false;
-          if (m.minInvestUGX !== canon.min && STALE_MIN_INVEST.has(m.minInvestUGX)) return true;
-          // Sync any plan with outdated daily rewards or minimum investment
-          if (m.dailyRewardUGX !== canon.daily || m.minInvestUGX !== canon.min) return true;
-          return false;
-        })
-        .map((m) => {
-          const canon = CANONICAL[m.id];
-          const base = AVAILABLE_CATALOG.find((c) => c.id === m.id)!;
-          return {
-            id: m.id,
-            title: base.title,
-            subtitle: base.subtitle || null,
-            category: base.category,
-            image: base.image,
-            daily_reward_ugx: canon.daily,
-            status: base.status || 'Active',
-            est_yearly_roi: canon.roi,
-            min_invest_ugx: canon.min,
-            hashrate: base.hashrate || '10.0 TH/s',
-            power_source: base.powerSource || 'Clean Energy',
-            uptime: base.uptime || '99.9%',
-            temperature: base.temperature || '36.0°C',
-            efficiency: base.efficiency || 98.5,
-            total_mined_ugx: 0,
-            unclaimed_rewards_ugx: 0,
-            is_boosted: Boolean(base.isBoosted),
-          };
-        });
-      if (corrections.length > 0) {
-        try {
-          await sb.from('catalog_machines').upsert(corrections, { onConflict: 'id' });
-          corrections.forEach((c) => {
-            const m = mappedMachines.find((x) => x.id === c.id);
-            if (m) {
-              m.minInvestUGX = c.min_invest_ugx;
-              m.dailyRewardUGX = c.daily_reward_ugx;
-              m.estYearlyROI = c.est_yearly_roi;
-            }
-          });
-        } catch (fixErr) {
-          console.warn('[Supabase Admin] Catalog amount migration notice:', fixErr);
-        }
-      }
-
       return { machines: mappedMachines };
     } catch (e: any) {
-      console.error('[Supabase Admin] fetchCatalogMachines error:', e);
-      return { machines: AVAILABLE_CATALOG, error: e?.message };
+      return { machines: [], error: e?.message || 'Failed to load products.' };
     }
   },
 
   async createCatalogMachine(machine: Partial<Machine>): Promise<{ success: boolean; machine?: Machine; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.createCatalogMachine(machine);
-      return { success: !res.error, machine: res.machine, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     const machineId = machine.id || `mach_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -585,38 +466,38 @@ export const supabaseAdmin = {
 
     const payload = {
       id: machineId,
-      title: machine.title.trim(),
+      name: machine.title.trim(),
+      slug: machineId,
+      description: machine.subtitle ? machine.subtitle.trim() : null,
       subtitle: machine.subtitle ? machine.subtitle.trim() : null,
       category: machine.category || 'DS-Mining',
-      image: machine.image || 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
+      image_url: machine.image || 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
       daily_reward_ugx: Number(machine.dailyRewardUGX || 250000),
-      status: machine.status || 'Active',
-      est_yearly_roi: Number(machine.estYearlyROI || 120),
-      min_invest_ugx: cost,
+      status: machine.status === 'Active' ? 'active' : 'inactive',
+      expected_return: Number(machine.estYearlyROI || 120),
+      minimum_investment: cost,
+      currency: 'UGX',
       hashrate: machine.hashrate || '50.0 TH/s',
       power_source: machine.powerSource || 'Clean Energy Array',
       uptime: machine.uptime || '99.9%',
       temperature: machine.temperature || '38.0°C',
       efficiency: Number(machine.efficiency || 99.0),
-      total_mined_ugx: 0,
-      unclaimed_rewards_ugx: 0,
-      is_boosted: Boolean(machine.isBoosted),
     };
 
     try {
-      const { error } = await sb.from('catalog_machines').insert(payload);
+      const { error } = await sb.from('products').insert(payload);
       if (error) return { success: false, error: translate(error.message) };
 
       const created: Machine = {
         id: payload.id,
-        title: payload.title,
+        title: payload.name,
         subtitle: payload.subtitle || undefined,
         category: payload.category as any,
-        image: payload.image,
+        image: payload.image_url,
         dailyRewardUGX: payload.daily_reward_ugx,
-        status: payload.status as any,
-        estYearlyROI: payload.est_yearly_roi,
-        minInvestUGX: payload.min_invest_ugx,
+        status: machine.status as any,
+        estYearlyROI: payload.expected_return,
+        minInvestUGX: payload.minimum_investment,
         hashrate: payload.hashrate,
         powerSource: payload.power_source,
         uptime: payload.uptime,
@@ -624,7 +505,7 @@ export const supabaseAdmin = {
         efficiency: payload.efficiency,
         totalMinedUGX: 0,
         unclaimedRewardsUGX: 0,
-        isBoosted: payload.is_boosted,
+        isBoosted: false,
       };
 
       return { success: true, machine: created };
@@ -636,29 +517,27 @@ export const supabaseAdmin = {
   async updateCatalogMachine(id: string, machine: Partial<Machine>): Promise<{ success: boolean; machine?: Machine; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.updateCatalogMachine(id, machine);
-      return { success: !res.error, machine: res.machine, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     const updatePayload: any = {};
-    if (machine.title !== undefined) updatePayload.title = machine.title.trim();
+    if (machine.title !== undefined) updatePayload.name = machine.title.trim();
     if (machine.subtitle !== undefined) updatePayload.subtitle = machine.subtitle ? machine.subtitle.trim() : null;
     if (machine.category !== undefined) updatePayload.category = machine.category;
-    if (machine.image !== undefined) updatePayload.image = machine.image;
+    if (machine.image !== undefined) updatePayload.image_url = machine.image;
     if (machine.dailyRewardUGX !== undefined) updatePayload.daily_reward_ugx = Number(machine.dailyRewardUGX);
-    if (machine.status !== undefined) updatePayload.status = machine.status;
-    if (machine.estYearlyROI !== undefined) updatePayload.est_yearly_roi = Number(machine.estYearlyROI);
-    if (machine.minInvestUGX !== undefined) updatePayload.min_invest_ugx = Math.round(Number(machine.minInvestUGX));
+    if (machine.status !== undefined) updatePayload.status = machine.status === 'Active' ? 'active' : 'inactive';
+    if (machine.estYearlyROI !== undefined) updatePayload.expected_return = Number(machine.estYearlyROI);
+    if (machine.minInvestUGX !== undefined) updatePayload.minimum_investment = Math.round(Number(machine.minInvestUGX));
     if (machine.hashrate !== undefined) updatePayload.hashrate = machine.hashrate;
     if (machine.powerSource !== undefined) updatePayload.power_source = machine.powerSource;
     if (machine.uptime !== undefined) updatePayload.uptime = machine.uptime;
     if (machine.temperature !== undefined) updatePayload.temperature = machine.temperature;
     if (machine.efficiency !== undefined) updatePayload.efficiency = Number(machine.efficiency);
-    if (machine.isBoosted !== undefined) updatePayload.is_boosted = Boolean(machine.isBoosted);
 
     try {
       const { data, error } = await sb
-        .from('catalog_machines')
+        .from('products')
         .update(updatePayload)
         .eq('id', id)
         .select()
@@ -668,22 +547,22 @@ export const supabaseAdmin = {
 
       const updated: Machine = {
         id: data.id,
-        title: data.title,
+        title: data.name,
         subtitle: data.subtitle || undefined,
         category: data.category,
-        image: data.image,
+        image: data.image_url,
         dailyRewardUGX: Number(data.daily_reward_ugx),
-        status: data.status,
-        estYearlyROI: Number(data.est_yearly_roi),
-        minInvestUGX: Number(data.min_invest_ugx),
+        status: data.status === 'active' ? 'Active' : 'Maintenance',
+        estYearlyROI: Number(data.expected_return),
+        minInvestUGX: Number(data.minimum_investment),
         hashrate: data.hashrate,
         powerSource: data.power_source,
         uptime: data.uptime,
         temperature: data.temperature,
         efficiency: Number(data.efficiency),
-        totalMinedUGX: Number(data.total_mined_ugx || 0),
-        unclaimedRewardsUGX: Number(data.unclaimed_rewards_ugx || 0),
-        isBoosted: Boolean(data.is_boosted),
+        totalMinedUGX: 0,
+        unclaimedRewardsUGX: 0,
+        isBoosted: false,
       };
 
       return { success: true, machine: updated };
@@ -695,12 +574,11 @@ export const supabaseAdmin = {
   async deleteCatalogMachine(id: string): Promise<{ success: boolean; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.deleteCatalogMachine(id);
-      return { success: !res.error, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
-      const { error } = await sb.from('catalog_machines').delete().eq('id', id);
+      const { error } = await sb.from('products').delete().eq('id', id);
       if (error) return { success: false, error: translate(error.message) };
       return { success: true };
     } catch (e: any) {
@@ -712,8 +590,7 @@ export const supabaseAdmin = {
   async fetchPendingTransactions(): Promise<{ transactions: Transaction[]; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.fetchPendingTransactions();
-      return { transactions: res.transactions || [], error: res.error };
+      return { transactions: [], error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     const { data, error } = await sb.rpc('admin_pending_transactions');
@@ -749,8 +626,7 @@ export const supabaseAdmin = {
   async fetchAllTransactions(): Promise<{ transactions: Transaction[]; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.fetchAllTransactions();
-      return { transactions: res.transactions || [], error: res.error };
+      return { transactions: [], error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -841,8 +717,7 @@ export const supabaseAdmin = {
   async approveTransaction(txId: string): Promise<{ success: boolean; newBalance?: number; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.approveTransaction(txId);
-      return { success: !res.error, newBalance: res.updatedUserBalance, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -851,61 +726,7 @@ export const supabaseAdmin = {
         return { success: true, newBalance: data === null ? undefined : Number(data) };
       }
 
-      // Fallback: direct update if RPC is missing
-      const { data: tx } = await sb.from('transactions').select('*').eq('id', txId).single();
-      if (!tx || tx.status !== 'pending') return { success: true };
-
-      await sb.from('transactions').update({ status: 'completed' }).eq('id', txId);
-
-      // Update user wallet balance
-      const amount = Number(tx.amount_ugx || tx.amount || 0);
-      const { data: wallet } = await sb.from('wallets').select('*').eq('user_id', tx.user_id).single();
-      const curBal = Number(wallet?.total_balance_ugx ?? wallet?.balance ?? 0);
-      const newBal = tx.type === 'deposit' ? curBal + amount : curBal - amount;
-
-      await sb.from('wallets').update({ total_balance_ugx: newBal, updated_at: new Date().toISOString() }).eq('user_id', tx.user_id);
-
-      // If approved transaction is a deposit, notify referrer that 20% commission is available to claim
-      if (tx.type === 'deposit') {
-        try {
-          const { data: profile } = await sb.from('profiles').select('referred_by, username').eq('id', tx.user_id).maybeSingle();
-          if (profile?.referred_by) {
-            const { data: referrer } = await sb
-              .from('profiles')
-              .select('id, referral_earnings_ugx')
-              .ilike('referral_code', profile.referred_by.trim())
-              .neq('id', tx.user_id)
-              .maybeSingle();
-
-            if (referrer) {
-              const commissionUGX = Math.round(amount * 0.20);
-              if (commissionUGX > 0) {
-                // Update referrer stats
-                const curEarnings = Number(referrer.referral_earnings_ugx || 0);
-                await sb.from('profiles').update({
-                  referral_earnings_ugx: curEarnings + commissionUGX,
-                  updated_at: new Date().toISOString(),
-                }).eq('id', referrer.id);
-
-                // Add notification for referrer that commission is available to claim
-                await sb.from('notifications').insert({
-                  id: `notif_refavail_${txId}`,
-                  user_id: referrer.id,
-                  title: 'Referral Commission Available (20%)',
-                  message: `Your referral @${profile.username || 'partner'} had a deposit of UGX ${amount.toLocaleString()} approved. UGX ${commissionUGX.toLocaleString()} (20% commission) is now available to claim in your Referral tab!`,
-                  read: false,
-                  type: 'success',
-                  created_at: new Date().toISOString(),
-                });
-              }
-            }
-          }
-        } catch (refErr) {
-          console.warn('Referral commission notification warning:', refErr);
-        }
-      }
-
-      return { success: true, newBalance: newBal };
+      return { success: false, error: translate(error.message) };
     } catch (e: any) {
       return { success: false, error: e?.message || 'Approval failed' };
     }
@@ -914,8 +735,7 @@ export const supabaseAdmin = {
   async rejectTransaction(txId: string): Promise<{ success: boolean; balance?: number; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.rejectTransaction(txId);
-      return { success: !res.error, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -924,9 +744,7 @@ export const supabaseAdmin = {
         return { success: true, balance: data === null ? undefined : Number(data) };
       }
 
-      // Fallback: direct update
-      await sb.from('transactions').update({ status: 'rejected' }).eq('id', txId);
-      return { success: true };
+      return { success: false, error: translate(error.message) };
     } catch (e: any) {
       return { success: false, error: e?.message || 'Rejection failed' };
     }
@@ -936,7 +754,7 @@ export const supabaseAdmin = {
   async fetchAdminUsers(): Promise<{ users: AdminUserSummary[]; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      return apiClient.fetchAdminUsers();
+      return { users: [], error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -1049,8 +867,7 @@ export const supabaseAdmin = {
   ): Promise<{ success: boolean; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.updateAdminUser(userId, data);
-      return { success: !res.error, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     const { error } = await sb.rpc('admin_update_user', {
@@ -1071,8 +888,7 @@ export const supabaseAdmin = {
   ): Promise<{ success: boolean; previousBalance?: number; newBalance?: number; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      const res = await apiClient.adjustUserBalance(userId, adjustment);
-      return { success: !res.error, previousBalance: res.previousBalance, newBalance: res.newBalance, error: res.error };
+      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     try {
@@ -1210,7 +1026,7 @@ export const supabaseAdmin = {
   async fetchBalanceAdjustments(): Promise<{ adjustments: BalanceAdjustment[]; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) {
-      return apiClient.fetchBalanceAdjustments();
+      return { adjustments: [], error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
     const { data, error } = await sb

@@ -29,9 +29,6 @@ import { MeProfileView } from './components/MeProfileView';
 import { ReferralView } from './components/ReferralView';
 import { WelcomeBonusCard } from './components/WelcomeBonusCard';
 
-import {
-  AVAILABLE_CATALOG,
-} from './data/initialData';
 import { Machine, WalletState, Transaction, AdminTask, AppNotification, UserProfile } from './types';
 import { authService, UserAccountData, cleanReferralCode } from './services/supabaseAuth';
 import { getSupabaseClient } from './services/supabase';
@@ -45,7 +42,7 @@ export default function App() {
   const [pageLoadingMessage, setPageLoadingMessage] = useState<string>('Loading...');
 
   // Dynamic Catalog from backend
-  const [catalogMachines, setCatalogMachines] = useState<Machine[]>(AVAILABLE_CATALOG);
+  const [catalogMachines, setCatalogMachines] = useState<Machine[]>([]);
 
   // URL referral detection & persistent caching
   const [initialReferralCode] = useState<string>(() => {
@@ -55,13 +52,8 @@ export default function App() {
         const refParam = searchParams.get('ref') || searchParams.get('referral');
         if (refParam) {
           const cleaned = cleanReferralCode(refParam);
-          if (cleaned) {
-            localStorage.setItem('pending_referral_code', cleaned);
-            return cleaned;
-          }
+          if (cleaned) return cleaned;
         }
-        const cached = localStorage.getItem('pending_referral_code');
-        if (cached) return cleanReferralCode(cached);
       } catch {
         return '';
       }
@@ -102,14 +94,12 @@ export default function App() {
 
   // Fetch dynamic catalog
   const loadCatalog = useCallback(async () => {
-    try {
-      const res = await authService.fetchCatalogMachines();
-      if (res.machines && res.machines.length > 0) {
-        setCatalogMachines(res.machines);
-      }
-    } catch {
-      // Keep initial catalog
+    const res = await authService.fetchCatalogMachines();
+    if (res.error) {
+      setCatalogMachines([]);
+      return;
     }
+    setCatalogMachines(res.machines);
   }, []);
 
   // Restore authenticated session on app boot
@@ -150,12 +140,16 @@ export default function App() {
     }
 
     restore();
-    loadCatalog();
-
     return () => {
       isMounted = false;
     };
   }, [loadCatalog]);
+
+  useEffect(() => {
+    if (user && !isAuthViewActive && viewMode !== 'auth') {
+      loadCatalog();
+    }
+  }, [user, isAuthViewActive, viewMode, loadCatalog]);
 
   // Periodic background synchronization with central backend for cross-device updates
   useEffect(() => {

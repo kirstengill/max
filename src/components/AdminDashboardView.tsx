@@ -330,6 +330,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         loadUsersList();
       } else if (activeSubTab === 'projects' || activeSubTab === 'catalog') {
         loadCatalogProjects();
+        loadPlatformSettings();
       } else if (activeSubTab === 'settings') {
         loadPlatformSettings();
       } else if (activeSubTab === 'audit') {
@@ -998,6 +999,42 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </span>
           </div>
         </div>
+
+        {/* Platform Settings Quick Access Strip */}
+        <div className="mt-3 bg-slate-800/60 rounded-2xl p-3 border border-slate-700/60 flex flex-wrap items-center justify-between gap-2.5 text-[12px]">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-slate-300 font-bold text-[11.5px]">Platform Settings:</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700/50">
+              <span className="text-slate-400 text-[11px]">Referral Rate:</span>
+              <span className="font-mono font-bold text-amber-300">
+                {referralPercentage ? `${referralPercentage}%` : '15%'}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700/50">
+              <span className="text-slate-400 text-[11px]">Min Withdrawal:</span>
+              <span className="font-mono font-bold text-emerald-300">
+                UGX {Number(minimumWithdrawalAmount || 5000).toLocaleString()}
+              </span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/80 px-2.5 py-1 rounded-xl border border-slate-700/50">
+              <span className="text-slate-400 text-[11px]">Gateway:</span>
+              <span className="font-mono font-bold text-slate-300">0763445008 (MTN/Airtel)</span>
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveSubTab('settings')}
+            className={`text-[11.5px] font-bold px-3 py-1 rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeSubTab === 'settings'
+                ? 'bg-blue-600 text-white border-blue-500 shadow-xs'
+                : 'text-blue-400 hover:text-blue-300 bg-blue-500/10 hover:bg-blue-500/20 border-blue-500/30'
+            }`}
+          >
+            <span>{activeSubTab === 'settings' ? 'Viewing Settings' : 'Configure Settings →'}</span>
+          </button>
+        </div>
       </div>
 
       {/* SUB-NAVIGATION TABS */}
@@ -1039,18 +1076,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </button>
 
         <button
-          onClick={() => setActiveSubTab('catalog')}
-          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[12px] font-bold shrink-0 transition-all cursor-pointer ${
-            activeSubTab === 'catalog'
-              ? 'bg-[#1657D9] text-white shadow-xs'
-              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>Projects Catalog</span>
-        </button>
-
-        <button
           onClick={() => setActiveSubTab('settings')}
           className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[12px] font-bold shrink-0 transition-all cursor-pointer ${
             activeSubTab === 'settings'
@@ -1060,6 +1085,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           <span>Platform Settings</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('catalog')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[12px] font-bold shrink-0 transition-all cursor-pointer ${
+            activeSubTab === 'catalog'
+              ? 'bg-[#1657D9] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Projects Catalog</span>
         </button>
 
         <button
@@ -2136,21 +2173,78 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       )}
 
       {/* ==========================================
-          TAB 3: PROJECTS / MACHINE CATALOG MANAGEMENT
+          TAB 3: PLATFORM SETTINGS & GOVERNANCE
           ========================================== */}
       {activeSubTab === 'settings' && (
-        <div className="space-y-3">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
-            <div className="mb-4">
-              <h3 className="text-[17px] font-extrabold text-slate-900">Platform Settings</h3>
-              <p className="text-[12px] text-slate-500 mt-1">Manage values used centrally by referral and withdrawal validation.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-xl border border-slate-200 p-4 space-y-3">
-                <div>
-                  <h4 className="text-[13px] font-extrabold text-slate-900">Referral Percentage</h4>
-                  <p className="text-[11px] text-slate-500">Applied to future eligible referral calculations.</p>
+        <div className="space-y-4">
+          {/* Header Card */}
+          <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center shadow-xs">
+                  <SlidersHorizontal className="w-5 h-5" />
                 </div>
+                <div>
+                  <h3 className="text-[17px] font-extrabold text-slate-900 leading-tight">Platform Settings</h3>
+                  <p className="text-[12px] text-slate-500">
+                    Authoritative parameters stored centrally in Supabase for referral commission rates, withdrawal thresholds, and payment infrastructure.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={loadPlatformSettings}
+              disabled={settingsLoading}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${settingsLoading ? 'animate-spin text-blue-600' : ''}`} />
+              <span>{settingsLoading ? 'Syncing...' : 'Reload from Supabase'}</span>
+            </button>
+          </div>
+
+          {/* Primary Settings Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Card 1: Referral Percentage */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 space-y-4 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-extrabold text-slate-900">Affiliate Referral Percentage</h4>
+                      <span className="text-[10px] font-bold text-slate-400">RPC: admin_update_referral_percent</span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200/60">
+                    {referralPercentage ? `${referralPercentage}%` : '15%'}
+                  </span>
+                </div>
+                <p className="text-[12px] text-slate-500 leading-relaxed">
+                  All affiliate and referral commission earnings calculations compute commission from approved user deposits using this authoritative rate.
+                </p>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10.5px] font-bold text-slate-400">Presets:</span>
+                {[10, 15, 20, 25].map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => setReferralPercentage(String(preset))}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                      referralPercentage === String(preset)
+                        ? 'bg-amber-100 text-amber-900 border-amber-300'
+                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'
+                    }`}
+                  >
+                    {preset}% {preset === 15 ? '(Default)' : ''}
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-3">
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input
@@ -2158,63 +2252,255 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       min="0"
                       max="100"
                       step="0.01"
+                      placeholder="e.g. 15"
                       value={referralPercentage}
+                      disabled={settingsLoading}
                       onChange={(e) => setReferralPercentage(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 text-sm font-mono font-bold"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 pr-8 text-sm font-mono font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
                     />
-                    <span className="absolute right-3 top-2 text-sm text-slate-400">%</span>
+                    <span className="absolute right-3 top-2.5 text-sm font-bold text-slate-400">%</span>
                   </div>
                   <button
                     onClick={() => handleSavePlatformSetting('referral_percentage')}
-                    disabled={settingsSaving === 'referral_percentage'}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    disabled={settingsSaving === 'referral_percentage' || settingsLoading}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-xs font-bold text-white transition-colors flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    {settingsSaving === 'referral_percentage' ? 'Saving...' : 'Save'}
+                    {settingsSaving === 'referral_percentage' ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Save Rate</span>
+                      </>
+                    )}
                   </button>
                 </div>
+                <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Backed by get_referral_percent() & admin_update_referral_percent()</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Minimum Withdrawal Limit */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 space-y-4 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                      <Wallet className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-extrabold text-slate-900">Minimum Withdrawal Limit</h4>
+                      <span className="text-[10px] font-bold text-slate-400">Setting: minimum_withdrawal_amount</span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-mono font-bold bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                    UGX {Number(minimumWithdrawalAmount || 5000).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-[12px] text-slate-500 leading-relaxed">
+                  The minimum amount in UGX an investor can submit for withdrawal. Submissions below this threshold are blocked client-side and backend.
+                </p>
               </div>
 
-              <div className="rounded-xl border border-slate-200 p-4 space-y-3">
-                <div>
-                  <h4 className="text-[13px] font-extrabold text-slate-900">Minimum Withdrawal Amount</h4>
-                  <p className="text-[11px] text-slate-500">Users must meet this amount before withdrawal validation proceeds.</p>
-                </div>
+              {/* Quick Presets */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10.5px] font-bold text-slate-400">Presets:</span>
+                {[5000, 10000, 20000, 50000].map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => setMinimumWithdrawalAmount(String(preset))}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                      Number(minimumWithdrawalAmount) === preset
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'
+                    }`}
+                  >
+                    UGX {preset.toLocaleString()} {preset === 5000 ? '(Default)' : ''}
+                  </button>
+                ))}
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 space-y-3">
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <span className="absolute left-3 top-2 text-sm text-slate-400">UGX</span>
+                    <span className="absolute left-3 top-2.5 text-xs font-bold text-slate-400">UGX</span>
                     <input
                       type="number"
                       min="1"
                       step="1"
+                      placeholder="e.g. 5000"
                       value={minimumWithdrawalAmount}
+                      disabled={settingsLoading}
                       onChange={(e) => setMinimumWithdrawalAmount(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-12 text-sm font-mono font-bold"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2.5 pl-12 text-sm font-mono font-bold text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
                     />
                   </div>
                   <button
                     onClick={() => handleSavePlatformSetting('minimum_withdrawal_amount')}
-                    disabled={settingsSaving === 'minimum_withdrawal_amount'}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    disabled={settingsSaving === 'minimum_withdrawal_amount' || settingsLoading}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-xs font-bold text-white transition-colors flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-xs"
                   >
-                    {settingsSaving === 'minimum_withdrawal_amount' ? 'Saving...' : 'Save'}
+                    {settingsSaving === 'minimum_withdrawal_amount' ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Save Limit</span>
+                      </>
+                    )}
                   </button>
                 </div>
+                <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Backed by admin_update_platform_setting() & platform_settings table</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary Information Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Card 3: Official Mobile Money Deposit Gateway */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-[14px] font-extrabold text-slate-900">Official Deposit Gateway</h4>
+                  <p className="text-[11px] text-slate-500">Designated merchant destination for MTN & Airtel mobile deposits</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/70 space-y-2 text-[12px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Merchant Name:</span>
+                  <span className="font-bold text-slate-900">HUZAIRU SSALI</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Recipient Number:</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono font-bold text-purple-700">0763445008</span>
+                    <button
+                      onClick={() => handleCopyText('0763445008', 'gateway-number', 'Merchant Number')}
+                      className="p-1 hover:bg-slate-200 rounded text-slate-500 cursor-pointer"
+                      title="Copy phone number"
+                    >
+                      {copiedId === 'gateway-number' ? (
+                        <CheckCheck className="w-3 h-3 text-emerald-600" />
+                      ) : (
+                        <Copy className="w-3 h-3" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Supported Networks:</span>
+                  <span className="font-bold text-slate-700">MTN Mobile Money & Airtel Money</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium">Min Deposit Recommended:</span>
+                  <span className="font-mono font-bold text-emerald-600">UGX 15,000</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between bg-purple-50/60 p-2.5 rounded-xl border border-purple-100 text-[11px]">
+                <span className="text-purple-800 font-medium">MTN MoMo Direct USSD:</span>
+                <button
+                  onClick={() => handleCopyText('*165*1*1*0763445008#', 'ussd-code', 'USSD String')}
+                  className="font-mono font-bold text-purple-700 hover:text-purple-900 flex items-center gap-1 cursor-pointer"
+                >
+                  <span>*165*1*1*0763445008#</span>
+                  <Copy className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {/* Card 4: Catalog Investment Rules */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-5 space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-extrabold text-slate-900">Product Investment Rules</h4>
+                    <p className="text-[11px] text-slate-500">Hardware mining rigs and vaults minimum entry thresholds</p>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 pt-1">
+                  {catalogProjects.slice(0, 3).map((proj) => (
+                    <div key={proj.id} className="flex items-center justify-between bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-[11.5px]">
+                      <span className="font-bold text-slate-700 truncate max-w-[180px]">{proj.title}</span>
+                      <span className="font-mono font-bold text-slate-900">
+                        UGX {(proj.minimum_investment_amount ?? proj.minInvestUGX).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-[11px] text-slate-400">
+                  {catalogProjects.length} total products in catalog
+                </span>
+                <button
+                  onClick={() => setActiveSubTab('catalog')}
+                  className="text-[11.5px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
+                >
+                  <span>Manage in Projects Catalog</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* ==========================================
+          TAB 4: PROJECTS / MACHINE CATALOG MANAGEMENT
+          ========================================== */}
       {activeSubTab === 'catalog' && (
         <div className="space-y-3">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
-            <div>
-              <h3 className="text-[15px] font-extrabold text-slate-900">Platform Settings</h3>
-              <p className="text-[11.5px] text-slate-500">Values are stored centrally and used by backend transaction and referral calculations.</p>
+          {/* Restored Platform Settings Card inside Projects Catalog */}
+          <div className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-[15px] font-extrabold text-slate-900">Platform Settings</h3>
+                  <p className="text-[11.5px] text-slate-500">
+                    Values are stored centrally in Supabase and used for referral commissions and withdrawal validations.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveSubTab('settings')}
+                className="text-[11.5px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span>Full Governance Suite →</span>
+              </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="rounded-xl border border-slate-200 p-3 space-y-2">
-                <label className="text-[11px] font-bold text-slate-600">Referral Percentage</label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-slate-700">Referral Percentage</label>
+                  <span className="text-[10.5px] font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded">
+                    {referralPercentage ? `${referralPercentage}%` : '15%'}
+                  </span>
+                </div>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input
@@ -2225,35 +2511,44 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       value={referralPercentage}
                       disabled={settingsLoading}
                       onChange={(e) => setReferralPercentage(e.target.value)}
-                      className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 text-sm font-mono font-bold"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pr-8 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-500"
                     />
-                    <span className="absolute right-3 top-2 text-sm text-slate-400">%</span>
+                    <span className="absolute right-3 top-2 text-sm font-bold text-slate-400">%</span>
                   </div>
                   <button
                     onClick={() => handleSavePlatformSetting('referral_percentage')}
-                    disabled={settingsSaving === 'referral_percentage'}
-                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    disabled={settingsSaving === 'referral_percentage' || settingsLoading}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {settingsSaving === 'referral_percentage' ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </div>
-              <div className="rounded-xl border border-slate-200 p-3 space-y-2">
-                <label className="text-[11px] font-bold text-slate-600">Minimum Withdrawal Amount (UGX)</label>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-3.5 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-slate-700">Minimum Withdrawal Amount</label>
+                  <span className="text-[10.5px] font-mono font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                    UGX {Number(minimumWithdrawalAmount || 5000).toLocaleString()}
+                  </span>
+                </div>
                 <div className="flex gap-2">
-                  <input
-                    type="number"
-                    min="1"
-                    step="1"
-                    value={minimumWithdrawalAmount}
-                    disabled={settingsLoading}
-                    onChange={(e) => setMinimumWithdrawalAmount(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono font-bold"
-                  />
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">UGX</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={minimumWithdrawalAmount}
+                      disabled={settingsLoading}
+                      onChange={(e) => setMinimumWithdrawalAmount(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 pl-12 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
                   <button
                     onClick={() => handleSavePlatformSetting('minimum_withdrawal_amount')}
-                    disabled={settingsSaving === 'minimum_withdrawal_amount'}
-                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                    disabled={settingsSaving === 'minimum_withdrawal_amount' || settingsLoading}
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700 px-3.5 py-2 text-xs font-bold text-white transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {settingsSaving === 'minimum_withdrawal_amount' ? 'Saving...' : 'Save'}
                   </button>

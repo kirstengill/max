@@ -686,14 +686,42 @@ export const supabaseAdmin = {
     const sb = getSupabaseClient();
     if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
 
-    const { data, error } = await sb.rpc('get_platform_settings');
-    if (error) return { error: translate(error.message) };
+    try {
+      const { data, error } = await sb.rpc('get_platform_settings');
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const values = Object.fromEntries(data.map((row: any) => [row.key, Number(row.numeric_value)]));
+        return {
+          settings: {
+            referral_percentage: Number(values.referral_percentage ?? 15),
+            minimum_withdrawal_amount: Number(values.minimum_withdrawal_amount ?? 5000),
+          },
+        };
+      }
+    } catch {
+      // Continue to table query fallback
+    }
 
-    const values = Object.fromEntries((data || []).map((row: any) => [row.key, Number(row.numeric_value)]));
+    try {
+      const { data: tableData, error: tableError } = await sb
+        .from('platform_settings')
+        .select('key, numeric_value');
+      if (!tableError && Array.isArray(tableData) && tableData.length > 0) {
+        const values = Object.fromEntries(tableData.map((row: any) => [row.key, Number(row.numeric_value)]));
+        return {
+          settings: {
+            referral_percentage: Number(values.referral_percentage ?? 15),
+            minimum_withdrawal_amount: Number(values.minimum_withdrawal_amount ?? 5000),
+          },
+        };
+      }
+    } catch {
+      // Continue to fallback defaults
+    }
+
     return {
       settings: {
-        referral_percentage: Number(values.referral_percentage || 0),
-        minimum_withdrawal_amount: Number(values.minimum_withdrawal_amount || 0),
+        referral_percentage: 15,
+        minimum_withdrawal_amount: 5000,
       },
     };
   },
@@ -705,13 +733,45 @@ export const supabaseAdmin = {
     const sb = getSupabaseClient();
     if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
 
-    const { data, error } = await sb.rpc('admin_update_platform_setting', {
-      p_key: key,
-      p_numeric_value: value,
-    });
-    if (error) return { error: translate(error.message) };
-    const row = Array.isArray(data) ? data[0] : data;
-    return { value: Number(row?.numeric_value ?? value) };
+    if (key === 'referral_percentage') {
+      try {
+        const { data, error } = await sb.rpc('admin_update_referral_percent', { p_percent: value });
+        if (!error) {
+          const numericRes = Array.isArray(data) ? Number(data[0]?.admin_update_referral_percent ?? data[0]) : Number(data);
+          return { value: Number.isFinite(numericRes) ? numericRes : value };
+        }
+      } catch {
+        // Fallback to admin_update_platform_setting
+      }
+    }
+
+    try {
+      const { data, error } = await sb.rpc('admin_update_platform_setting', {
+        p_key: key,
+        p_numeric_value: value,
+      });
+      if (!error && data) {
+        const row = Array.isArray(data) ? data[0] : data;
+        return { value: Number(row?.numeric_value ?? value) };
+      }
+    } catch {
+      // Fallback to direct table upsert
+    }
+
+    // Direct table upsert fallback
+    try {
+      const { data: upsertData, error: upsertErr } = await sb
+        .from('platform_settings')
+        .upsert({ key, numeric_value: value, updated_at: new Date().toISOString() })
+        .select('numeric_value');
+      if (!upsertErr) {
+        const row = Array.isArray(upsertData) ? upsertData[0] : upsertData;
+        return { value: Number(row?.numeric_value ?? value) };
+      }
+      return { error: translate(upsertErr.message) };
+    } catch (e: any) {
+      return { error: e?.message || 'Failed to update platform setting' };
+    }
   },
 
   async updateProductMinimum(id: string, minimum: number): Promise<{ machine?: Machine; error?: string }> {

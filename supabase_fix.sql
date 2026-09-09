@@ -306,6 +306,56 @@ $$;
 REVOKE ALL ON FUNCTION public.admin_update_referral_percent(NUMERIC) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_update_referral_percent(NUMERIC) TO authenticated;
 
+-- Authoritative RPC: get_platform_settings()
+CREATE OR REPLACE FUNCTION public.get_platform_settings()
+RETURNS TABLE (key TEXT, numeric_value NUMERIC)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT s.key, s.numeric_value
+  FROM public.platform_settings s
+  ORDER BY s.key;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_platform_settings() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_platform_settings() TO authenticated;
+
+-- Authoritative RPC: admin_update_platform_setting(p_key text, p_numeric_value numeric)
+CREATE OR REPLACE FUNCTION public.admin_update_platform_setting(
+  p_key TEXT,
+  p_numeric_value NUMERIC
+)
+RETURNS TABLE (key TEXT, numeric_value NUMERIC)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF NOT public.is_admin() THEN RAISE EXCEPTION 'Admin access required'; END IF;
+  IF p_key NOT IN ('referral_percentage', 'minimum_withdrawal_amount') THEN
+    RAISE EXCEPTION 'Unsupported platform setting';
+  END IF;
+  IF p_numeric_value IS NULL OR p_numeric_value < 0 THEN
+    RAISE EXCEPTION 'Setting value must not be negative';
+  END IF;
+  IF p_key = 'referral_percentage' AND p_numeric_value > 100 THEN
+    RAISE EXCEPTION 'Referral percentage must be between 0 and 100';
+  END IF;
+  IF p_key = 'minimum_withdrawal_amount' AND p_numeric_value <= 0 THEN
+    RAISE EXCEPTION 'Minimum withdrawal must be greater than 0';
+  END IF;
+
+  INSERT INTO public.platform_settings (key, numeric_value, updated_at)
+  VALUES (p_key, p_numeric_value, now())
+  ON CONFLICT (key) DO UPDATE
+    SET numeric_value = EXCLUDED.numeric_value,
+        updated_at = now();
+
+  RETURN QUERY
+  SELECT p_key AS key, p_numeric_value AS numeric_value;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_update_platform_setting(TEXT, NUMERIC) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_update_platform_setting(TEXT, NUMERIC) TO authenticated;
+
 -- ============================================================
 -- 3c. USER: get referred users list (names, joined date, deposits, referral commission)
 -- ============================================================

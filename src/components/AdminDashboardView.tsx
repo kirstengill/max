@@ -619,8 +619,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     try {
       if (isCreatingProject) {
         const res = await authService.createCatalogMachine(projectToSave);
-        if (res.error) {
-          setProjectFormError(res.error);
+        if (!res.success || res.error) {
+          setProjectFormError(res.error || 'Failed to save new project to database.');
+          showToast(res.error || 'Failed to save new project to database.', 'error');
         } else {
           showToast(`New Project "${projectToSave.title}" added to investment catalog.`);
           setEditingProject(null);
@@ -632,8 +633,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         }
       } else if (editingProject.id) {
         const res = await authService.updateCatalogMachine(editingProject.id, projectToSave);
-        if (res.error) {
-          setProjectFormError(res.error);
+        if (!res.success || res.error) {
+          setProjectFormError(res.error || 'Failed to update project in database.');
+          showToast(res.error || 'Failed to update project in database.', 'error');
         } else {
           showToast(`Project "${projectToSave.title}" updated successfully.`);
           setEditingProject(null);
@@ -645,6 +647,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       }
     } catch (err: any) {
       setProjectFormError(err.message || 'Failed to save project.');
+      showToast(err.message || 'Failed to save project.', 'error');
     } finally {
       setProjectFormLoading(false);
     }
@@ -739,8 +742,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }
     try {
       const res = await authService.deleteCatalogMachine(proj.id);
-      if (res.error) {
-        showToast(res.error, 'error');
+      if (!res.success || res.error) {
+        showToast(res.error || 'Failed to delete project from database.', 'error');
       } else {
         showToast(`Project "${proj.title}" removed from catalog.`, 'info');
         await loadCatalogProjects();

@@ -180,74 +180,12 @@ export const defaultCatalogProducts: Machine[] = [
   },
 ];
 
-const STORAGE_KEY = 'sunrise_capital_product_overrides';
-
-export function getLocalProductOverrides(): Record<string, Machine> {
-  if (typeof window === 'undefined') return {};
+// Clean up any legacy localStorage overrides from previous sessions
+if (typeof window !== 'undefined') {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return {};
-    return JSON.parse(raw);
+    localStorage.removeItem('sunrise_capital_product_overrides');
   } catch {
-    return {};
+    // Ignore in non-browser or restricted environments
   }
 }
 
-export function saveLocalProductOverride(product: Machine): void {
-  if (typeof window === 'undefined') return;
-  try {
-    const current = getLocalProductOverrides();
-    current[product.id] = product;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-  } catch (err) {
-    console.warn('[Storage] Failed to save product override:', err);
-  }
-}
-
-export function removeLocalProductOverride(productId: string): void {
-  if (typeof window === 'undefined') return;
-  try {
-    const current = getLocalProductOverrides();
-    delete current[productId];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
-  } catch (err) {
-    console.warn('[Storage] Failed to remove product override:', err);
-  }
-}
-
-/** Merges defaults, DB records, and local admin edits into a unified product list. */
-export function mergeCatalogWithOverrides(dbProducts: Machine[] = []): Machine[] {
-  const overrides = getLocalProductOverrides();
-  const productMap = new Map<string, Machine>();
-
-  // 1. Seed with default products
-  for (const def of defaultCatalogProducts) {
-    productMap.set(def.id, { ...def });
-  }
-
-  // 2. Overlay remote database products
-  for (const p of dbProducts) {
-    const existing = productMap.get(p.id);
-    productMap.set(p.id, {
-      ...(existing || {}),
-      ...p,
-      minInvestUGX: p.minimum_investment_amount ?? p.minInvestUGX,
-      minimum_investment_amount: p.minimum_investment_amount ?? p.minInvestUGX,
-    });
-  }
-
-  // 3. Overlay any local administrator edits
-  for (const [id, override] of Object.entries(overrides)) {
-    const existing = productMap.get(id);
-    productMap.set(id, {
-      ...(existing || {}),
-      ...override,
-      minInvestUGX: override.minimum_investment_amount ?? override.minInvestUGX,
-      minimum_investment_amount: override.minimum_investment_amount ?? override.minInvestUGX,
-    });
-  }
-
-  const result = Array.from(productMap.values());
-  result.sort((a, b) => (a.minInvestUGX || 0) - (b.minInvestUGX || 0));
-  return result;
-}

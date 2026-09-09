@@ -49,10 +49,14 @@ export const ManageMachineModal: React.FC<ManageMachineModalProps> = ({
     }, 600);
   };
 
-  const formattedReward = new Intl.NumberFormat('en-US').format(calculateDailyReturnUGX(machine.minInvestUGX));
+  const minInvest = machine.minimum_investment_amount ?? machine.minInvestUGX ?? 0;
+  const dailyReward = (machine.dailyRewardUGX && machine.dailyRewardUGX > 0)
+    ? machine.dailyRewardUGX
+    : calculateDailyReturnUGX(minInvest);
+  const formattedReward = new Intl.NumberFormat('en-US').format(dailyReward);
   const formattedUnclaimed = new Intl.NumberFormat('en-US').format(liveReward);
   const formattedTotalMined = new Intl.NumberFormat('en-US').format(machine.totalMinedUGX);
-  const formattedMinInvest = new Intl.NumberFormat('en-US').format(machine.minInvestUGX);
+  const formattedMinInvest = new Intl.NumberFormat('en-US').format(minInvest);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">

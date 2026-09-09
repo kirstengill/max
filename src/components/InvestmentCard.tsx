@@ -16,14 +16,18 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
   onManage,
   buttonVariant = 'solid',
 }) => {
-  const dailyReturnUGX = calculateDailyReturnUGX(machine.minInvestUGX);
+  const effectiveMinInvest = machine.minimum_investment_amount ?? machine.minInvestUGX ?? 0;
+  const dailyReturnUGX = (machine.dailyRewardUGX && machine.dailyRewardUGX > 0)
+    ? machine.dailyRewardUGX
+    : calculateDailyReturnUGX(effectiveMinInvest);
   const formattedReward = new Intl.NumberFormat('en-US').format(dailyReturnUGX);
-  const formattedMinInvest = new Intl.NumberFormat('en-US').format(machine.minInvestUGX);
+  const formattedMinInvest = new Intl.NumberFormat('en-US').format(effectiveMinInvest);
   const isOutline = buttonVariant === 'outline';
+  const isActive = machine.status === 'Active';
 
   // Calculate daily percentage return
-  const dailyYieldPercent = machine.minInvestUGX > 0
-    ? ((dailyReturnUGX / machine.minInvestUGX) * 100).toFixed(1)
+  const dailyYieldPercent = effectiveMinInvest > 0
+    ? ((dailyReturnUGX / effectiveMinInvest) * 100).toFixed(1)
     : '10.0';
 
   return (
@@ -50,9 +54,9 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
             className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
           {/* Subtle Live Badge Overlay */}
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-semibold bg-slate-900/80 backdrop-blur-xs text-white px-2 py-0.5 rounded-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Active Vault</span>
+          <div className={`absolute bottom-2 left-2 flex items-center gap-1 text-[10px] font-semibold backdrop-blur-xs text-white px-2 py-0.5 rounded-md ${isActive ? 'bg-slate-900/80' : 'bg-amber-900/80'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span>{isActive ? 'Active Vault' : 'Maintenance'}</span>
           </div>
           {machine.durationDays && (
             <div className="absolute bottom-2 right-2 flex items-center gap-1 text-[10px] font-semibold bg-white/90 backdrop-blur-xs text-slate-700 px-2 py-0.5 rounded-md shadow-2xs border border-slate-200">

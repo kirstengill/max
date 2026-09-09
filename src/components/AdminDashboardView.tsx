@@ -56,6 +56,7 @@ import { authService } from '../services/supabaseAuth';
 import { getSupabaseClient } from '../services/supabase';
 import { ProjectImage } from './ProjectImage';
 import { getPreciousMetalCategoryLabel } from '../constants/preciousMetalImages';
+import { defaultCatalogProducts } from '../constants/defaultProducts';
 
 interface AdminDashboardViewProps {
   tasks: AdminTask[];
@@ -64,6 +65,7 @@ interface AdminDashboardViewProps {
   onRejectTask: (taskId: string) => void;
   onBackToUserDashboard?: () => void;
   onTransactionApproved?: () => void;
+  onCatalogUpdated?: () => void;
 }
 
 type AdminSubTab = 'transactions' | 'users' | 'catalog' | 'settings' | 'audit' | 'cluster' | 'nodes' | 'tasks';
@@ -75,6 +77,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onRejectTask,
   onBackToUserDashboard,
   onTransactionApproved,
+  onCatalogUpdated,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('transactions');
   const [rewardMultiplier, setRewardMultiplier] = useState<number>(1.0);
@@ -223,16 +226,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }
   };
 
-  // 3. Fetch Catalog Projects (direct from Supabase)
+  // 3. Fetch Catalog Projects (Supabase + Site Defaults + Overrides)
   const loadCatalogProjects = async () => {
     setCatalogLoading(true);
     try {
       const res = await authService.fetchCatalogMachines();
-      if (res.machines) {
+      if (res.machines && res.machines.length > 0) {
         setCatalogProjects(res.machines);
+      } else {
+        setCatalogProjects(defaultCatalogProducts);
       }
     } catch (e) {
       console.warn('Failed to load catalog projects', e);
+      setCatalogProjects(defaultCatalogProducts);
     } finally {
       setCatalogLoading(false);
     }
@@ -586,8 +592,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       return;
     }
 
-    if (!editingProject.title || !editingProject.minInvestUGX || !editingProject.minimum_investment_amount) {
-      setProjectFormError('Project Title, Min Investment, and Minimum Investment Amount are required.');
+    const minInvest = Math.round(Number(editingProject.minimum_investment_amount ?? editingProject.minInvestUGX ?? 0));
+    if (!editingProject.title?.trim() || !minInvest) {
+      setProjectFormError('Project Title and Minimum Investment amount are required.');
       return;
     }
 
@@ -602,30 +609,38 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       return;
     }
 
+    const projectToSave: Machine = {
+      ...editingProject,
+      minInvestUGX: minInvest,
+      minimum_investment_amount: minInvest,
+    };
+
     setProjectFormLoading(true);
     try {
       if (isCreatingProject) {
-        const res = await authService.createCatalogMachine(editingProject);
+        const res = await authService.createCatalogMachine(projectToSave);
         if (res.error) {
           setProjectFormError(res.error);
         } else {
-          showToast(`New Project "${editingProject.title}" added to investment catalog in Supabase.`);
+          showToast(`New Project "${projectToSave.title}" added to investment catalog.`);
           setEditingProject(null);
           setIsCreatingProject(false);
           setImageUploadError('');
           setImageUploadSuccess(false);
           await loadCatalogProjects();
+          onCatalogUpdated?.();
         }
       } else if (editingProject.id) {
-        const res = await authService.updateCatalogMachine(editingProject.id, editingProject);
+        const res = await authService.updateCatalogMachine(editingProject.id, projectToSave);
         if (res.error) {
           setProjectFormError(res.error);
         } else {
-          showToast(`Project "${editingProject.title}" updated successfully in Supabase.`);
+          showToast(`Project "${projectToSave.title}" updated successfully.`);
           setEditingProject(null);
           setImageUploadError('');
           setImageUploadSuccess(false);
           await loadCatalogProjects();
+          onCatalogUpdated?.();
         }
       }
     } catch (err: any) {
@@ -729,6 +744,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       } else {
         showToast(`Project "${proj.title}" removed from catalog.`, 'info');
         await loadCatalogProjects();
+        onCatalogUpdated?.();
       }
     } catch (err: any) {
       showToast(err.message || 'Failed to delete project.', 'error');
@@ -2438,12 +2454,30 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 </div>
 
                 <div className="space-y-1.5 pt-1">
-                  {catalogProjects.slice(0, 3).map((proj) => (
+                  {catalogProjects.slice(0, 4).map((proj) => (
                     <div key={proj.id} className="flex items-center justify-between bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-[11.5px]">
-                      <span className="font-bold text-slate-700 truncate max-w-[180px]">{proj.title}</span>
-                      <span className="font-mono font-bold text-slate-900">
-                        UGX {(proj.minimum_investment_amount ?? proj.minInvestUGX).toLocaleString()}
-                      </span>
+                      <span className="font-bold text-slate-700 truncate max-w-[160px]">{proj.title}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-900">
+                          UGX {(proj.minimum_investment_amount ?? proj.minInvestUGX).toLocaleString()}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setIsCreatingProject(false);
+                            setEditingProject({
+                              ...proj,
+                              minInvestUGX: proj.minimum_investment_amount ?? proj.minInvestUGX,
+                              minimum_investment_amount: proj.minimum_investment_amount ?? proj.minInvestUGX,
+                            });
+                            setProjectFormError('');
+                            setImageUploadError('');
+                            setImageUploadSuccess(false);
+                          }}
+                          className="text-blue-600 hover:text-blue-800 text-[11px] font-bold px-1.5 py-0.5 rounded hover:bg-blue-50 transition-colors cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -2665,7 +2699,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <button
                         onClick={() => {
                           setIsCreatingProject(false);
-                          setEditingProject(proj);
+                          setEditingProject({
+                            ...proj,
+                            minInvestUGX: proj.minimum_investment_amount ?? proj.minInvestUGX,
+                            minimum_investment_amount: proj.minimum_investment_amount ?? proj.minInvestUGX,
+                          });
                           setProjectFormError('');
                           setImageUploadError('');
                           setImageUploadSuccess(false);
@@ -3335,9 +3373,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     }
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                   >
-                    <option value="DS-Mining">Palladium</option>
-                    <option value="Clean Energy">Silver</option>
-                    <option value="VIP Products">Gold</option>
+                    <option value="VIP Products">VIP Products (Gold)</option>
+                    <option value="Clean Energy">Clean Energy (Silver)</option>
+                    <option value="DS-Mining">DS-Mining (Palladium)</option>
+                    <option value="Alpha Vaults">Alpha Vaults (Platinum)</option>
+                    <option value="Infrastructure">Infrastructure (Gold)</option>
+                    <option value="Private Wealth">Private Wealth (Silver)</option>
+                    <option value="Liquid Yield">Liquid Yield (Silver)</option>
                   </select>
                 </div>
 
@@ -3366,86 +3408,95 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                    Min Investment (UGX)
+                    Minimum Investment (UGX) <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 15000"
-                    value={editingProject.minInvestUGX || ''}
-                    onChange={(e) =>
-                      setEditingProject({
-                        ...editingProject,
-                        minInvestUGX: Number(e.target.value),
-                      })
-                    }
-                    required
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">UGX</span>
+                    <input
+                      type="number"
+                      placeholder="e.g. 15000"
+                      value={editingProject.minimum_investment_amount ?? editingProject.minInvestUGX ?? ''}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setEditingProject({
+                          ...editingProject,
+                          minInvestUGX: val,
+                          minimum_investment_amount: val,
+                        });
+                      }}
+                      required
+                      min="1000"
+                      step="1000"
+                      className="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                    Minimum Investment Amount (UGX)
+                    Daily Reward (UGX) <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 15000"
-                    value={editingProject.minimum_investment_amount ?? editingProject.minInvestUGX ?? ''}
-                    onChange={(e) =>
-                      setEditingProject({
-                        ...editingProject,
-                        minimum_investment_amount: Number(e.target.value),
-                      })
-                    }
-                    required
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                    Daily Reward (UGX)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 4500"
-                    value={editingProject.dailyRewardUGX || ''}
-                    onChange={(e) =>
-                      setEditingProject({
-                        ...editingProject,
-                        dailyRewardUGX: Number(e.target.value),
-                      })
-                    }
-                    required
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  />
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">UGX</span>
+                    <input
+                      type="number"
+                      placeholder="e.g. 4500"
+                      value={editingProject.dailyRewardUGX ?? ''}
+                      onChange={(e) =>
+                        setEditingProject({
+                          ...editingProject,
+                          dailyRewardUGX: Number(e.target.value),
+                        })
+                      }
+                      required
+                      min="0"
+                      step="100"
+                      className="w-full pl-12 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono font-bold text-emerald-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                    Estimated Yearly ROI (%)
+                    Yearly ROI (%)
                   </label>
                   <input
                     type="number"
                     placeholder="e.g. 120"
-                    value={editingProject.estYearlyROI || ''}
+                    value={editingProject.estYearlyROI ?? ''}
                     onChange={(e) =>
                       setEditingProject({
                         ...editingProject,
                         estYearlyROI: Number(e.target.value),
                       })
                     }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[12px] font-bold text-slate-700 mb-1">
-                    Hashrate
+                    Duration (Days)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 365"
+                    value={editingProject.durationDays ?? 365}
+                    onChange={(e) =>
+                      setEditingProject({
+                        ...editingProject,
+                        durationDays: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                    Hashrate Spec
                   </label>
                   <input
                     type="text"
@@ -3457,7 +3508,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                         hashrate: e.target.value,
                       })
                     }
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   />
                 </div>
               </div>

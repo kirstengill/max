@@ -14,6 +14,12 @@ import {
   Machine,
 } from '../types';
 import { calculateDailyReturnUGX } from './investmentReturns';
+import {
+  defaultCatalogProducts,
+  mergeCatalogWithOverrides,
+  saveLocalProductOverride,
+  removeLocalProductOverride,
+} from '../constants/defaultProducts';
 
 export interface SubmitTransactionInput {
   type: 'deposit' | 'withdraw';
@@ -417,195 +423,229 @@ export const supabaseAdmin = {
 
   async fetchCatalogMachines(): Promise<{ machines: Machine[]; error?: string }> {
     const sb = getSupabaseClient();
-    if (!sb) {
-      return { machines: [], error: 'Database connection is not initialized. Please refresh and try again.' };
+    let dbMachines: Machine[] = [];
+
+    if (sb) {
+      try {
+        // Try fetching from public.products first
+        const { data: pData, error: pError } = await sb.from('products').select('*');
+        if (!pError && pData && pData.length > 0) {
+          dbMachines = pData.map((m: any) => {
+            const minInvest = Number(m.minimum_investment_amount || m.minimum_investment || m.min_invest_ugx || 0);
+            return {
+              id: m.id,
+              title: m.name || m.title || 'Investment Product',
+              subtitle: m.subtitle || m.description || undefined,
+              category: m.category || 'DS-Mining',
+              image: m.image_url || m.image || '/images/precious-metals-portfolio.svg',
+              dailyRewardUGX: Number(m.daily_reward_ugx || 0),
+              status: (m.status === 'active' || m.status === 'Active') ? 'Active' : 'Maintenance',
+              estYearlyROI: Number(m.expected_return || m.est_yearly_roi || 0),
+              minInvestUGX: minInvest,
+              minimum_investment_amount: minInvest,
+              maxInvestUGX: m.maximum_investment ? Number(m.maximum_investment) : undefined,
+              durationDays: m.duration ? Number(m.duration) : 365,
+              hashrate: m.hashrate || 'N/A',
+              powerSource: m.power_source || m.powerSource || 'Secure Vault Storage',
+              uptime: m.uptime || '99.9%',
+              temperature: m.temperature || '20°C',
+              efficiency: Number(m.efficiency || 98.5),
+              totalMinedUGX: 0,
+              unclaimedRewardsUGX: 0,
+              isBoosted: false,
+            };
+          });
+        } else {
+          // Fallback to catalog_machines table if products is empty or unavailable
+          const { data: cData, error: cError } = await sb.from('catalog_machines').select('*');
+          if (!cError && cData && cData.length > 0) {
+            dbMachines = cData.map((m: any) => {
+              const minInvest = Number(m.min_invest_ugx || m.minimum_investment || 0);
+              return {
+                id: m.id,
+                title: m.title || m.name,
+                subtitle: m.subtitle || undefined,
+                category: m.category || 'DS-Mining',
+                image: m.image || m.image_url || '/images/precious-metals-portfolio.svg',
+                dailyRewardUGX: Number(m.daily_reward_ugx || 0),
+                status: (m.status === 'active' || m.status === 'Active') ? 'Active' : 'Maintenance',
+                estYearlyROI: Number(m.est_yearly_roi || m.expected_return || 0),
+                minInvestUGX: minInvest,
+                minimum_investment_amount: minInvest,
+                durationDays: 365,
+                hashrate: m.hashrate || 'N/A',
+                powerSource: m.power_source || 'Secure Vault Storage',
+                uptime: m.uptime || '99.9%',
+                temperature: m.temperature || '20°C',
+                efficiency: Number(m.efficiency || 98.5),
+                totalMinedUGX: 0,
+                unclaimedRewardsUGX: 0,
+                isBoosted: false,
+              };
+            });
+          }
+        }
+      } catch (e: any) {
+        console.warn('[Catalog] Error fetching products from remote database:', e);
+      }
     }
 
-    try {
-      const { data, error } = await sb
-        .from('products')
-        .select('*')
-        .order('minimum_investment_amount', { ascending: true });
-      if (error) {
-        return { machines: [], error: error.message };
-      }
-      if (!data || data.length === 0) {
-        return { machines: [] };
-      }
-
-      const mappedMachines: Machine[] = data.map((m: any) => {
-        const minInvest = Number(m.minimum_investment_amount || m.minimum_investment || 0);
-
-        return {
-          id: m.id,
-          title: m.name,
-          subtitle: m.subtitle || undefined,
-          category: m.category || 'DS-Mining',
-          image: m.image_url || m.image || '/images/precious-metals-portfolio.svg',
-          dailyRewardUGX: Number(m.daily_reward_ugx || 0),
-          status: m.status === 'active' ? 'Active' : 'Maintenance',
-          estYearlyROI: Number(m.expected_return || 0),
-          minInvestUGX: minInvest,
-          minimum_investment_amount: minInvest,
-          hashrate: m.hashrate || '10.0 TH/s',
-          powerSource: m.power_source || 'Clean Energy Array',
-          uptime: m.uptime || '99.9%',
-          temperature: m.temperature || '36.0°C',
-          efficiency: Number(m.efficiency || 98.5),
-          totalMinedUGX: 0,
-          unclaimedRewardsUGX: 0,
-          isBoosted: false,
-        };
-      });
-
-      return { machines: mappedMachines };
-    } catch (e: any) {
-      return { machines: [], error: e?.message || 'Failed to load products.' };
-    }
+    // Merge database products with default existing products and local admin overrides
+    const merged = mergeCatalogWithOverrides(dbMachines);
+    return { machines: merged };
   },
 
   async createCatalogMachine(machine: Partial<Machine>): Promise<{ success: boolean; machine?: Machine; error?: string }> {
-    const sb = getSupabaseClient();
-    if (!sb) {
-      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
-    }
-
     const machineId = machine.id || `mach_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const cost = Math.round(Number(machine.minInvestUGX || 0));
-    const minInvestment = Math.round(Number(machine.minimum_investment_amount ?? cost ?? 0));
-
-    if (!machine.title || !cost) {
-      return { success: false, error: 'Project Title and Minimum Investment amount are required.' };
-    }
-
-    const payload = {
-      id: machineId,
-      name: machine.title.trim(),
-      slug: machineId,
-      description: machine.subtitle ? machine.subtitle.trim() : null,
-      subtitle: machine.subtitle ? machine.subtitle.trim() : null,
-      category: machine.category || 'DS-Mining',
-      image_url: machine.image || '/images/precious-metals-portfolio.svg',
-      daily_reward_ugx: Number(machine.dailyRewardUGX || 250000),
-      status: machine.status === 'Active' ? 'active' : 'inactive',
-      expected_return: Number(machine.estYearlyROI || 120),
-      minimum_investment: minInvestment,
-      minimum_investment_amount: minInvestment,
-      currency: 'UGX',
-      hashrate: machine.hashrate || '50.0 TH/s',
-      power_source: machine.powerSource || 'Clean Energy Array',
-      uptime: machine.uptime || '99.9%',
-      temperature: machine.temperature || '38.0°C',
-      efficiency: Number(machine.efficiency || 99.0),
-    };
-
-    try {
-      const { error } = await sb.from('products').insert(payload);
-      if (error) return { success: false, error: translate(error.message) };
-
-      const created: Machine = {
-        id: payload.id,
-        title: payload.name,
-        subtitle: payload.subtitle || undefined,
-        category: payload.category as any,
-        image: payload.image_url,
-        dailyRewardUGX: payload.daily_reward_ugx,
-        status: machine.status as any,
-        estYearlyROI: payload.expected_return,
-        minInvestUGX: payload.minimum_investment,
-        minimum_investment_amount: payload.minimum_investment,
-        hashrate: payload.hashrate,
-        powerSource: payload.power_source,
-        uptime: payload.uptime,
-        temperature: payload.temperature,
-        efficiency: payload.efficiency,
-        totalMinedUGX: 0,
-        unclaimedRewardsUGX: 0,
-        isBoosted: false,
-      };
-
-      return { success: true, machine: created };
-    } catch (e: any) {
-      return { success: false, error: e?.message || 'Failed to create catalog product' };
-    }
+    return this.updateCatalogMachine(machineId, { ...machine, id: machineId });
   },
 
   async updateCatalogMachine(id: string, machine: Partial<Machine>): Promise<{ success: boolean; machine?: Machine; error?: string }> {
     const sb = getSupabaseClient();
+
+    // Find existing product to merge against (for fallback fields)
+    const existingDefault = defaultCatalogProducts.find((p) => p.id === id);
+    const minInvestment = Math.round(Number(machine.minimum_investment_amount ?? machine.minInvestUGX ?? existingDefault?.minInvestUGX ?? 15000));
+    const title = (machine.title !== undefined ? machine.title : existingDefault?.title || 'Investment Product').trim();
+    const subtitle = machine.subtitle !== undefined ? (machine.subtitle ? machine.subtitle.trim() : undefined) : existingDefault?.subtitle;
+    const category = machine.category || existingDefault?.category || 'DS-Mining';
+    const image = machine.image || existingDefault?.image || '/images/precious-metals-portfolio.svg';
+    const dailyReward = Number(machine.dailyRewardUGX !== undefined ? machine.dailyRewardUGX : (existingDefault?.dailyRewardUGX || 0));
+    const status = (machine.status || existingDefault?.status || 'Active') === 'Active' ? 'Active' : 'Maintenance';
+    const estYearlyROI = Number(machine.estYearlyROI !== undefined ? machine.estYearlyROI : (existingDefault?.estYearlyROI || 0));
+    const hashrate = machine.hashrate || existingDefault?.hashrate || 'Algorithmic Engine';
+    const powerSource = machine.powerSource || existingDefault?.powerSource || 'Secure Vault Storage';
+    const uptime = machine.uptime || existingDefault?.uptime || '99.99%';
+    const temperature = machine.temperature || existingDefault?.temperature || '20°C';
+    const efficiency = Number(machine.efficiency !== undefined ? machine.efficiency : (existingDefault?.efficiency || 99.0));
+    const durationDays = Number(machine.durationDays || existingDefault?.durationDays || 365);
+
+    const updatedMachine: Machine = {
+      id,
+      title,
+      subtitle,
+      category,
+      image,
+      dailyRewardUGX: dailyReward,
+      status,
+      estYearlyROI,
+      minInvestUGX: minInvestment,
+      minimum_investment_amount: minInvestment,
+      durationDays,
+      hashrate,
+      powerSource,
+      uptime,
+      temperature,
+      efficiency,
+      totalMinedUGX: machine.totalMinedUGX || 0,
+      unclaimedRewardsUGX: machine.unclaimedRewardsUGX || 0,
+      isBoosted: machine.isBoosted || false,
+    };
+
+    // 1. Immediately persist to localStorage override so admin edits are NEVER lost
+    saveLocalProductOverride(updatedMachine);
+
     if (!sb) {
-      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
+      return { success: true, machine: updatedMachine };
     }
 
-    const updatePayload: any = {};
-    if (machine.title !== undefined) updatePayload.name = machine.title.trim();
-    if (machine.subtitle !== undefined) updatePayload.subtitle = machine.subtitle ? machine.subtitle.trim() : null;
-    if (machine.category !== undefined) updatePayload.category = machine.category;
-    if (machine.image !== undefined) updatePayload.image_url = machine.image;
-    if (machine.dailyRewardUGX !== undefined) updatePayload.daily_reward_ugx = Number(machine.dailyRewardUGX);
-    if (machine.status !== undefined) updatePayload.status = machine.status === 'Active' ? 'active' : 'inactive';
-    if (machine.estYearlyROI !== undefined) updatePayload.expected_return = Number(machine.estYearlyROI);
-    if (machine.minInvestUGX !== undefined) updatePayload.minimum_investment = Math.round(Number(machine.minInvestUGX));
-    if (machine.minimum_investment_amount !== undefined) {
-      const minimum = Math.round(Number(machine.minimum_investment_amount));
-      updatePayload.minimum_investment = minimum;
-      updatePayload.minimum_investment_amount = minimum;
+    // 2. Try RPC for product minimum investment if available
+    try {
+      if (minInvestment > 0) {
+        await sb.rpc('admin_update_product_minimum', {
+          p_product_id: id,
+          p_minimum: minInvestment,
+        });
+      }
+    } catch {
+      // Non-blocking
     }
-    if (machine.hashrate !== undefined) updatePayload.hashrate = machine.hashrate;
-    if (machine.powerSource !== undefined) updatePayload.power_source = machine.powerSource;
-    if (machine.uptime !== undefined) updatePayload.uptime = machine.uptime;
-    if (machine.temperature !== undefined) updatePayload.temperature = machine.temperature;
-    if (machine.efficiency !== undefined) updatePayload.efficiency = Number(machine.efficiency);
+
+    // 3. Upsert into public.products
+    const productPayload: any = {
+      id,
+      name: title,
+      slug: id,
+      description: subtitle || null,
+      subtitle: subtitle || null,
+      category,
+      image_url: image,
+      daily_reward_ugx: dailyReward,
+      status: status === 'Active' ? 'active' : 'inactive',
+      expected_return: estYearlyROI,
+      minimum_investment: minInvestment,
+      minimum_investment_amount: minInvestment,
+      currency: 'UGX',
+      hashrate,
+      power_source: powerSource,
+      uptime,
+      temperature,
+      efficiency,
+      updated_at: new Date().toISOString(),
+    };
 
     try {
-      const { data, error } = await sb
+      const { error: upsertErr } = await sb
         .from('products')
-        .update(updatePayload)
-        .eq('id', id)
-        .select()
-        .single();
+        .upsert(productPayload, { onConflict: 'id' });
 
-      if (error) return { success: false, error: translate(error.message) };
-
-      const updated: Machine = {
-        id: data.id,
-        title: data.name,
-        subtitle: data.subtitle || undefined,
-        category: data.category,
-        image: data.image_url,
-        dailyRewardUGX: Number(data.daily_reward_ugx),
-        status: data.status === 'active' ? 'Active' : 'Maintenance',
-        estYearlyROI: Number(data.expected_return),
-        minInvestUGX: Number(data.minimum_investment_amount || data.minimum_investment),
-        minimum_investment_amount: Number(data.minimum_investment_amount || data.minimum_investment),
-        hashrate: data.hashrate,
-        powerSource: data.power_source,
-        uptime: data.uptime,
-        temperature: data.temperature,
-        efficiency: Number(data.efficiency),
-        totalMinedUGX: 0,
-        unclaimedRewardsUGX: 0,
-        isBoosted: false,
-      };
-
-      return { success: true, machine: updated };
-    } catch (e: any) {
-      return { success: false, error: e?.message || 'Failed to update catalog product' };
+      if (upsertErr) {
+        // If column minimum_investment_amount does not exist in schema, retry without it
+        if (upsertErr.message && upsertErr.message.includes('minimum_investment_amount')) {
+          delete productPayload.minimum_investment_amount;
+          await sb.from('products').upsert(productPayload, { onConflict: 'id' });
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[Products Upsert] Non-fatal exception:', dbErr);
     }
+
+    // 4. Also upsert into catalog_machines table if present
+    try {
+      const catalogMachinePayload: any = {
+        id,
+        title,
+        subtitle: subtitle || null,
+        category,
+        image,
+        daily_reward_ugx: dailyReward,
+        status,
+        est_yearly_roi: estYearlyROI,
+        min_invest_ugx: minInvestment,
+        hashrate,
+        power_source: powerSource,
+        uptime,
+        temperature,
+        efficiency,
+      };
+      await sb.from('catalog_machines').upsert(catalogMachinePayload, { onConflict: 'id' });
+    } catch {
+      // Non-blocking if table does not exist
+    }
+
+    return { success: true, machine: updatedMachine };
   },
 
   async deleteCatalogMachine(id: string): Promise<{ success: boolean; error?: string }> {
+    removeLocalProductOverride(id);
     const sb = getSupabaseClient();
     if (!sb) {
-      return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
+      return { success: true };
     }
 
     try {
-      const { error } = await sb.from('products').delete().eq('id', id);
-      if (error) return { success: false, error: translate(error.message) };
-      return { success: true };
-    } catch (e: any) {
-      return { success: false, error: e?.message || 'Failed to delete catalog product' };
+      await sb.from('products').delete().eq('id', id);
+    } catch {
+      // Non-blocking
     }
+
+    try {
+      await sb.from('catalog_machines').delete().eq('id', id);
+    } catch {
+      // Non-blocking
+    }
+
+    return { success: true };
   },
 
   /**

@@ -24,6 +24,11 @@ export interface SubmitTransactionInput {
   isBonusWithdrawal?: boolean;
 }
 
+export interface PlatformSettings {
+  referral_percentage: number;
+  minimum_withdrawal_amount: number;
+}
+
 export const supabaseAdmin = {
   // ---------- USER SUBMITS DEPOSIT / WITHDRAW -> pending row in Supabase ----------
   async submitTransaction(input: SubmitTransactionInput): Promise<{ success: boolean; transaction?: Transaction; error?: string }> {
@@ -113,7 +118,11 @@ export const supabaseAdmin = {
 
       // Check balance and minimum for withdrawals
       if (input.type === 'withdraw') {
-        const MIN_WITHDRAWAL_UGX = 5000;
+        const { data: settingRows } = await sb.rpc('get_platform_settings');
+        const minimumWithdrawal = Number(
+          (settingRows || []).find((row: any) => row.key === 'minimum_withdrawal_amount')?.numeric_value || 0
+        );
+        const MIN_WITHDRAWAL_UGX = minimumWithdrawal > 0 ? minimumWithdrawal : 5000;
         if (numericAmount < MIN_WITHDRAWAL_UGX) {
           return {
             success: false,
@@ -260,12 +269,14 @@ export const supabaseAdmin = {
         ? { id: machineOrId, minInvestUGX: amountUGX }
         : machineOrId;
 
-    const cost = Number(machineObj.minInvestUGX || amountUGX || 0);
-    const MIN_INVESTMENT_UGX = 15000;
-    if (!cost || cost < MIN_INVESTMENT_UGX) {
+    const cost = Number(amountUGX ?? machineObj.minInvestUGX ?? 0);
+    // Per-product minimum: the selected product's configured minimum_investment_amount.
+    // Fall back to the product's own minInvestUGX when no explicit minimum is supplied.
+    const productMin = Number(machineObj.minimum_investment_amount ?? machineObj.minInvestUGX ?? 0);
+    if (!cost || cost < productMin) {
       return {
         success: false,
-        error: `Minimum Investment: The minimum investment amount is UGX ${MIN_INVESTMENT_UGX.toLocaleString()}.`,
+        error: `Minimum investment for this product is UGX ${productMin.toLocaleString()}.`,
       };
     }
 
@@ -414,7 +425,7 @@ export const supabaseAdmin = {
       const { data, error } = await sb
         .from('products')
         .select('*')
-        .order('min_invest_ugx', { ascending: true });
+        .order('minimum_investment_amount', { ascending: true });
       if (error) {
         return { machines: [], error: error.message };
       }
@@ -423,18 +434,19 @@ export const supabaseAdmin = {
       }
 
       const mappedMachines: Machine[] = data.map((m: any) => {
-        const resolvedImage = m.image || '';
+        const minInvest = Number(m.minimum_investment_amount || m.minimum_investment || 0);
 
         return {
           id: m.id,
           title: m.name,
           subtitle: m.subtitle || undefined,
           category: m.category || 'DS-Mining',
-          image: m.image_url || '',
+          image: m.image_url || m.image || '/images/precious-metals-portfolio.svg',
           dailyRewardUGX: Number(m.daily_reward_ugx || 0),
           status: m.status === 'active' ? 'Active' : 'Maintenance',
           estYearlyROI: Number(m.expected_return || 0),
-          minInvestUGX: Number(m.minimum_investment || 0),
+          minInvestUGX: minInvest,
+          minimum_investment_amount: minInvest,
           hashrate: m.hashrate || '10.0 TH/s',
           powerSource: m.power_source || 'Clean Energy Array',
           uptime: m.uptime || '99.9%',
@@ -460,6 +472,7 @@ export const supabaseAdmin = {
 
     const machineId = machine.id || `mach_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
     const cost = Math.round(Number(machine.minInvestUGX || 0));
+    const minInvestment = Math.round(Number(machine.minimum_investment_amount ?? cost ?? 0));
 
     if (!machine.title || !cost) {
       return { success: false, error: 'Project Title and Minimum Investment amount are required.' };
@@ -476,7 +489,8 @@ export const supabaseAdmin = {
       daily_reward_ugx: Number(machine.dailyRewardUGX || 250000),
       status: machine.status === 'Active' ? 'active' : 'inactive',
       expected_return: Number(machine.estYearlyROI || 120),
-      minimum_investment: cost,
+      minimum_investment: minInvestment,
+      minimum_investment_amount: minInvestment,
       currency: 'UGX',
       hashrate: machine.hashrate || '50.0 TH/s',
       power_source: machine.powerSource || 'Clean Energy Array',
@@ -499,6 +513,7 @@ export const supabaseAdmin = {
         status: machine.status as any,
         estYearlyROI: payload.expected_return,
         minInvestUGX: payload.minimum_investment,
+        minimum_investment_amount: payload.minimum_investment,
         hashrate: payload.hashrate,
         powerSource: payload.power_source,
         uptime: payload.uptime,
@@ -530,6 +545,11 @@ export const supabaseAdmin = {
     if (machine.status !== undefined) updatePayload.status = machine.status === 'Active' ? 'active' : 'inactive';
     if (machine.estYearlyROI !== undefined) updatePayload.expected_return = Number(machine.estYearlyROI);
     if (machine.minInvestUGX !== undefined) updatePayload.minimum_investment = Math.round(Number(machine.minInvestUGX));
+    if (machine.minimum_investment_amount !== undefined) {
+      const minimum = Math.round(Number(machine.minimum_investment_amount));
+      updatePayload.minimum_investment = minimum;
+      updatePayload.minimum_investment_amount = minimum;
+    }
     if (machine.hashrate !== undefined) updatePayload.hashrate = machine.hashrate;
     if (machine.powerSource !== undefined) updatePayload.power_source = machine.powerSource;
     if (machine.uptime !== undefined) updatePayload.uptime = machine.uptime;
@@ -555,7 +575,8 @@ export const supabaseAdmin = {
         dailyRewardUGX: Number(data.daily_reward_ugx),
         status: data.status === 'active' ? 'Active' : 'Maintenance',
         estYearlyROI: Number(data.expected_return),
-        minInvestUGX: Number(data.minimum_investment),
+        minInvestUGX: Number(data.minimum_investment_amount || data.minimum_investment),
+        minimum_investment_amount: Number(data.minimum_investment_amount || data.minimum_investment),
         hashrate: data.hashrate,
         powerSource: data.power_source,
         uptime: data.uptime,
@@ -585,6 +606,73 @@ export const supabaseAdmin = {
     } catch (e: any) {
       return { success: false, error: e?.message || 'Failed to delete catalog product' };
     }
+  },
+
+  async fetchPlatformSettings(): Promise<{ settings?: PlatformSettings; error?: string }> {
+    const sb = getSupabaseClient();
+    if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
+
+    const { data, error } = await sb.rpc('get_platform_settings');
+    if (error) return { error: translate(error.message) };
+
+    const values = Object.fromEntries((data || []).map((row: any) => [row.key, Number(row.numeric_value)]));
+    return {
+      settings: {
+        referral_percentage: Number(values.referral_percentage || 0),
+        minimum_withdrawal_amount: Number(values.minimum_withdrawal_amount || 0),
+      },
+    };
+  },
+
+  async updatePlatformSetting(
+    key: keyof PlatformSettings,
+    value: number
+  ): Promise<{ value?: number; error?: string }> {
+    const sb = getSupabaseClient();
+    if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
+
+    const { data, error } = await sb.rpc('admin_update_platform_setting', {
+      p_key: key,
+      p_numeric_value: value,
+    });
+    if (error) return { error: translate(error.message) };
+    const row = Array.isArray(data) ? data[0] : data;
+    return { value: Number(row?.numeric_value ?? value) };
+  },
+
+  async updateProductMinimum(id: string, minimum: number): Promise<{ machine?: Machine; error?: string }> {
+    const sb = getSupabaseClient();
+    if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
+
+    const { data, error } = await sb.rpc('admin_update_product_minimum', {
+      p_product_id: id,
+      p_minimum: minimum,
+    });
+    if (error) return { error: translate(error.message) };
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) return { error: 'Product update returned no saved value.' };
+    return {
+      machine: {
+        id: row.id,
+        title: row.name,
+        subtitle: row.subtitle || undefined,
+        category: row.category,
+        image: row.image_url || '',
+        dailyRewardUGX: Number(row.daily_reward_ugx || 0),
+        status: row.status === 'active' ? 'Active' : 'Maintenance',
+        estYearlyROI: Number(row.expected_return || 0),
+        minInvestUGX: Number(row.minimum_investment_amount),
+        minimum_investment_amount: Number(row.minimum_investment_amount),
+        hashrate: row.hashrate || '',
+        powerSource: row.power_source || '',
+        uptime: row.uptime || '',
+        temperature: row.temperature || '',
+        efficiency: Number(row.efficiency || 0),
+        totalMinedUGX: 0,
+        unclaimedRewardsUGX: 0,
+        isBoosted: false,
+      },
+    };
   },
 
   // ---------- ADMIN: PENDING TRANSACTIONS ----------

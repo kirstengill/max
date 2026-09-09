@@ -688,7 +688,11 @@ class AuthService {
             .eq('status', 'completed');
 
           const totalDeposits = (approvedTxs || []).reduce((sum, tx) => sum + (Number(tx.amount_ugx) || 0), 0);
-          const liveCommission = Math.round(totalDeposits * 0.20);
+          const { data: settingRows } = await this.client.rpc('get_platform_settings');
+          const referralPercentage = Number(
+            (settingRows || []).find((row: any) => row.key === 'referral_percentage')?.numeric_value || 0
+          );
+          const liveCommission = Math.round(totalDeposits * referralPercentage / 100);
           if (liveCommission > totalCommissionUGX) {
             totalCommissionUGX = liveCommission;
           }
@@ -810,9 +814,13 @@ class AuthService {
         });
       }
 
+      const { data: settingRows } = await this.client.rpc('get_platform_settings');
+      const referralPercentage = Number(
+        (settingRows || []).find((row: any) => row.key === 'referral_percentage')?.numeric_value || 0
+      );
       return profiles.map((p: any) => {
         const approvedDep = approvedDepositsByUserId[p.id] || 0;
-        const comm = Math.round(approvedDep * 0.20);
+        const comm = Math.round(approvedDep * referralPercentage / 100);
         return {
           id: p.id,
           username: p.username || 'user',
@@ -928,7 +936,11 @@ class AuthService {
         .eq('status', 'completed');
 
       const totalDep = (myDeposits || []).reduce((sum, d) => sum + (Number(d.amount_ugx) || 0), 0);
-      const earnedComm = Math.round(totalDep * 0.20);
+      const { data: settingRows } = await sb.rpc('get_platform_settings');
+      const referralPercentage = Number(
+        (settingRows || []).find((row: any) => row.key === 'referral_percentage')?.numeric_value || 0
+      );
+      const earnedComm = Math.round(totalDep * referralPercentage / 100);
       const prevEarnings = Number(referrer.referral_earnings_ugx || 0);
 
       await sb
@@ -1340,6 +1352,18 @@ class AuthService {
 
   public async deleteCatalogMachine(id: string): Promise<{ success: boolean; error?: string }> {
     return supabaseAdmin.deleteCatalogMachine(id);
+  }
+
+  public async fetchPlatformSettings() {
+    return supabaseAdmin.fetchPlatformSettings();
+  }
+
+  public async updatePlatformSetting(key: 'referral_percentage' | 'minimum_withdrawal_amount', value: number) {
+    return supabaseAdmin.updatePlatformSetting(key, value);
+  }
+
+  public async updateProductMinimum(id: string, minimum: number) {
+    return supabaseAdmin.updateProductMinimum(id, minimum);
   }
 
   public async fetchPendingTransactions() {

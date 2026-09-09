@@ -202,8 +202,8 @@ BEGIN
     AND t.type = 'deposit'
     AND t.status = 'completed';
 
-  -- Total commission earned (20% of approved deposits)
-  v_total_commission := ROUND(v_total_approved_deposits * 0.20);
+  -- Total commission earned at the centrally configured percentage.
+  v_total_commission := ROUND(v_total_approved_deposits * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.20));
 
   -- Total commission already claimed
   SELECT COALESCE(SUM(amount_ugx), 0) INTO v_claimed_commission
@@ -273,7 +273,7 @@ BEGIN
     COALESCE(p.full_name, '') AS full_name,
     to_char(p.created_at, 'DD Mon YYYY') AS registered_date,
     COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) AS approved_deposit_ugx,
-    ROUND(COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) * 0.20) AS commission_ugx,
+    ROUND(COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.20)) AS commission_ugx,
     CASE
       WHEN COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) > 0 THEN 'active'
       ELSE 'pending'
@@ -334,7 +334,7 @@ BEGIN
     AND t.type = 'deposit'
     AND t.status = 'completed';
 
-  v_total_commission := ROUND(v_total_approved_deposits * 0.20);
+  v_total_commission := ROUND(v_total_approved_deposits * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.20));
 
   -- Calculate already claimed commission
   SELECT COALESCE(SUM(amount_ugx), 0) INTO v_claimed_commission

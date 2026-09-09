@@ -65,7 +65,7 @@ interface AdminDashboardViewProps {
   onTransactionApproved?: () => void;
 }
 
-type AdminSubTab = 'transactions' | 'users' | 'catalog' | 'audit' | 'cluster' | 'nodes' | 'tasks';
+type AdminSubTab = 'transactions' | 'users' | 'catalog' | 'settings' | 'audit' | 'cluster' | 'nodes' | 'tasks';
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   tasks,
@@ -136,6 +136,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [projectFormError, setProjectFormError] = useState('');
   const [projectFormLoading, setProjectFormLoading] = useState(false);
+  const [referralPercentage, setReferralPercentage] = useState('');
+  const [minimumWithdrawalAmount, setMinimumWithdrawalAmount] = useState('');
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState<string | null>(null);
 
   // Project Image Upload State (Supabase Storage: bucket 'project-images')
   const [imageUploading, setImageUploading] = useState(false);
@@ -233,6 +237,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }
   };
 
+  const loadPlatformSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const res = await authService.fetchPlatformSettings();
+      if (res.settings) {
+        setReferralPercentage(String(res.settings.referral_percentage));
+        setMinimumWithdrawalAmount(String(res.settings.minimum_withdrawal_amount));
+      }
+    } catch (e) {
+      console.warn('Failed to load platform settings', e);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   // 4. Fetch Audit Logs
   const loadAuditLogs = async () => {
     setAuditLoading(true);
@@ -253,6 +272,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       loadPendingTransactions();
       loadUsersList();
       loadCatalogProjects();
+      loadPlatformSettings();
       loadAuditLogs();
 
       if (autoRefreshInterval > 0) {
@@ -527,8 +547,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       return;
     }
 
-    if (!editingProject.title || !editingProject.minInvestUGX) {
-      setProjectFormError('Project Title and Minimum Investment amount are required.');
+    if (!editingProject.title || !editingProject.minInvestUGX || !editingProject.minimum_investment_amount) {
+      setProjectFormError('Project Title, Min Investment, and Minimum Investment Amount are required.');
       return;
     }
 
@@ -574,6 +594,26 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     } finally {
       setProjectFormLoading(false);
     }
+  };
+
+  const handleSavePlatformSetting = async (key: 'referral_percentage' | 'minimum_withdrawal_amount') => {
+    const rawValue = key === 'referral_percentage' ? referralPercentage : minimumWithdrawalAmount;
+    const value = Number(rawValue);
+    if (!Number.isFinite(value) || value < 0 || (key === 'minimum_withdrawal_amount' && value <= 0) || (key === 'referral_percentage' && value > 100)) {
+      showToast(key === 'referral_percentage' ? 'Referral percentage must be between 0 and 100.' : 'Minimum withdrawal must be greater than zero.', 'error');
+      return;
+    }
+
+    setSettingsSaving(key);
+    const res = await authService.updatePlatformSetting(key, value);
+    setSettingsSaving(null);
+    if (res.error) {
+      showToast(res.error, 'error');
+      return;
+    }
+    if (key === 'referral_percentage') setReferralPercentage(String(res.value));
+    else setMinimumWithdrawalAmount(String(res.value));
+    showToast('Platform setting saved to Supabase.');
   };
 
   const handleDeleteProject = async (proj: Machine) => {
@@ -907,6 +947,18 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         >
           <Layers className="w-3.5 h-3.5" />
           <span>Projects Catalog</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('settings')}
+          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-[12px] font-bold shrink-0 transition-all cursor-pointer ${
+            activeSubTab === 'settings'
+              ? 'bg-[#1657D9] text-white shadow-xs'
+              : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span>Platform Settings</span>
         </button>
 
         <button
@@ -1985,8 +2037,129 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {/* ==========================================
           TAB 3: PROJECTS / MACHINE CATALOG MANAGEMENT
           ========================================== */}
+      {activeSubTab === 'settings' && (
+        <div className="space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="mb-4">
+              <h3 className="text-[17px] font-extrabold text-slate-900">Platform Settings</h3>
+              <p className="text-[12px] text-slate-500 mt-1">Manage values used centrally by referral and withdrawal validation.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                <div>
+                  <h4 className="text-[13px] font-extrabold text-slate-900">Referral Percentage</h4>
+                  <p className="text-[11px] text-slate-500">Applied to future eligible referral calculations.</p>
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={referralPercentage}
+                      onChange={(e) => setReferralPercentage(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 text-sm font-mono font-bold"
+                    />
+                    <span className="absolute right-3 top-2 text-sm text-slate-400">%</span>
+                  </div>
+                  <button
+                    onClick={() => handleSavePlatformSetting('referral_percentage')}
+                    disabled={settingsSaving === 'referral_percentage'}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    {settingsSaving === 'referral_percentage' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                <div>
+                  <h4 className="text-[13px] font-extrabold text-slate-900">Minimum Withdrawal Amount</h4>
+                  <p className="text-[11px] text-slate-500">Users must meet this amount before withdrawal validation proceeds.</p>
+                </div>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-2 text-sm text-slate-400">UGX</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={minimumWithdrawalAmount}
+                      onChange={(e) => setMinimumWithdrawalAmount(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 pl-12 text-sm font-mono font-bold"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleSavePlatformSetting('minimum_withdrawal_amount')}
+                    disabled={settingsSaving === 'minimum_withdrawal_amount'}
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    {settingsSaving === 'minimum_withdrawal_amount' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeSubTab === 'catalog' && (
         <div className="space-y-3">
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
+            <div>
+              <h3 className="text-[15px] font-extrabold text-slate-900">Platform Settings</h3>
+              <p className="text-[11.5px] text-slate-500">Values are stored centrally and used by backend transaction and referral calculations.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-xl border border-slate-200 p-3 space-y-2">
+                <label className="text-[11px] font-bold text-slate-600">Referral Percentage</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={referralPercentage}
+                      disabled={settingsLoading}
+                      onChange={(e) => setReferralPercentage(e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 text-sm font-mono font-bold"
+                    />
+                    <span className="absolute right-3 top-2 text-sm text-slate-400">%</span>
+                  </div>
+                  <button
+                    onClick={() => handleSavePlatformSetting('referral_percentage')}
+                    disabled={settingsSaving === 'referral_percentage'}
+                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    {settingsSaving === 'referral_percentage' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-3 space-y-2">
+                <label className="text-[11px] font-bold text-slate-600">Minimum Withdrawal Amount (UGX)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={minimumWithdrawalAmount}
+                    disabled={settingsLoading}
+                    onChange={(e) => setMinimumWithdrawalAmount(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono font-bold"
+                  />
+                  <button
+                    onClick={() => handleSavePlatformSetting('minimum_withdrawal_amount')}
+                    disabled={settingsSaving === 'minimum_withdrawal_amount'}
+                    className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    {settingsSaving === 'minimum_withdrawal_amount' ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
           {/* Header & Add Button */}
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div>
@@ -2006,6 +2179,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   category: 'DS-Mining',
                   dailyRewardUGX: 4500,
                   minInvestUGX: 15000,
+                  minimum_investment_amount: 15000,
                   estYearlyROI: 10950,
                   hashrate: 'Algorithmic Engine',
                   powerSource: 'Clean Energy Grid',
@@ -2060,7 +2234,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <div>
                         <span className="text-slate-400 block text-[10.5px]">Min Investment</span>
                         <span className="font-mono font-bold text-slate-900">
-                          UGX {proj.minInvestUGX.toLocaleString()}
+                          UGX {(proj.minimum_investment_amount ?? proj.minInvestUGX).toLocaleString()}
                         </span>
                       </div>
                       <div>
@@ -2813,6 +2987,27 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   />
                 </div>
 
+                <div>
+                  <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                    Minimum Investment Amount (UGX)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 15000"
+                    value={editingProject.minimum_investment_amount ?? editingProject.minInvestUGX ?? ''}
+                    onChange={(e) =>
+                      setEditingProject({
+                        ...editingProject,
+                        minimum_investment_amount: Number(e.target.value),
+                      })
+                    }
+                    required
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[12px] font-bold text-slate-700 mb-1">
                     Daily Reward (UGX)

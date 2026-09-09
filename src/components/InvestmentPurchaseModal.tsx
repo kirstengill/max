@@ -22,30 +22,33 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
 }) => {
   if (!machine) return null;
 
-  const [amountUGX, setAmountUGX] = useState<number>(machine.minInvestUGX);
+  const productMin = machine.minimum_investment_amount ?? machine.minInvestUGX;
+  const [amountUGX, setAmountUGX] = useState<number>(productMin);
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const durationDays = machine.durationDays || 30;
+  const isBelowMinimum = amountUGX < productMin;
   const isInsufficient = userBalanceUGX < amountUGX;
   const estDailyYield = calculateDailyReturnUGX(amountUGX);
   const estTermYield = estDailyYield * durationDays;
   const totalReturn = amountUGX + estTermYield;
 
   const presets = [
-    { label: 'UGX 15,000', value: 15000 },
-    { label: 'UGX 20,000', value: 20000 },
-    { label: 'UGX 30,000', value: 30000 },
+    { label: `UGX ${productMin.toLocaleString()}`, value: productMin },
+    { label: `UGX ${(productMin * 2).toLocaleString()}`, value: productMin * 2 },
+    { label: `UGX ${(productMin * 3).toLocaleString()}`, value: productMin * 3 },
+    { label: `UGX ${(productMin * 5).toLocaleString()}`, value: productMin * 5 },
   ];
 
   const handleInvest = async () => {
-    if (amountUGX < 15000) {
-      setErrorMessage('Minimum Investment: The minimum investment amount is UGX 15,000');
+    if (isBelowMinimum) {
+      setErrorMessage(`Minimum investment for this product is UGX ${productMin.toLocaleString()}.`);
       return;
     }
     if (isInsufficient) {
-      setErrorMessage('Insufficient wallet balance. Please make a deposit first.');
+      setErrorMessage(`Insufficient balance: available UGX ${userBalanceUGX.toLocaleString()}, required UGX ${amountUGX.toLocaleString()}.`);
       return;
     }
 
@@ -121,7 +124,7 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
                 Allocation Amount (UGX)
               </label>
               <span className="text-[11px] text-slate-500 font-mono">
-                Min: UGX 15,000
+                Min: UGX {productMin.toLocaleString()}
               </span>
             </div>
             <div className="relative">
@@ -132,7 +135,7 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
                 type="number"
                 value={amountUGX || ''}
                 ref={amountInputRef}
-                min={15000}
+                min={productMin}
                 step={5000}
                 onChange={(e) => setAmountUGX(Number(e.target.value))}
                 className="w-full pl-14 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold font-mono text-slate-900 focus:outline-hidden focus:border-emerald-500 focus:bg-white transition-all"

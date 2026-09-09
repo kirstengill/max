@@ -47,6 +47,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 145,
     minInvestUGX: 5000000,
+    minimum_investment_amount: 5000000,
     maxInvestUGX: 50000000,
     durationDays: 365,
     hashrate: 'N/A',
@@ -68,6 +69,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 132,
     minInvestUGX: 1500000,
+    minimum_investment_amount: 1500000,
     maxInvestUGX: 15000000,
     durationDays: 365,
     hashrate: 'N/A',
@@ -89,6 +91,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 158,
     minInvestUGX: 3000000,
+    minimum_investment_amount: 3000000,
     maxInvestUGX: 30000000,
     durationDays: 365,
     hashrate: 'N/A',
@@ -110,6 +113,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 185,
     minInvestUGX: 10000000,
+    minimum_investment_amount: 10000000,
     maxInvestUGX: 100000000,
     durationDays: 730,
     hashrate: '2.5 PH/s',
@@ -131,6 +135,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 168,
     minInvestUGX: 5000000,
+    minimum_investment_amount: 5000000,
     maxInvestUGX: 50000000,
     durationDays: 540,
     hashrate: 'N/A',
@@ -152,6 +157,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 125,
     minInvestUGX: 2000000,
+    minimum_investment_amount: 2000000,
     maxInvestUGX: 20000000,
     durationDays: 365,
     hashrate: 'N/A',
@@ -173,6 +179,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 142,
     minInvestUGX: 1000000,
+    minimum_investment_amount: 1000000,
     maxInvestUGX: 10000000,
     durationDays: 365,
     hashrate: 'N/A',
@@ -194,6 +201,7 @@ const fallbackCatalogMachines: Machine[] = [
     status: 'Active',
     estYearlyROI: 155,
     minInvestUGX: 7500000,
+    minimum_investment_amount: 7500000,
     maxInvestUGX: 75000000,
     durationDays: 540,
     hashrate: '1.8 PH/s',
@@ -269,7 +277,6 @@ export default function App() {
   const loadCatalog = useCallback(async () => {
     const res = await authService.fetchCatalogMachines();
     if (res.error || !res.machines || res.machines.length === 0) {
-      // Use fallback precious metals products when Supabase catalog is empty
       setCatalogMachines(fallbackCatalogMachines);
       return;
     }

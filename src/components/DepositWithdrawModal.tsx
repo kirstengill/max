@@ -23,7 +23,6 @@ import { TELEGRAM_HELP_URL } from '../constants/links';
 import { authService } from '../services/supabaseAuth';
 
 // Withdrawal & Deposit rules
-const MIN_WITHDRAWAL_UGX = 5000;
 const MIN_DEPOSIT_UGX = 20000;
 const WITHDRAWAL_FEE_RATE = 0.20; // 20% normal withdrawal fee
 const BONUS_WITHDRAWAL_FEE_RATE = 0.30; // 30% bonus-withdrawal protection charge
@@ -68,6 +67,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
   const currentUser = authService.getCurrentUser();
   const [activeTab, setActiveTab] = useState<'mtn' | 'airtel' | 'bank'>('mtn');
   const [isWelcomeBonus, setIsWelcomeBonus] = useState<boolean>(initialIsWelcomeBonus);
+  const [minimumWithdrawalUGX, setMinimumWithdrawalUGX] = useState(0);
 
   const [amountUGXStr, setAmountUGXStr] = useState<string>(() => {
     if (initialIsWelcomeBonus) {
@@ -75,13 +75,25 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
     }
     if (mode === 'withdraw') {
       const maxPossible = calculateMaxWithdrawal(balanceUGX);
-      if (maxPossible >= MIN_WITHDRAWAL_UGX) {
+      if (maxPossible > 0) {
         return Math.min(maxPossible, 50000).toString();
       }
-      return MIN_WITHDRAWAL_UGX.toString();
+      return '';
     }
     return MIN_DEPOSIT_UGX.toString();
   });
+
+  useEffect(() => {
+    let active = true;
+    if (mode !== 'withdraw') return () => { active = false; };
+    authService.fetchPlatformSettings().then((res) => {
+      if (!active || !res.settings) return;
+      const minimum = res.settings.minimum_withdrawal_amount;
+      setMinimumWithdrawalUGX(minimum);
+      setAmountUGXStr((current) => current || minimum.toString());
+    });
+    return () => { active = false; };
+  }, [mode]);
 
   const [depositorPhone, setDepositorPhone] = useState<string>(() => currentUser?.phone || '');
   const [recipient, setRecipient] = useState<string>(() =>
@@ -168,9 +180,13 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
 
     // Minimum withdrawal amount & balance verification
     if (mode === 'withdraw') {
-      if (requestedWithdrawalUGX < MIN_WITHDRAWAL_UGX) {
+      if (minimumWithdrawalUGX <= 0) {
+        setErrorMessage('Withdrawal settings are unavailable. Please refresh and try again.');
+        return;
+      }
+      if (requestedWithdrawalUGX < minimumWithdrawalUGX) {
         setErrorMessage(
-          `Minimum Withdrawal: The minimum withdrawal amount is UGX ${MIN_WITHDRAWAL_UGX.toLocaleString()}.`
+          `Minimum withdrawal amount is UGX ${minimumWithdrawalUGX.toLocaleString()}.`
         );
         return;
       }
@@ -403,6 +419,11 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
           </div>
         ) : (
           <div className="p-5 space-y-4">
+            {mode === 'withdraw' && minimumWithdrawalUGX > 0 && (
+              <div className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800">
+                Minimum withdrawal amount is UGX {minimumWithdrawalUGX.toLocaleString()}.
+              </div>
+            )}
             {/* Mode Toggle for Withdraw: Standard vs Welcome Bonus */}
             {mode === 'withdraw' && (
               hasApprovedDeposit ? (
@@ -530,7 +551,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                       : 'Withdrawal Amount (You Receive)'}
                   {mode === 'withdraw' && !isWelcomeBonus && (
                     <span className="ml-1.5 text-[10.5px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                      Min: UGX {MIN_WITHDRAWAL_UGX.toLocaleString()}
+                      Min: UGX {(minimumWithdrawalUGX || 0).toLocaleString()}
                     </span>
                   )}
                   {mode === 'deposit' && (

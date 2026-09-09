@@ -9,6 +9,8 @@ export interface Machine {
   status: 'Active' | 'Maintenance' | 'Pending' | 'Reserved';
   estYearlyROI: number;
   minInvestUGX: number;
+  /** Configurable per-product minimum investment amount (admin-adjustable). */
+  minimum_investment_amount?: number;
   maxInvestUGX?: number;
   durationDays?: number;
   hashrate: string;

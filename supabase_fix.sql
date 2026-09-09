@@ -202,8 +202,8 @@ BEGIN
     AND t.type = 'deposit'
     AND t.status = 'completed';
 
-  -- Total commission earned at the centrally configured percentage.
-  v_total_commission := ROUND(v_total_approved_deposits * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.20));
+  -- Total commission earned at the centrally configured percentage (default 15%).
+  v_total_commission := ROUND(v_total_approved_deposits * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.15));
 
   -- Total commission already claimed
   SELECT COALESCE(SUM(amount_ugx), 0) INTO v_claimed_commission
@@ -240,7 +240,74 @@ REVOKE EXECUTE ON FUNCTION public.get_referral_summary() FROM anon, public;
 GRANT EXECUTE ON FUNCTION public.get_referral_summary() TO authenticated;
 
 -- ============================================================
--- 3c. USER: get referred users list (names, joined date, deposits, 20% commission)
+-- 3b2. Platform Settings & Referral Percent RPCs (Authoritative)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.platform_settings (
+  key TEXT PRIMARY KEY,
+  numeric_value NUMERIC(20,6) NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT platform_settings_numeric_value_valid CHECK (numeric_value >= 0)
+);
+
+INSERT INTO public.platform_settings (key, numeric_value)
+VALUES
+  ('referral_percentage', 15),
+  ('minimum_withdrawal_amount', 5000)
+ON CONFLICT (key) DO NOTHING;
+
+ALTER TABLE public.platform_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS platform_settings_read_authenticated ON public.platform_settings;
+CREATE POLICY platform_settings_read_authenticated ON public.platform_settings
+  FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS platform_settings_admin_write ON public.platform_settings;
+CREATE POLICY platform_settings_admin_write ON public.platform_settings
+  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- Authoritative RPC: get_referral_percent()
+CREATE OR REPLACE FUNCTION public.get_referral_percent()
+RETURNS NUMERIC
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT COALESCE(
+    (SELECT numeric_value FROM public.platform_settings WHERE key = 'referral_percentage'),
+    15
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.get_referral_percent() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_referral_percent() TO authenticated;
+
+-- Authoritative RPC: admin_update_referral_percent(p_percent numeric)
+CREATE OR REPLACE FUNCTION public.admin_update_referral_percent(
+  p_percent NUMERIC
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Admin access required';
+  END IF;
+
+  IF p_percent IS NULL OR p_percent < 0 OR p_percent > 100 THEN
+    RAISE EXCEPTION 'Referral percentage must be between 0 and 100';
+  END IF;
+
+  INSERT INTO public.platform_settings (key, numeric_value, updated_at)
+  VALUES ('referral_percentage', p_percent, now())
+  ON CONFLICT (key) DO UPDATE
+    SET numeric_value = EXCLUDED.numeric_value,
+        updated_at = now();
+
+  RETURN p_percent;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_update_referral_percent(NUMERIC) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_update_referral_percent(NUMERIC) TO authenticated;
+
+-- ============================================================
+-- 3c. USER: get referred users list (names, joined date, deposits, referral commission)
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.get_referred_users()
 RETURNS TABLE (
@@ -273,7 +340,7 @@ BEGIN
     COALESCE(p.full_name, '') AS full_name,
     to_char(p.created_at, 'DD Mon YYYY') AS registered_date,
     COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) AS approved_deposit_ugx,
-    ROUND(COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.20)) AS commission_ugx,
+    ROUND(COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) * COALESCE((SELECT numeric_value / 100 FROM public.platform_settings WHERE key = 'referral_percentage'), 0.15)) AS commission_ugx,
     CASE
       WHEN COALESCE(SUM(CASE WHEN t.type = 'deposit' AND t.status = 'completed' THEN t.amount_ugx ELSE 0 END), 0) > 0 THEN 'active'
       ELSE 'pending'

@@ -608,6 +608,80 @@ export const supabaseAdmin = {
     }
   },
 
+  /**
+   * Fetch referral percentage directly via Supabase RPC get_referral_percent()
+   * Single source of truth from backend.
+   */
+  async getReferralPercent(): Promise<{ percent?: number; error?: string }> {
+    const sb = getSupabaseClient();
+    if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
+
+    try {
+      const { data, error } = await sb.rpc('get_referral_percent');
+      if (error) {
+        // Fallback to get_platform_settings if needed
+        const { data: altData, error: altErr } = await sb.rpc('get_platform_settings');
+        if (altErr) return { error: error.message };
+        const row = (altData || []).find((r: any) => r.key === 'referral_percentage');
+        if (row && row.numeric_value !== undefined) {
+          return { percent: Number(row.numeric_value) };
+        }
+        return { error: error.message };
+      }
+
+      let val: number | undefined;
+      if (typeof data === 'number') {
+        val = data;
+      } else if (typeof data === 'string') {
+        val = Number(data);
+      } else if (Array.isArray(data) && data.length > 0) {
+        const item = data[0];
+        val = Number(item?.get_referral_percent ?? item?.p_percent ?? item?.percent ?? item?.numeric_value ?? item);
+      } else if (typeof data === 'object' && data !== null) {
+        val = Number((data as any).get_referral_percent ?? (data as any).p_percent ?? (data as any).percent ?? (data as any).numeric_value);
+      }
+
+      if (val !== undefined && Number.isFinite(val)) {
+        return { percent: val };
+      }
+      return { percent: Number(data) || 0 };
+    } catch (e: any) {
+      return { error: e?.message || 'Failed to fetch referral percent' };
+    }
+  },
+
+  /**
+   * Update referral percentage via Supabase RPC admin_update_referral_percent(p_percent numeric)
+   */
+  async adminUpdateReferralPercent(percent: number): Promise<{ percent?: number; error?: string }> {
+    const sb = getSupabaseClient();
+    if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };
+
+    try {
+      const { data, error } = await sb.rpc('admin_update_referral_percent', {
+        p_percent: percent,
+      });
+      if (error) {
+        return { error: error.message };
+      }
+
+      let returnedVal: number = percent;
+      if (typeof data === 'number') {
+        returnedVal = data;
+      } else if (typeof data === 'string') {
+        returnedVal = Number(data);
+      } else if (Array.isArray(data) && data.length > 0) {
+        returnedVal = Number(data[0]?.admin_update_referral_percent ?? data[0]?.p_percent ?? data[0]?.percent ?? data[0]?.numeric_value ?? data[0]);
+      } else if (typeof data === 'object' && data !== null) {
+        returnedVal = Number((data as any).admin_update_referral_percent ?? (data as any).p_percent ?? (data as any).percent ?? (data as any).numeric_value ?? percent);
+      }
+
+      return { percent: returnedVal };
+    } catch (e: any) {
+      return { error: e?.message || 'Failed to update referral percent' };
+    }
+  },
+
   async fetchPlatformSettings(): Promise<{ settings?: PlatformSettings; error?: string }> {
     const sb = getSupabaseClient();
     if (!sb) return { error: 'Database connection is not initialized. Please refresh and try again.' };

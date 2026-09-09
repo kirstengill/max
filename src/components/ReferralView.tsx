@@ -39,6 +39,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
 }) => {
   const [summary, setSummary] = useState<ReferralSummary | null>(null);
   const [referredUsers, setReferredUsers] = useState<ReferralPartner[]>([]);
+  const [commissionPercent, setCommissionPercent] = useState<number>(15);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [isClaiming, setIsClaiming] = useState<boolean>(false);
@@ -84,13 +85,17 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
     }
 
     try {
-      const [freshSummary, freshUsers] = await Promise.all([
+      const [freshSummary, freshUsers, freshPercent] = await Promise.all([
         supabaseAuth.getReferralSummary(),
         supabaseAuth.getReferredUsers(),
+        supabaseAuth.getReferralPercent(),
       ]);
 
       setSummary(freshSummary);
       setReferredUsers(freshUsers);
+      if (typeof freshPercent === 'number' && Number.isFinite(freshPercent)) {
+        setCommissionPercent(freshPercent);
+      }
 
       if (freshSummary && user) {
         user.referralCount = Math.max(freshSummary.totalReferrals, freshUsers.length);
@@ -298,7 +303,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
         </button>
       </div>
 
-      {/* MAIN HERO CARD: 20% Deposit Commission Rule */}
+      {/* MAIN HERO CARD: Dynamic Deposit Commission Rule */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1657D9] via-[#1E40AF] to-[#0F172A] p-5 text-white shadow-md">
         <div className="absolute -top-12 -right-12 w-36 h-36 bg-blue-400/20 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-amber-400/15 rounded-full blur-2xl pointer-events-none" />
@@ -306,7 +311,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
         <div className="relative z-10 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/15 backdrop-blur-md px-2.5 py-1 rounded-full text-amber-300 flex items-center gap-1 border border-white/10">
-              <Percent className="w-3 h-3 text-amber-300" /> 20% Commission Rate
+              <Percent className="w-3 h-3 text-amber-300" /> {commissionPercent}% Commission Rate
             </span>
             <span className="text-[11px] font-mono font-bold text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-400/30">
               Approved Deposits Only
@@ -315,10 +320,10 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
 
           <div>
             <h2 className="text-[18px] font-black tracking-tight leading-snug">
-              Earn 20% Commission on Every Approved Deposit
+              Earn {commissionPercent}% Commission on Every Approved Deposit
             </h2>
             <p className="text-[12px] text-blue-100/90 mt-1 leading-relaxed">
-              When a user joins with your code and their deposit is approved by admin, 20% commission is earned and stored in your Available Commission balance until you claim it into your main wallet.
+              When a user joins with your code and their deposit is approved by admin, {commissionPercent}% commission is earned and stored in your Available Commission balance until you claim it into your main wallet.
             </p>
           </div>
 
@@ -344,7 +349,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
                 {isLoading ? '...' : `UGX ${totalCommissionUGX.toLocaleString()}`}
               </span>
               <span className="text-[10px] text-blue-200/80 mt-0.5 block">
-                Total 20% Generated
+                Total {commissionPercent}% Generated
               </span>
             </div>
           </div>
@@ -439,7 +444,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
           <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100">
             <span className="text-slate-500 block">Commission Rate</span>
             <span className="font-bold text-emerald-700 font-mono mt-0.5 block">
-              20% on Approved Dep.
+              {commissionPercent}% on Approved Dep.
             </span>
           </div>
         </div>
@@ -608,7 +613,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
               No referrals yet
             </p>
             <p className="text-[11.5px] text-slate-500 max-w-xs mx-auto">
-              Share your invitation link above. Newly registered partners will appear here immediately, and 20% commission is earned when their deposits are approved.
+              Share your invitation link above. Newly registered partners will appear here immediately, and {commissionPercent}% commission is earned when their deposits are approved.
             </p>
             <button
               onClick={handleNativeShare}
@@ -673,7 +678,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
                           : 'bg-slate-100 text-slate-500'
                       }`}
                     >
-                      {hasDeposit ? '20% Commission' : 'Awaiting Deposit'}
+                      {hasDeposit ? `${commissionPercent}% Commission` : 'Awaiting Deposit'}
                     </span>
                   </div>
                 </div>
@@ -683,10 +688,10 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
         )}
       </div>
 
-      {/* 20% Commission Calculation Examples */}
+      {/* Dynamic Commission Calculation Examples */}
       <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl p-5 border border-emerald-200/70 shadow-xs space-y-2">
         <h3 className="text-[14.5px] font-extrabold text-slate-900 flex items-center gap-2">
-          <Percent className="w-4 h-4 text-emerald-600" /> 20% Deposit Commission Formula
+          <Percent className="w-4 h-4 text-emerald-600" /> {commissionPercent}% Deposit Commission Formula
         </h3>
         <p className="text-[12.5px] text-slate-700 leading-relaxed">
           Commission is calculated exclusively on administrator-approved deposits. Pending or rejected requests generate zero commission.
@@ -694,15 +699,15 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
         <div className="grid grid-cols-3 gap-2 pt-1.5 text-center text-[11px]">
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
             <span className="text-slate-500 block">UGX 20,000 Dep</span>
-            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 5,000</span>
+            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX {Math.round(20000 * commissionPercent / 100).toLocaleString()}</span>
           </div>
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
             <span className="text-slate-500 block">UGX 50,000 Dep</span>
-            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 10,000</span>
+            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX {Math.round(50000 * commissionPercent / 100).toLocaleString()}</span>
           </div>
           <div className="bg-white/90 rounded-xl p-2.5 border border-emerald-200/60 shadow-2xs">
             <span className="text-slate-500 block">UGX 100,000 Dep</span>
-            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX 20,000</span>
+            <span className="font-black text-emerald-700 block mt-0.5 font-mono">+UGX {Math.round(100000 * commissionPercent / 100).toLocaleString()}</span>
           </div>
         </div>
       </div>
@@ -751,7 +756,7 @@ export const ReferralView: React.FC<ReferralViewProps> = ({
                 Deposit Verification
               </h4>
               <p className="text-[12px] text-slate-500 mt-0.5 leading-relaxed">
-                Your friend submits a deposit via MoMo. Once an administrator approves it, 20% commission becomes available.
+                Your friend submits a deposit via MoMo. Once an administrator approves it, {commissionPercent}% commission becomes available.
               </p>
             </div>
           </div>

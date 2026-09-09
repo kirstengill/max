@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS public.platform_settings (
 
 INSERT INTO public.platform_settings (key, numeric_value)
 VALUES
-  ('referral_percentage', 20),
+  ('referral_percentage', 15),
   ('minimum_withdrawal_amount', 5000)
 ON CONFLICT (key) DO NOTHING;
 
@@ -63,6 +63,49 @@ CREATE POLICY platform_settings_read_authenticated ON public.platform_settings
 DROP POLICY IF EXISTS platform_settings_admin_write ON public.platform_settings;
 CREATE POLICY platform_settings_admin_write ON public.platform_settings
   FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- Authoritative RPC: get_referral_percent()
+CREATE OR REPLACE FUNCTION public.get_referral_percent()
+RETURNS NUMERIC
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT COALESCE(
+    (SELECT numeric_value FROM public.platform_settings WHERE key = 'referral_percentage'),
+    15
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.get_referral_percent() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_referral_percent() TO authenticated;
+
+-- Authoritative RPC: admin_update_referral_percent(p_percent numeric)
+CREATE OR REPLACE FUNCTION public.admin_update_referral_percent(
+  p_percent NUMERIC
+)
+RETURNS NUMERIC
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Admin access required';
+  END IF;
+
+  IF p_percent IS NULL OR p_percent < 0 OR p_percent > 100 THEN
+    RAISE EXCEPTION 'Referral percentage must be between 0 and 100';
+  END IF;
+
+  INSERT INTO public.platform_settings (key, numeric_value, updated_at)
+  VALUES ('referral_percentage', p_percent, now())
+  ON CONFLICT (key) DO UPDATE
+    SET numeric_value = EXCLUDED.numeric_value,
+        updated_at = now();
+
+  RETURN p_percent;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_update_referral_percent(NUMERIC) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_update_referral_percent(NUMERIC) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.get_platform_settings()
 RETURNS TABLE (key TEXT, numeric_value NUMERIC)

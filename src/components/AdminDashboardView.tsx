@@ -239,15 +239,50 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   };
 
   const loadPlatformSettings = async () => {
+    if (!isAuthorizedAdmin) return;
     setSettingsLoading(true);
     try {
+      const sb = getSupabaseClient();
+      if (!sb) {
+        showToast('Database connection is not initialized. Please refresh and try again.', 'error');
+        return;
+      }
+
+      // Call Supabase RPC get_referral_percent()
+      const { data: refPercentData, error: refPercentError } = await sb.rpc('get_referral_percent');
+      if (refPercentError) {
+        console.warn('get_referral_percent RPC error:', refPercentError);
+        // If the specific RPC had an error, display the actual Supabase error message
+        showToast(refPercentError.message, 'error');
+      } else if (refPercentData !== undefined && refPercentData !== null) {
+        let val: number | undefined;
+        if (typeof refPercentData === 'number') {
+          val = refPercentData;
+        } else if (typeof refPercentData === 'string') {
+          val = Number(refPercentData);
+        } else if (Array.isArray(refPercentData) && refPercentData.length > 0) {
+          const item = refPercentData[0];
+          val = Number(item?.get_referral_percent ?? item?.p_percent ?? item?.percent ?? item?.numeric_value ?? item);
+        } else if (typeof refPercentData === 'object' && refPercentData !== null) {
+          val = Number((refPercentData as any).get_referral_percent ?? (refPercentData as any).p_percent ?? (refPercentData as any).percent ?? (refPercentData as any).numeric_value);
+        }
+
+        if (val !== undefined && Number.isFinite(val)) {
+          setReferralPercentage(String(val));
+        }
+      }
+
+      // Also load minimum withdrawal amount setting
       const res = await authService.fetchPlatformSettings();
       if (res.settings) {
-        setReferralPercentage(String(res.settings.referral_percentage));
         setMinimumWithdrawalAmount(String(res.settings.minimum_withdrawal_amount));
+        if (referralPercentage === '' && !refPercentData) {
+          setReferralPercentage(String(res.settings.referral_percentage));
+        }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.warn('Failed to load platform settings', e);
+      showToast(e?.message || 'Failed to load platform settings', 'error');
     } finally {
       setSettingsLoading(false);
     }
@@ -293,8 +328,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         loadTransactions();
       } else if (activeSubTab === 'users') {
         loadUsersList();
-      } else if (activeSubTab === 'projects') {
+      } else if (activeSubTab === 'projects' || activeSubTab === 'catalog') {
         loadCatalogProjects();
+      } else if (activeSubTab === 'settings') {
+        loadPlatformSettings();
       } else if (activeSubTab === 'audit') {
         loadAuditLogs();
       }
@@ -597,11 +634,75 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     }
   };
 
+  const handleSaveReferralPercentage = async () => {
+    if (!isAuthorizedAdmin) {
+      showToast('Unauthorized: Only authenticated admins can update platform settings.', 'error');
+      return;
+    }
+
+    const value = Number(referralPercentage);
+    if (!Number.isFinite(value) || value < 0 || value > 100) {
+      showToast('Referral percentage must be a number between 0 and 100.', 'error');
+      return;
+    }
+
+    const sb = getSupabaseClient();
+    if (!sb) {
+      showToast('Database connection is not initialized. Please refresh and try again.', 'error');
+      return;
+    }
+
+    setSettingsSaving('referral_percentage');
+    try {
+      // 4. When the admin clicks Save, call: supabase.rpc('admin_update_referral_percent', { p_percent: value }).
+      const { data, error } = await sb.rpc('admin_update_referral_percent', { p_percent: value });
+
+      if (error) {
+        // 6. Show the actual Supabase error message if the RPC fails.
+        showToast(error.message, 'error');
+        return;
+      }
+
+      // 5. Show a success message after the RPC succeeds.
+      showToast('Referral percentage updated successfully!');
+
+      // 9. After saving, reload the value from get_referral_percent() so the UI displays the actual database value.
+      const { data: freshData, error: freshErr } = await sb.rpc('get_referral_percent');
+      if (freshErr) {
+        showToast(freshErr.message, 'error');
+      } else if (freshData !== undefined && freshData !== null) {
+        let reloadedVal: number | undefined;
+        if (typeof freshData === 'number') {
+          reloadedVal = freshData;
+        } else if (typeof freshData === 'string') {
+          reloadedVal = Number(freshData);
+        } else if (Array.isArray(freshData) && freshData.length > 0) {
+          const item = freshData[0];
+          reloadedVal = Number(item?.get_referral_percent ?? item?.p_percent ?? item?.percent ?? item?.numeric_value ?? item);
+        } else if (typeof freshData === 'object' && freshData !== null) {
+          reloadedVal = Number((freshData as any).get_referral_percent ?? (freshData as any).p_percent ?? (freshData as any).percent ?? (freshData as any).numeric_value);
+        }
+
+        if (reloadedVal !== undefined && Number.isFinite(reloadedVal)) {
+          setReferralPercentage(String(reloadedVal));
+        }
+      }
+    } catch (e: any) {
+      showToast(e?.message || 'Failed to update referral percentage', 'error');
+    } finally {
+      setSettingsSaving(null);
+    }
+  };
+
   const handleSavePlatformSetting = async (key: 'referral_percentage' | 'minimum_withdrawal_amount') => {
-    const rawValue = key === 'referral_percentage' ? referralPercentage : minimumWithdrawalAmount;
+    if (key === 'referral_percentage') {
+      return handleSaveReferralPercentage();
+    }
+
+    const rawValue = minimumWithdrawalAmount;
     const value = Number(rawValue);
-    if (!Number.isFinite(value) || value < 0 || (key === 'minimum_withdrawal_amount' && value <= 0) || (key === 'referral_percentage' && value > 100)) {
-      showToast(key === 'referral_percentage' ? 'Referral percentage must be between 0 and 100.' : 'Minimum withdrawal must be greater than zero.', 'error');
+    if (!Number.isFinite(value) || value <= 0) {
+      showToast('Minimum withdrawal must be greater than zero.', 'error');
       return;
     }
 
@@ -612,8 +713,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       showToast(res.error, 'error');
       return;
     }
-    if (key === 'referral_percentage') setReferralPercentage(String(res.value));
-    else setMinimumWithdrawalAmount(String(res.value));
+    setMinimumWithdrawalAmount(String(res.value));
     showToast('Platform setting saved to Supabase.');
   };
 

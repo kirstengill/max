@@ -688,10 +688,7 @@ class AuthService {
             .eq('status', 'completed');
 
           const totalDeposits = (approvedTxs || []).reduce((sum, tx) => sum + (Number(tx.amount_ugx) || 0), 0);
-          const { data: settingRows } = await this.client.rpc('get_platform_settings');
-          const referralPercentage = Number(
-            (settingRows || []).find((row: any) => row.key === 'referral_percentage')?.numeric_value || 0
-          );
+          const referralPercentage = await this.getReferralPercent();
           const liveCommission = Math.round(totalDeposits * referralPercentage / 100);
           if (liveCommission > totalCommissionUGX) {
             totalCommissionUGX = liveCommission;
@@ -814,10 +811,7 @@ class AuthService {
         });
       }
 
-      const { data: settingRows } = await this.client.rpc('get_platform_settings');
-      const referralPercentage = Number(
-        (settingRows || []).find((row: any) => row.key === 'referral_percentage')?.numeric_value || 0
-      );
+      const referralPercentage = await this.getReferralPercent();
       return profiles.map((p: any) => {
         const approvedDep = approvedDepositsByUserId[p.id] || 0;
         const comm = Math.round(approvedDep * referralPercentage / 100);
@@ -936,10 +930,7 @@ class AuthService {
         .eq('status', 'completed');
 
       const totalDep = (myDeposits || []).reduce((sum, d) => sum + (Number(d.amount_ugx) || 0), 0);
-      const { data: settingRows } = await sb.rpc('get_platform_settings');
-      const referralPercentage = Number(
-        (settingRows || []).find((row: any) => row.key === 'referral_percentage')?.numeric_value || 0
-      );
+      const referralPercentage = await this.getReferralPercent();
       const earnedComm = Math.round(totalDep * referralPercentage / 100);
       const prevEarnings = Number(referrer.referral_earnings_ugx || 0);
 
@@ -1059,6 +1050,7 @@ class AuthService {
 
       // Insert transaction
       const txId = `tx_claim_ref_${Date.now()}`;
+      const refPercent = await this.getReferralPercent();
       await this.client.from('transactions').insert({
         id: txId,
         user_id: userId,
@@ -1066,7 +1058,7 @@ class AuthService {
         amount_ugx: available,
         currency: 'UGX',
         status: 'completed',
-        description: 'Claimed Referral Commission (20%)',
+        description: `Claimed Referral Commission (${refPercent}%)`,
         is_credit: true,
         created_at: new Date().toISOString(),
       });
@@ -1356,6 +1348,18 @@ class AuthService {
 
   public async fetchPlatformSettings() {
     return supabaseAdmin.fetchPlatformSettings();
+  }
+
+  public async getReferralPercent(): Promise<number> {
+    const res = await supabaseAdmin.getReferralPercent();
+    if (res.percent !== undefined && Number.isFinite(res.percent)) {
+      return res.percent;
+    }
+    return 15;
+  }
+
+  public async adminUpdateReferralPercent(percent: number): Promise<{ percent?: number; error?: string }> {
+    return supabaseAdmin.adminUpdateReferralPercent(percent);
   }
 
   public async updatePlatformSetting(key: 'referral_percentage' | 'minimum_withdrawal_amount', value: number) {

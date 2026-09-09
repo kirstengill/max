@@ -3,6 +3,7 @@ import { Machine } from '../types';
 import { ProjectImage } from './ProjectImage';
 import { ArrowUpRight, ShieldCheck, Sparkles, TrendingUp, Zap, Clock } from 'lucide-react';
 import { calculateDailyReturnUGX } from '../services/investmentReturns';
+import { getPreciousMetalCategoryLabel } from '../constants/preciousMetalImages';
 
 interface InvestmentCardProps {
   machine: Machine;
@@ -32,7 +33,7 @@ export const InvestmentCard: React.FC<InvestmentCardProps> = ({
         <div className="flex items-center justify-between gap-2 mb-3">
           <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200/60">
             <Zap className="w-3 h-3 text-emerald-600" />
-            {machine.category}
+            {getPreciousMetalCategoryLabel(machine.category)}
           </span>
           <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono">
             <TrendingUp className="w-3 h-3 text-emerald-600" />

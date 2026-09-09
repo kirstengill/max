@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Machine } from '../types';
 import { InvestmentCard } from './InvestmentCard';
 import { Search, Sparkles, Filter, ShieldCheck, Zap, ArrowUpDown, Layers } from 'lucide-react';
+import { getPreciousMetalCategoryLabel } from '../constants/preciousMetalImages';
 
 interface ProductsBrowseViewProps {
   machines: Machine[];

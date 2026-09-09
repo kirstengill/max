@@ -55,6 +55,7 @@ import {
 import { authService } from '../services/supabaseAuth';
 import { getSupabaseClient } from '../services/supabase';
 import { ProjectImage } from './ProjectImage';
+import { getPreciousMetalCategoryLabel } from '../constants/preciousMetalImages';
 
 interface AdminDashboardViewProps {
   tasks: AdminTask[];
@@ -2221,7 +2222,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       </div>
                       <div>
                         <span className="text-[9.5px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                          {proj.category}
+                          {getPreciousMetalCategoryLabel(proj.category)}
                         </span>
                         <h4 className="text-[14px] font-extrabold text-slate-900 mt-1">
                           {proj.title}
@@ -2939,9 +2940,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     }
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
                   >
-                    <option value="DS-Mining">DS-Mining</option>
-                    <option value="Clean Energy">Clean Energy</option>
-                    <option value="VIP Products">VIP Products</option>
+                    <option value="DS-Mining">Palladium</option>
+                    <option value="Clean Energy">Silver</option>
+                    <option value="VIP Products">Gold</option>
                   </select>
                 </div>
 

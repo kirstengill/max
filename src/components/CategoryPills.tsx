@@ -1,4 +1,5 @@
 import React from 'react';
+import { getPreciousMetalCategoryLabel } from '../constants/preciousMetalImages';
 
 export type CategoryType = 'VIP Products' | 'Clean Energy' | 'DS-Mining' | 'All';
 
@@ -19,10 +20,10 @@ export const CategoryPills: React.FC<CategoryPillsProps> = ({
   counts,
 }) => {
   const categories: { key: CategoryType; label: string; count?: number }[] = [
-    { key: 'VIP Products', label: 'VIP Products', count: counts.vip },
-    { key: 'Clean Energy', label: 'Clean Energy', count: counts.cleanEnergy },
-    { key: 'DS-Mining', label: 'DS-Mining', count: counts.dsMining },
-    { key: 'All', label: 'All', count: undefined },
+    { key: 'VIP Products', label: getPreciousMetalCategoryLabel('VIP Products'), count: counts.vip },
+    { key: 'Clean Energy', label: getPreciousMetalCategoryLabel('Clean Energy'), count: counts.cleanEnergy },
+    { key: 'DS-Mining', label: getPreciousMetalCategoryLabel('DS-Mining'), count: counts.dsMining },
+    { key: 'All', label: getPreciousMetalCategoryLabel('All'), count: undefined },
   ];
 
   return (

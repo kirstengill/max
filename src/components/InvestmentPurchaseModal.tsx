@@ -4,6 +4,7 @@ import confetti from 'canvas-confetti';
 import { Machine } from '../types';
 import { ProjectImage } from './ProjectImage';
 import { calculateDailyReturnUGX } from '../services/investmentReturns';
+import { getPreciousMetalCategoryLabel } from '../constants/preciousMetalImages';
 
 interface InvestmentPurchaseModalProps {
   machine: Machine | null;
@@ -105,7 +106,7 @@ export const InvestmentPurchaseModal: React.FC<InvestmentPurchaseModalProps> = (
             </div>
             <div className="flex-1 min-w-0">
               <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
-                {machine.category}
+                {getPreciousMetalCategoryLabel(machine.category)}
               </span>
               <p className="text-[13px] font-bold text-slate-900 mt-1 truncate">
                 {machine.subtitle || machine.description}

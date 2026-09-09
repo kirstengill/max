@@ -14,3 +14,17 @@ export const legacyImageMap: Record<string, string> = {
   '/images/bullion-vault.svg': preciousMetalImages.goldBullion,
   '/images/precious-metals-portfolio.svg': preciousMetalImages.silverBullion,
 };
+
+export const preciousMetalCategoryLabels: Record<string, string> = {
+  'VIP Products': 'Gold',
+  'Clean Energy': 'Silver',
+  'DS-Mining': 'Palladium',
+  'Infrastructure': 'Gold',
+  'Private Wealth': 'Silver',
+  'Liquid Yield': 'Silver',
+  'Alpha Vaults': 'Platinum',
+  'All': 'All Metals',
+};
+
+export const getPreciousMetalCategoryLabel = (category?: string): string =>
+  preciousMetalCategoryLabels[category || ''] || category || 'Precious Metals';

@@ -134,18 +134,29 @@ export const supabaseAdmin = {
         // Fetch authoritative wallet balance from Supabase
         const { data: walletRow } = await sb
           .from('wallets')
-          .select('total_balance_ugx, withdrawable_balance_ugx')
+          .select('total_balance_ugx')
           .eq('user_id', userId)
           .maybeSingle();
 
-        const availableBalance = walletRow
-          ? Number(walletRow.withdrawable_balance_ugx ?? walletRow.total_balance_ugx ?? 0)
-          : 0;
+        // Calculate pending withdrawals directly from Supabase
+        const { data: pendingTx } = await sb
+          .from('transactions')
+          .select('amount_ugx')
+          .eq('user_id', userId)
+          .eq('type', 'withdraw')
+          .in('status', ['pending', 'processing']);
+
+        const pendingSum = (pendingTx || []).reduce(
+          (acc: number, t: any) => acc + Number(t.amount_ugx || 0),
+          0
+        );
+        const totalBal = Number(walletRow?.total_balance_ugx ?? 0);
+        const availableBalance = Math.max(0, totalBal - pendingSum);
 
         if (numericAmount > availableBalance) {
           return {
             success: false,
-            error: `Insufficient balance: requested UGX ${numericAmount.toLocaleString()}, available UGX ${availableBalance.toLocaleString()}`,
+            error: `Insufficient balance: requested UGX ${numericAmount.toLocaleString()} exceeds your available withdrawable balance of UGX ${availableBalance.toLocaleString()}.`,
           };
         }
       }
@@ -1308,12 +1319,24 @@ export const supabaseAdmin = {
       // 3. Authoritatively fetch the updated wallet from Supabase
       const { data: updatedWallet } = await sb
         .from('wallets')
-        .select('total_balance_ugx, withdrawable_balance_ugx')
+        .select('total_balance_ugx')
         .eq('user_id', userId)
         .maybeSingle();
 
       if (updatedWallet) {
         newBal = Number(updatedWallet.total_balance_ugx ?? newBal ?? 0);
+        // Sync withdrawable_balance_ugx column in wallets if it exists so legacy queries stay consistent
+        try {
+          await sb
+            .from('wallets')
+            .update({
+              withdrawable_balance_ugx: newBal,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', userId);
+        } catch {
+          // column might not exist or permission restricted, safe to ignore
+        }
       }
 
       return {

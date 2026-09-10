@@ -493,10 +493,19 @@ class AuthService {
         }
 
         const totalBal = Number(walletRes.data.total_balance_ugx ?? walletRes.data.balance) || 0;
-        const withdrawableBal =
-          walletRes.data.withdrawable_balance_ugx !== undefined && walletRes.data.withdrawable_balance_ugx !== null
-            ? Number(walletRes.data.withdrawable_balance_ugx)
-            : totalBal;
+
+        // Calculate pending withdrawals directly from authoritative transactions in Supabase
+        const pendingWithdrawalTotal = (txRes.data || [])
+          .filter(
+            (t: any) =>
+              (t.type === 'withdraw' || t.type === 'withdrawal') &&
+              (t.status === 'pending' || t.status === 'processing')
+          )
+          .reduce((sum: number, t: any) => sum + Number(t.amount_ugx || t.amount || 0), 0);
+
+        // Authoritative withdrawable balance: actual available wallet balance minus pending withdrawals.
+        // Do not arbitrarily limit withdrawals to UGX 4,000.
+        const withdrawableBal = Math.max(0, totalBal - pendingWithdrawalTotal);
         const depositedBal =
           walletRes.data.deposited_balance_ugx !== undefined && walletRes.data.deposited_balance_ugx !== null
             ? Number(walletRes.data.deposited_balance_ugx)

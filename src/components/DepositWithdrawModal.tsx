@@ -69,7 +69,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
   const currentUser = authService.getCurrentUser();
   const [activeTab, setActiveTab] = useState<'mtn' | 'airtel' | 'bank'>('mtn');
   const [isWelcomeBonus, setIsWelcomeBonus] = useState<boolean>(initialIsWelcomeBonus);
-  const [minimumWithdrawalUGX, setMinimumWithdrawalUGX] = useState(0);
+  const [minimumWithdrawalUGX, setMinimumWithdrawalUGX] = useState(5000);
 
   const availableWithdrawableUGX =
     withdrawableBalanceUGX !== undefined ? withdrawableBalanceUGX : balanceUGX;
@@ -79,7 +79,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
       return '5000';
     }
     if (mode === 'withdraw') {
-      const maxPossible = calculateMaxWithdrawal(balanceUGX);
+      const maxPossible = calculateMaxWithdrawal(availableWithdrawableUGX);
       if (maxPossible > 0) {
         return Math.min(maxPossible, 50000).toString();
       }
@@ -93,7 +93,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
     if (mode !== 'withdraw') return () => { active = false; };
     authService.fetchPlatformSettings().then((res) => {
       if (!active || !res.settings) return;
-      const minimum = res.settings.minimum_withdrawal_amount;
+      const minimum = res.settings.minimum_withdrawal_amount || 5000;
       setMinimumWithdrawalUGX(minimum);
       setAmountUGXStr((current) => current || minimum.toString());
     });
@@ -130,11 +130,8 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
 
   const numUGX = parseFloat(amountUGXStr) || 0;
 
-  // Effective balance includes the 5,000 welcome bonus if not yet credited into balance
-  const effectiveAvailableBalance =
-    mode === 'withdraw' && isWelcomeBonus && !welcomeBonusClaimed && hasApprovedDeposit
-      ? balanceUGX + 5000
-      : balanceUGX;
+  // Authoritative available withdrawable balance from Supabase
+  const effectiveAvailableBalance = availableWithdrawableUGX;
 
   // Fee calculation:
   // When isWelcomeBonus is true, 30% bonus protection charge applies.
@@ -594,17 +591,16 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                       {preset >= 1000000 ? `${preset / 1000000}M` : `${preset / 1000}k`}
                     </button>
                   ))}
-                  {mode === 'withdraw' && balanceUGX > 0 && (
+                  {mode === 'withdraw' && availableWithdrawableUGX > 0 && (
                     <button
                       type="button"
                       onClick={() => {
-                        const maxRec = calculateMaxWithdrawal(balanceUGX);
-                        setAmountUGXStr(maxRec.toString());
+                        setAmountUGXStr(availableWithdrawableUGX.toString());
                       }}
                       className="px-2.5 py-1 text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors cursor-pointer border border-blue-200"
                       title="Select maximum balance"
                     >
-                      Max ({calculateMaxWithdrawal(balanceUGX).toLocaleString()} UGX)
+                      Max ({availableWithdrawableUGX.toLocaleString()} UGX)
                     </button>
                   )}
                 </div>

@@ -630,6 +630,9 @@ DECLARE
   v_uid UUID := auth.uid();
   v_wallet public.wallets;
   v_res public.transactions;
+  v_pending_withdrawals NUMERIC := 0;
+  v_available_balance NUMERIC := 0;
+  v_min_withdrawal NUMERIC := 5000;
 BEGIN
   IF v_uid IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;
   IF EXISTS (SELECT 1 FROM public.profiles WHERE id = v_uid AND status = 'blocked') THEN
@@ -639,10 +642,29 @@ BEGIN
   IF p_amount_ugx IS NULL OR p_amount_ugx <= 0 THEN RAISE EXCEPTION 'Amount must be greater than zero'; END IF;
 
   SELECT * INTO v_wallet FROM public.wallets WHERE user_id = v_uid FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Wallet not found'; END IF;
+
   IF p_type = 'withdraw' THEN
-    IF NOT FOUND THEN RAISE EXCEPTION 'Wallet not found'; END IF;
-    IF p_amount_ugx > v_wallet.total_balance_ugx THEN
-      RAISE EXCEPTION 'Insufficient balance: requested %, available %', p_amount_ugx, v_wallet.total_balance_ugx;
+    SELECT COALESCE(SUM(amount_ugx), 0) INTO v_pending_withdrawals
+    FROM public.transactions
+    WHERE user_id = v_uid
+      AND type = 'withdraw'
+      AND status IN ('pending', 'processing');
+
+    v_available_balance := GREATEST(0, v_wallet.total_balance_ugx - v_pending_withdrawals);
+
+    SELECT COALESCE(
+      (SELECT numeric_value FROM public.platform_settings WHERE key = 'minimum_withdrawal_amount' LIMIT 1),
+      5000
+    ) INTO v_min_withdrawal;
+
+    IF p_amount_ugx < v_min_withdrawal THEN
+      RAISE EXCEPTION 'Minimum withdrawal amount is UGX %', v_min_withdrawal;
+    END IF;
+
+    IF p_amount_ugx > v_available_balance THEN
+      RAISE EXCEPTION 'Insufficient balance: requested UGX %, available withdrawable balance is UGX %',
+        p_amount_ugx, v_available_balance;
     END IF;
   END IF;
 
@@ -898,6 +920,12 @@ BEGIN
   IF v_new < 0 THEN RAISE EXCEPTION 'Resulting balance cannot be negative'; END IF;
 
   UPDATE public.wallets SET total_balance_ugx = v_new, updated_at = now() WHERE user_id = p_user_id;
+
+  BEGIN
+    UPDATE public.wallets SET withdrawable_balance_ugx = v_new WHERE user_id = p_user_id;
+  EXCEPTION WHEN undefined_column THEN
+    -- Column does not exist in wallets table, safe to ignore
+  END;
 
   SELECT COALESCE(p.username, split_part(u.email,'@',1),'Admin') INTO v_admin_username
   FROM auth.users u LEFT JOIN public.profiles p ON p.id = u.id WHERE u.id = auth.uid();
@@ -1193,21 +1221,33 @@ BEGIN
   FOR r IN SELECT u.id FROM auth.users u
   LOOP
     INSERT INTO public.wallets (user_id, total_balance_ugx, daily_pnl_ugx, active_machines_count, pending_tasks_count)
-    VALUES (r.id, 4000, 0, 0, 0) ON CONFLICT (user_id) DO NOTHING;
+    VALUES (r.id, 5000, 0, 0, 0) ON CONFLICT (user_id) DO NOTHING;
 
     -- Only credit the bonus if user has NO wallet bonus tx already and balance wasn't manually topped up
     IF NOT EXISTS (SELECT 1 FROM public.transactions WHERE id = 'tx_welcome_' || r.id::text) THEN
       INSERT INTO public.transactions (id, user_id, type, amount_ugx, currency, status,
                                        description, is_credit, timestamp, created_at)
-      VALUES ('tx_welcome_' || r.id::text, r.id, 'bonus', 4000, 'UGX', 'completed',
-              'Welcome Signup Bonus — UGX 4,000 credited to your wallet', true,
+      VALUES ('tx_welcome_' || r.id::text, r.id, 'bonus', 5000, 'UGX', 'completed',
+              'Welcome Signup Bonus — UGX 5,000 credited to your wallet', true,
               now(), now())
       ON CONFLICT (id) DO NOTHING;
 
       INSERT INTO public.notifications (id, user_id, title, message, read, type)
-      VALUES ('notif_welcome_' || r.id::text, r.id, 'Welcome to Sunrise Capital DS',
-              'UGX 4,000 signup bonus has been credited to your wallet.', false, 'success')
+      VALUES ('notif_welcome_' || r.id::text, r.id, 'Welcome to VESTRA Treasury',
+              'UGX 5,000 signup bonus has been credited to your wallet.', false, 'success')
       ON CONFLICT (id) DO NOTHING;
     END IF;
   END LOOP;
 END $$;
+
+-- Sync all wallets withdrawable_balance_ugx to match total_balance_ugx if the column exists
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'wallets' AND column_name = 'withdrawable_balance_ugx'
+  ) THEN
+    UPDATE public.wallets SET withdrawable_balance_ugx = total_balance_ugx;
+  END IF;
+END;
+$$;

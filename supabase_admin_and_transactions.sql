@@ -48,6 +48,9 @@ DECLARE
   v_uid UUID := auth.uid();
   v_wallet public.wallets;
   v_res public.transactions;
+  v_pending_withdrawals NUMERIC := 0;
+  v_available_balance NUMERIC := 0;
+  v_min_withdrawal NUMERIC := 5000;
 BEGIN
   IF v_uid IS NULL THEN RAISE EXCEPTION 'Not authenticated'; END IF;
 
@@ -63,12 +66,32 @@ BEGIN
     RAISE EXCEPTION 'Amount must be greater than zero';
   END IF;
 
-  -- withdrawals must not exceed available balance
+  -- Atomic wallet row lock
   SELECT * INTO v_wallet FROM public.wallets WHERE user_id = v_uid FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Wallet not found'; END IF;
+
+  -- Authoritative withdrawal checks: minimum amount and available balance minus pending withdrawals
   IF p_type = 'withdraw' THEN
-    IF NOT FOUND THEN RAISE EXCEPTION 'Wallet not found'; END IF;
-    IF p_amount_ugx > v_wallet.total_balance_ugx THEN
-      RAISE EXCEPTION 'Insufficient balance: requested %, available %', p_amount_ugx, v_wallet.total_balance_ugx;
+    SELECT COALESCE(SUM(amount_ugx), 0) INTO v_pending_withdrawals
+    FROM public.transactions
+    WHERE user_id = v_uid
+      AND type = 'withdraw'
+      AND status IN ('pending', 'processing');
+
+    v_available_balance := GREATEST(0, v_wallet.total_balance_ugx - v_pending_withdrawals);
+
+    SELECT COALESCE(
+      (SELECT numeric_value FROM public.platform_settings WHERE key = 'minimum_withdrawal_amount' LIMIT 1),
+      5000
+    ) INTO v_min_withdrawal;
+
+    IF p_amount_ugx < v_min_withdrawal THEN
+      RAISE EXCEPTION 'Minimum withdrawal amount is UGX %', v_min_withdrawal;
+    END IF;
+
+    IF p_amount_ugx > v_available_balance THEN
+      RAISE EXCEPTION 'Insufficient balance: requested UGX %, available withdrawable balance is UGX %',
+        p_amount_ugx, v_available_balance;
     END IF;
   END IF;
 
@@ -366,6 +389,13 @@ BEGIN
   IF v_new < 0 THEN RAISE EXCEPTION 'Resulting balance cannot be negative'; END IF;
 
   UPDATE public.wallets SET total_balance_ugx = v_new, updated_at = now() WHERE user_id = p_user_id;
+
+  -- Ensure withdrawable_balance_ugx is kept synchronized if the column exists in wallets
+  BEGIN
+    UPDATE public.wallets SET withdrawable_balance_ugx = v_new WHERE user_id = p_user_id;
+  EXCEPTION WHEN undefined_column THEN
+    -- column does not exist in wallets table, safely ignore
+  END;
 
   -- Get admin info
   SELECT COALESCE(p.username, split_part(u.email, '@', 1), 'Admin') INTO v_admin_username
@@ -754,3 +784,15 @@ DROP POLICY IF EXISTS "Balance adjustments viewable by owner or admin" ON public
 DROP POLICY IF EXISTS "adjust_select" ON public.balance_adjustments;
 CREATE POLICY "adjust_select" ON public.balance_adjustments FOR SELECT
   USING (auth.uid() = user_id::uuid OR public.is_admin());
+
+-- Synchronize all wallets so withdrawable_balance_ugx equals total_balance_ugx if the column exists
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'wallets' AND column_name = 'withdrawable_balance_ugx'
+  ) THEN
+    UPDATE public.wallets SET withdrawable_balance_ugx = total_balance_ugx;
+  END IF;
+END;
+$$;

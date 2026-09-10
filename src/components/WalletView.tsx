@@ -64,8 +64,14 @@ export const WalletView: React.FC<WalletViewProps> = ({
 
   // 6. Pending withdrawals
   const pendingWithdrawalsUGX = transactions
-    .filter((t) => t.type === 'withdraw' && t.status === 'pending')
+    .filter((t) => (t.type === 'withdraw' || t.type === 'withdrawal') && (t.status === 'pending' || t.status === 'processing'))
     .reduce((sum, t) => sum + (t.amountUGX || 0), 0);
+
+  // Liquid withdrawable balance
+  const withdrawableLiquidUGX =
+    wallet.withdrawableBalanceUGX !== undefined
+      ? wallet.withdrawableBalanceUGX
+      : Math.max(0, availableBalanceUGX - pendingWithdrawalsUGX);
 
   const pendingCount = transactions.filter((t) => t.status === 'pending').length;
   const hasApprovedDeposit = transactions.some(
@@ -233,7 +239,7 @@ export const WalletView: React.FC<WalletViewProps> = ({
             </div>
           </div>
           <div className="text-[15px] font-extrabold font-mono text-slate-900 leading-tight">
-            UGX {availableBalanceUGX.toLocaleString()}
+            UGX {withdrawableLiquidUGX.toLocaleString()}
           </div>
           <span className="text-[10px] text-slate-400 font-medium mt-0.5 block">
             100% withdrawable

@@ -401,12 +401,17 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const handleSaveEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
+    const cleanUsername = editUsername.trim().replace(/^@/, '');
+    if (!cleanUsername) {
+      setEditUserError('Username is required.');
+      return;
+    }
     setEditUserError('');
     setEditUserLoading(true);
 
     try {
       const res = await authService.updateUserInfo(editingUser.id, {
-        username: editUsername.trim(),
+        username: cleanUsername,
         fullName: editFullName.trim(),
         phone: editPhone.trim(),
       });
@@ -414,12 +419,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       if (res.error) {
         setEditUserError(res.error);
       } else {
-        showToast(`User @${editUsername} profile updated successfully.`);
+        showToast(`User @${cleanUsername} profile updated successfully in Supabase.`);
         setEditingUser(null);
+        // Refresh the user list from Supabase so the changes persist across browsers and devices
         await loadUsersList();
       }
     } catch (err: any) {
-      setEditUserError(err.message || 'Failed to update user.');
+      setEditUserError(err?.message || 'Failed to update user in Supabase.');
     } finally {
       setEditUserLoading(false);
     }
@@ -3007,12 +3013,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               </div>
             )}
 
-            <form onSubmit={handleSaveEditUser} className="space-y-3.5">
+            <form id="edit-user-form" onSubmit={handleSaveEditUser} className="space-y-3.5">
               <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                <label htmlFor="edit-user-username" className="block text-[12px] font-bold text-slate-700 mb-1">
                   Username
                 </label>
                 <input
+                  id="edit-user-username"
                   type="text"
                   value={editUsername}
                   onChange={(e) => setEditUsername(e.target.value)}
@@ -3022,10 +3029,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                <label htmlFor="edit-user-fullname" className="block text-[12px] font-bold text-slate-700 mb-1">
                   Full Name
                 </label>
                 <input
+                  id="edit-user-fullname"
                   type="text"
                   value={editFullName}
                   onChange={(e) => setEditFullName(e.target.value)}
@@ -3034,10 +3042,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">
+                <label htmlFor="edit-user-phone" className="block text-[12px] font-bold text-slate-700 mb-1">
                   Phone Number
                 </label>
                 <input
+                  id="edit-user-phone"
                   type="tel"
                   placeholder="+256 700 000 000"
                   value={editPhone}
@@ -3048,6 +3057,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
               <div className="flex gap-2 pt-2">
                 <button
+                  id="edit-user-cancel-btn"
                   type="button"
                   onClick={() => setEditingUser(null)}
                   className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[12.5px] rounded-xl transition-colors cursor-pointer"
@@ -3055,6 +3065,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   Cancel
                 </button>
                 <button
+                  id="edit-user-save-btn"
                   type="submit"
                   disabled={editUserLoading}
                   className="flex-1 py-2.5 bg-[#1657D9] hover:bg-blue-700 text-white font-bold text-[12.5px] rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"

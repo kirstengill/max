@@ -1125,16 +1125,113 @@ export const supabaseAdmin = {
       return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
-    const { error } = await sb.rpc('admin_update_user', {
-      p_user_id: userId,
-      p_username: data.username ?? null,
-      p_full_name: data.fullName ?? null,
-      p_phone: data.phone ?? null,
-      p_status: data.status ?? null,
-      p_full_name_meta: data.fullName ?? null,
-    });
-    if (error) return { success: false, error: translate(error.message) };
-    return { success: true };
+    if (!userId || typeof userId !== 'string') {
+      return { success: false, error: 'Invalid user ID provided for update.' };
+    }
+
+    const cleanUsername = data.username !== undefined ? data.username.trim().replace(/^@/, '') : undefined;
+    const cleanFullName = data.fullName !== undefined ? data.fullName.trim() : undefined;
+    const cleanPhone = data.phone !== undefined ? data.phone.trim() : undefined;
+    const cleanStatus = data.status;
+
+    let rpcError: any = null;
+
+    // Strategy 1: Call Supabase RPC admin_update_user (6-parameter signature)
+    try {
+      const { data: rpcData, error } = await sb.rpc('admin_update_user', {
+        p_user_id: userId,
+        p_username: cleanUsername || null,
+        p_full_name: cleanFullName ?? null,
+        p_phone: cleanPhone ?? null,
+        p_status: cleanStatus ?? null,
+        p_full_name_meta: cleanFullName ?? null,
+      });
+
+      if (!error) {
+        return { success: true };
+      }
+      rpcError = error;
+    } catch (e: any) {
+      rpcError = e;
+    }
+
+    // Strategy 2: If 6-parameter RPC had a signature or schema-cache mismatch, try 5-parameter version
+    const rpcMsg = rpcError?.message || '';
+    if (
+      rpcMsg.includes('Could not find the function') ||
+      rpcMsg.includes('p_full_name_meta') ||
+      rpcMsg.includes('schema cache') ||
+      rpcError?.code === 'PGRST202' ||
+      rpcError?.code === '42883'
+    ) {
+      try {
+        const { error: rpc5Error } = await sb.rpc('admin_update_user', {
+          p_user_id: userId,
+          p_username: cleanUsername || null,
+          p_full_name: cleanFullName ?? null,
+          p_phone: cleanPhone ?? null,
+          p_status: cleanStatus ?? null,
+        });
+
+        if (!rpc5Error) {
+          return { success: true };
+        }
+        rpcError = rpc5Error;
+      } catch (e: any) {
+        rpcError = e;
+      }
+    }
+
+    // Strategy 3: Direct update on public.profiles using the user's unique Auth/Profile ID
+    try {
+      const profileUpdates: Record<string, any> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (cleanUsername !== undefined && cleanUsername !== '') profileUpdates.username = cleanUsername;
+      if (cleanFullName !== undefined) profileUpdates.full_name = cleanFullName;
+      if (cleanPhone !== undefined) profileUpdates.phone = cleanPhone;
+      if (cleanStatus !== undefined) profileUpdates.status = cleanStatus;
+
+      const { data: updatedRows, error: directError } = await sb
+        .from('profiles')
+        .update(profileUpdates)
+        .eq('id', userId)
+        .select();
+
+      if (!directError && updatedRows && updatedRows.length > 0) {
+        return { success: true };
+      }
+
+      // If no row was updated because profile was not found, attempt upsert
+      if (!directError && (!updatedRows || updatedRows.length === 0)) {
+        const { error: upsertErr } = await sb
+          .from('profiles')
+          .upsert({
+            id: userId,
+            ...profileUpdates,
+          }, { onConflict: 'id' });
+
+        if (!upsertErr) {
+          return { success: true };
+        }
+      }
+
+      // Strategy 4: Show the real database error as explicitly requested
+      const realDbError = directError?.message || rpcError?.message || 'Database update failed';
+      const details = directError?.details || rpcError?.details;
+      const hint = directError?.hint || rpcError?.hint;
+      let fullMsg = realDbError;
+      if (details && !fullMsg.includes(details)) {
+        fullMsg += ` (${details})`;
+      }
+      if (hint && !fullMsg.includes(hint)) {
+        fullMsg += ` [Hint: ${hint}]`;
+      }
+
+      return { success: false, error: fullMsg };
+    } catch (e: any) {
+      return { success: false, error: e?.message || rpcError?.message || 'Database update failed' };
+    }
   },
 
   async adjustUserBalance(

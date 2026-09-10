@@ -33,8 +33,13 @@ RETURNS BOOLEAN
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public
 AS $$
   SELECT EXISTS (
-    SELECT 1 FROM public.profiles p
-    WHERE p.id = auth.uid() AND (p.is_admin = TRUE OR p.role = 'admin')
+    SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND (p.is_admin = TRUE OR p.role = 'admin')
+  ) OR EXISTS (
+    SELECT 1 FROM auth.users u WHERE u.id = auth.uid() AND (
+      (u.raw_user_meta_data->>'is_admin')::boolean = true OR
+      (u.raw_user_meta_data->>'role') = 'admin' OR
+      u.email = 'anthonymugenyi918@gmail.com'
+    )
   );
 $$;
 
@@ -87,7 +92,7 @@ BEGIN
   INSERT INTO public.notifications (id, user_id, title, message, read, type)
   VALUES ('notif_welcome_' || new.id::text, new.id,
           'Welcome to Sunrise Capital DS',
-          'Make and complete your first deposit to unlock your UGX 4,000 Welcome Bonus with 0% fee!',
+          'Your UGX 5,000 Welcome Bonus is ready to be credited directly to your wallet balance!',
           false, 'info')
   ON CONFLICT (id) DO NOTHING;
 
@@ -508,7 +513,7 @@ REVOKE EXECUTE ON FUNCTION public.claim_referral_commission() FROM anon, public;
 GRANT EXECUTE ON FUNCTION public.claim_referral_commission() TO authenticated;
 
 -- ============================================================
--- 3e. USER: claim welcome bonus (UGX 4,000, requires approved deposit, 0% fee)
+-- 3e. USER: claim welcome bonus (UGX 5,000 one-time, directly to wallet, 0% fee)
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.claim_welcome_bonus()
 RETURNS JSONB
@@ -517,8 +522,7 @@ AS $$
 DECLARE
   v_uid UUID := auth.uid();
   v_already_claimed BOOLEAN := false;
-  v_has_approved_deposit BOOLEAN := false;
-  v_bonus_amount NUMERIC := 4000;
+  v_bonus_amount NUMERIC := 5000;
   v_new_balance NUMERIC := 0;
   v_tx_id TEXT;
 BEGIN
@@ -526,36 +530,35 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-  -- 1. Check if user already claimed welcome bonus
+  -- 1. Check if user already claimed welcome bonus in profiles (with lock)
   SELECT COALESCE(welcome_bonus_claimed, false) INTO v_already_claimed
   FROM public.profiles
-  WHERE id = v_uid;
+  WHERE id = v_uid
+  FOR UPDATE;
 
   IF v_already_claimed IS TRUE THEN
     RETURN jsonb_build_object(
       'success', false,
-      'error', 'Welcome bonus has already been claimed for this account.',
+      'error', 'Welcome bonus has already been credited for this account.',
       'code', 'ALREADY_CLAIMED'
     );
   END IF;
 
-  -- 2. Verify that an approved/completed deposit exists
-  SELECT EXISTS (
+  -- 2. Check if a bonus transaction already exists for this user (prevent duplicate credit)
+  v_tx_id := 'tx_welcome_' || v_uid::text;
+  IF EXISTS (
     SELECT 1 FROM public.transactions
-    WHERE user_id = v_uid
-      AND type = 'deposit'
-      AND status IN ('completed', 'approved')
-  ) INTO v_has_approved_deposit;
-
-  IF NOT v_has_approved_deposit THEN
+    WHERE id = v_tx_id OR (user_id = v_uid AND type = 'bonus')
+  ) THEN
+    UPDATE public.profiles SET welcome_bonus_claimed = true WHERE id = v_uid;
     RETURN jsonb_build_object(
       'success', false,
-      'error', 'An approved deposit is required to unlock your UGX 4,000 Welcome Bonus.',
-      'code', 'DEPOSIT_REQUIRED'
+      'error', 'Welcome bonus has already been credited for this account.',
+      'code', 'ALREADY_CLAIMED'
     );
   END IF;
 
-  -- 3. Update profile to mark welcome bonus claimed
+  -- 3. Update profile to permanently mark welcome bonus claimed
   UPDATE public.profiles
   SET welcome_bonus_claimed = true,
       updated_at = now()
@@ -575,14 +578,13 @@ BEGIN
     RETURNING total_balance_ugx INTO v_new_balance;
   END IF;
 
-  -- 5. Record Welcome Bonus transaction (0% fee, full 4,000 UGX credited)
-  v_tx_id := 'tx_welcome_' || v_uid::text;
+  -- 5. Record Welcome Bonus transaction (0% fee, full 5,000 UGX credited)
   INSERT INTO public.transactions (
     id, user_id, type, amount_ugx, currency, status,
     description, is_credit, timestamp, created_at
   ) VALUES (
     v_tx_id, v_uid, 'bonus', v_bonus_amount, 'UGX', 'completed',
-    'Welcome Bonus — UGX 4,000 claimed (0% Fee)', true,
+    'Welcome Bonus — UGX 5,000 credited to wallet', true,
     round(extract(epoch from now()) * 1000)::bigint, now()
   ) ON CONFLICT (id) DO UPDATE SET
     status = 'completed',
@@ -593,8 +595,8 @@ BEGIN
     id, user_id, title, message, read, type, created_at
   ) VALUES (
     'notif_welcome_' || v_uid::text, v_uid,
-    'Welcome Bonus Claimed (UGX 4,000)',
-    'UGX 4,000 Welcome Bonus has been credited to your wallet balance with 0% transaction fee!',
+    'Welcome Bonus Credited (UGX 5,000)',
+    'UGX 5,000 Welcome Bonus has been credited directly to your wallet balance!',
     false, 'success', now()
   ) ON CONFLICT (id) DO NOTHING;
 
@@ -602,7 +604,7 @@ BEGIN
     'success', true,
     'claimed_ugx', v_bonus_amount,
     'new_balance', v_new_balance,
-    'message', 'Welcome Bonus Claimed! UGX 4,000 has been added to your wallet.'
+    'message', 'Welcome Bonus Credited! UGX 5,000 has been added to your wallet.'
   );
 END;
 $$;

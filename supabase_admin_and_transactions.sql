@@ -580,6 +580,106 @@ REVOKE EXECUTE ON FUNCTION public.apply_investment_debit(NUMERIC) FROM anon, pub
 GRANT EXECUTE ON FUNCTION public.apply_investment_debit(NUMERIC) TO authenticated;
 
 -- ============================================================
+-- 10. USER: claim welcome bonus (UGX 5,000 one-time, directly to wallet, 0% fee)
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.claim_welcome_bonus()
+RETURNS JSONB
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  v_uid UUID := auth.uid();
+  v_already_claimed BOOLEAN := false;
+  v_bonus_amount NUMERIC := 5000;
+  v_new_balance NUMERIC := 0;
+  v_tx_id TEXT;
+BEGIN
+  IF v_uid IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  -- 1. Check if user already claimed welcome bonus in profiles (with lock)
+  SELECT COALESCE(welcome_bonus_claimed, false) INTO v_already_claimed
+  FROM public.profiles
+  WHERE id = v_uid
+  FOR UPDATE;
+
+  IF v_already_claimed IS TRUE THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', 'Welcome bonus has already been credited for this account.',
+      'code', 'ALREADY_CLAIMED'
+    );
+  END IF;
+
+  -- 2. Check if a bonus transaction already exists for this user (prevent duplicate credit)
+  v_tx_id := 'tx_welcome_' || v_uid::text;
+  IF EXISTS (
+    SELECT 1 FROM public.transactions
+    WHERE id = v_tx_id OR (user_id = v_uid AND type = 'bonus')
+  ) THEN
+    UPDATE public.profiles SET welcome_bonus_claimed = true WHERE id = v_uid;
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', 'Welcome bonus has already been credited for this account.',
+      'code', 'ALREADY_CLAIMED'
+    );
+  END IF;
+
+  -- 3. Update profile to permanently mark welcome bonus claimed
+  UPDATE public.profiles
+  SET welcome_bonus_claimed = true,
+      updated_at = now()
+  WHERE id = v_uid;
+
+  -- 4. Credit user wallet atomically
+  UPDATE public.wallets
+  SET total_balance_ugx = total_balance_ugx + v_bonus_amount,
+      updated_at = now()
+  WHERE user_id = v_uid
+  RETURNING total_balance_ugx INTO v_new_balance;
+
+  -- If wallet didn't exist, initialize
+  IF NOT FOUND THEN
+    INSERT INTO public.wallets (user_id, total_balance_ugx)
+    VALUES (v_uid, v_bonus_amount)
+    RETURNING total_balance_ugx INTO v_new_balance;
+  END IF;
+
+  -- 5. Record Welcome Bonus transaction (0% fee, full 5,000 UGX credited)
+  INSERT INTO public.transactions (
+    id, user_id, type, amount_ugx, currency, status,
+    description, is_credit, timestamp, created_at
+  ) VALUES (
+    v_tx_id, v_uid, 'bonus', v_bonus_amount, 'UGX', 'completed',
+    'Welcome Bonus — UGX 5,000 credited to wallet', true,
+    round(extract(epoch from now()) * 1000)::bigint, now()
+  ) ON CONFLICT (id) DO UPDATE SET
+    status = 'completed',
+    updated_at = now();
+
+  -- 6. Insert notification for user
+  INSERT INTO public.notifications (
+    id, user_id, title, message, read, type, created_at
+  ) VALUES (
+    'notif_welcome_' || v_uid::text, v_uid,
+    'Welcome Bonus Credited (UGX 5,000)',
+    'UGX 5,000 Welcome Bonus has been credited directly to your wallet balance!',
+    false, 'success', now()
+  ) ON CONFLICT (id) DO NOTHING;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'claimed_ugx', v_bonus_amount,
+    'new_balance', v_new_balance,
+    'message', 'Welcome Bonus Credited! UGX 5,000 has been added to your wallet.'
+  );
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.claim_welcome_bonus() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.claim_welcome_bonus() TO authenticated;
+
+-- ============================================================
 -- RLS TIGHTENING on the EXISTING tables.
 -- ============================================================
 

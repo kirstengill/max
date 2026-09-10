@@ -1100,9 +1100,11 @@ class AuthService {
     }
   }
 
+  private claimingBonusInProgress = false;
+
   /**
-   * Claim one-time UGX 5,000 Welcome Bonus via Supabase RPC claim_welcome_bonus().
-   * Requires an approved/completed deposit.
+   * Claim one-time UGX 5,000 Welcome Bonus directly to wallet via Supabase.
+   * Atomic and idempotent: can only ever be credited once per account.
    */
   public async claimWelcomeBonus(): Promise<{
     success: boolean;
@@ -1119,6 +1121,20 @@ class AuthService {
       return { success: false, error: 'Database client not initialized' };
     }
 
+    const userId = this.currentUser.id;
+
+    // Prevent concurrent claim calls
+    if (this.claimingBonusInProgress) {
+      return { success: false, error: 'Welcome bonus credit is already being processed.' };
+    }
+
+    // Fast check: if currentUser profile already has welcomeBonusClaimed === true
+    if (this.currentUser.welcomeBonusClaimed) {
+      return { success: false, error: 'Welcome bonus has already been credited for this account.' };
+    }
+
+    this.claimingBonusInProgress = true;
+
     try {
       // 1. Authoritative: Call Supabase RPC claim_welcome_bonus()
       const { data, error } = await this.client.rpc('claim_welcome_bonus');
@@ -1127,10 +1143,7 @@ class AuthService {
         const errMsg = error.message || '';
         if (errMsg.toLowerCase().includes('already') || errMsg.includes('ALREADY_CLAIMED')) {
           await this.refreshUserData();
-          return { success: false, error: 'Welcome bonus has already been claimed for this account.' };
-        }
-        if (errMsg.toLowerCase().includes('deposit') || errMsg.includes('DEPOSIT_REQUIRED')) {
-          return { success: false, error: 'An approved deposit is required to unlock your UGX 5,000 Welcome Bonus.' };
+          return { success: false, error: 'Welcome bonus has already been credited for this account.' };
         }
 
         // Direct fallback if RPC is not yet registered in database
@@ -1146,7 +1159,7 @@ class AuthService {
       }
 
       const claimedUGX = Number(data?.claimed_ugx ?? 5000);
-      const currentBal = this.getUserData(this.currentUser.id)?.wallet?.totalBalanceUGX || 0;
+      const currentBal = this.getUserData(userId)?.wallet?.totalBalanceUGX || 0;
       const newBalance = Number(data?.new_balance ?? (currentBal + 5000));
 
       // Refresh local user profile and wallet data directly from Supabase
@@ -1156,7 +1169,7 @@ class AuthService {
         success: true,
         claimedUGX,
         newBalance,
-        message: data?.message || 'Welcome Bonus Claimed! UGX 5,000 has been added to your wallet.',
+        message: data?.message || 'Welcome Bonus Credited! UGX 5,000 has been added to your wallet.',
       };
     } catch (err: any) {
       console.warn('claimWelcomeBonus error:', err);
@@ -1164,11 +1177,14 @@ class AuthService {
         success: false,
         error: err?.message || 'An error occurred while claiming your welcome bonus.',
       };
+    } finally {
+      this.claimingBonusInProgress = false;
     }
   }
 
   /**
-   * Direct fallback to claim welcome bonus if RPC is unprovisioned
+   * Atomic direct fallback to credit welcome bonus directly to Supabase wallet and profile
+   * if the RPC is unprovisioned in the database.
    */
   private async claimWelcomeBonusDirectFallback(): Promise<{
     success: boolean;
@@ -1181,42 +1197,73 @@ class AuthService {
     const userId = this.currentUser.id;
 
     try {
-      // Check if profile already claimed
-      const { data: profile } = await this.client.from('profiles').select('welcome_bonus_claimed').eq('id', userId).single();
+      // 1. Check if profile already marked as claimed in Supabase
+      const { data: profile } = await this.client
+        .from('profiles')
+        .select('welcome_bonus_claimed')
+        .eq('id', userId)
+        .single();
+
       if (profile?.welcome_bonus_claimed === true) {
         await this.refreshUserData();
-        return { success: false, error: 'Welcome bonus has already been claimed for this account.' };
+        return { success: false, error: 'Welcome bonus has already been credited for this account.' };
       }
 
-      // Check if user has an approved deposit
-      const { data: deposits } = await this.client
+      // 2. Check if user already has a welcome bonus transaction in Supabase
+      const txId = `tx_welcome_${userId}`;
+      const { data: existingTx } = await this.client
         .from('transactions')
         .select('id')
+        .or(`id.eq.${txId},type.eq.bonus,description.ilike.%welcome bonus%`)
         .eq('user_id', userId)
-        .eq('type', 'deposit')
-        .in('status', ['completed', 'approved']);
+        .limit(1);
 
-      if (!deposits || deposits.length === 0) {
-        return { success: false, error: 'Make and complete your first deposit to unlock your UGX 5,000 Welcome Bonus.' };
+      if (existingTx && existingTx.length > 0) {
+        // Permanently mark profile as claimed in Supabase
+        await this.client
+          .from('profiles')
+          .update({ welcome_bonus_claimed: true, updated_at: new Date().toISOString() })
+          .eq('id', userId);
+
+        await this.refreshUserData();
+        return { success: false, error: 'Welcome bonus has already been credited for this account.' };
       }
 
-      // Update profile
-      await this.client.from('profiles').update({
-        welcome_bonus_claimed: true,
-        updated_at: new Date().toISOString(),
-      }).eq('id', userId);
+      // 3. Atomically update profile with conditional check: welcome_bonus_claimed must be false
+      const { data: updatedProfile, error: profileErr } = await this.client
+        .from('profiles')
+        .update({
+          welcome_bonus_claimed: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId)
+        .eq('welcome_bonus_claimed', false)
+        .select('welcome_bonus_claimed');
 
-      // Credit wallet + 5000
-      const { data: wallet } = await this.client.from('wallets').select('total_balance_ugx').eq('user_id', userId).single();
+      if (profileErr || !updatedProfile || updatedProfile.length === 0) {
+        await this.refreshUserData();
+        return { success: false, error: 'Welcome bonus has already been credited for this account.' };
+      }
+
+      // 4. Credit wallet + 5000 directly in Supabase
+      const { data: wallet } = await this.client
+        .from('wallets')
+        .select('total_balance_ugx')
+        .eq('user_id', userId)
+        .single();
+
       const currentBal = Number(wallet?.total_balance_ugx || 0);
       const newBal = currentBal + 5000;
-      await this.client.from('wallets').update({
-        total_balance_ugx: newBal,
-        updated_at: new Date().toISOString(),
-      }).eq('user_id', userId);
 
-      // Record transaction
-      const txId = `tx_welcome_${userId}`;
+      await this.client
+        .from('wallets')
+        .update({
+          total_balance_ugx: newBal,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId);
+
+      // 5. Insert deterministic transaction record into Supabase (0% fee, full 5,000 UGX credited)
       await this.client.from('transactions').upsert({
         id: txId,
         user_id: userId,
@@ -1224,33 +1271,34 @@ class AuthService {
         amount_ugx: 5000,
         currency: 'UGX',
         status: 'completed',
-        description: 'Welcome Bonus — UGX 5,000 claimed (New User Bonus)',
+        description: 'Welcome Bonus — UGX 5,000 credited to wallet',
         is_credit: true,
         timestamp: Date.now(),
         created_at: new Date().toISOString(),
       });
 
-      // Record notification
+      // 6. Record notification in Supabase
       await this.client.from('notifications').upsert({
         id: `notif_welcome_${userId}`,
         user_id: userId,
-        title: 'Welcome Bonus Claimed (UGX 5,000)',
-        message: 'UGX 5,000 Welcome Bonus has been credited to your wallet balance!',
+        title: 'Welcome Bonus Credited (UGX 5,000)',
+        message: 'UGX 5,000 Welcome Bonus has been credited directly to your wallet balance!',
         read: false,
         type: 'success',
         created_at: new Date().toISOString(),
       });
 
+      // 7. Refresh user data directly from Supabase
       await this.refreshUserData();
 
       return {
         success: true,
         claimedUGX: 5000,
         newBalance: newBal,
-        message: 'Welcome Bonus Claimed! UGX 5,000 has been added to your wallet.',
+        message: 'Welcome Bonus Credited! UGX 5,000 has been added to your wallet.',
       };
     } catch (e: any) {
-      return { success: false, error: e?.message || 'Failed to claim welcome bonus' };
+      return { success: false, error: e?.message || 'Failed to credit welcome bonus.' };
     }
   }
 
@@ -1412,9 +1460,9 @@ class AuthService {
     data: { username?: string; fullName?: string; phone?: string; status?: 'active' | 'blocked' }
   ) {
     const res = await supabaseAdmin.updateAdminUser(userId, data);
-    // Keep the locally signed-in user in sync when the admin edits THEIR OWN account
-    if (res.success && this.currentUser && this.currentUser.id === userId && data.fullName !== undefined) {
-      this.currentUser = { ...this.currentUser, fullName: data.fullName, phone: data.phone ?? this.currentUser.phone };
+    // After saving, refresh user data from Supabase so the changes persist across browsers and devices
+    if (res.success && this.currentUser && this.currentUser.id === userId) {
+      await this.refreshUserData();
     }
     return res;
   }

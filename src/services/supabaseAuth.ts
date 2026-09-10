@@ -338,7 +338,7 @@ class AuthService {
             this.setCurrentUser(profile, authData.session.access_token);
             const dataRes = await this.refreshUserData();
             const userData = dataRes.data || {
-              wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 0, depositedBalanceUGX: 0, bonusLocked: true, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
+              wallet: { totalBalanceUGX: 5000, welcomeBonusUGX: 5000, withdrawableBalanceUGX: 5000, depositedBalanceUGX: 0, bonusLocked: false, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 },
               transactions: [],
               machines: [],
               adminTasks: [],
@@ -492,14 +492,27 @@ class AuthService {
           // ignore
         }
 
+        const totalBal = Number(walletRes.data.total_balance_ugx ?? walletRes.data.balance) || 0;
+        const withdrawableBal =
+          walletRes.data.withdrawable_balance_ugx !== undefined && walletRes.data.withdrawable_balance_ugx !== null
+            ? Number(walletRes.data.withdrawable_balance_ugx)
+            : totalBal;
+        const depositedBal =
+          walletRes.data.deposited_balance_ugx !== undefined && walletRes.data.deposited_balance_ugx !== null
+            ? Number(walletRes.data.deposited_balance_ugx)
+            : 0;
+
         const wallet: WalletState = walletRes.data
           ? {
-              totalBalanceUGX: Number(walletRes.data.total_balance_ugx) || 0,
+              totalBalanceUGX: totalBal,
+              withdrawableBalanceUGX: withdrawableBal,
+              depositedBalanceUGX: depositedBal,
+              bonusLocked: false,
               dailyPnlUGX: Number(walletRes.data.daily_pnl_ugx) || 0,
               activeMachinesCount: Number(walletRes.data.active_machines_count) || 0,
               pendingTasksCount: Number(walletRes.data.pending_tasks_count) || 0,
             }
-          : { totalBalanceUGX: 0, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 };
+          : { totalBalanceUGX: 0, withdrawableBalanceUGX: 0, dailyPnlUGX: 0, activeMachinesCount: 0, pendingTasksCount: 0 };
 
         const transactions: Transaction[] = (txRes.data || [])
           .map((t: any) => {
@@ -1414,6 +1427,10 @@ class AuthService {
     if (res.success && res.newBalance !== undefined) {
       if (this.memoryUserData[userId]) {
         this.memoryUserData[userId].wallet.totalBalanceUGX = res.newBalance;
+        this.memoryUserData[userId].wallet.withdrawableBalanceUGX = res.newBalance;
+      }
+      if (this.currentUser && this.currentUser.id === userId) {
+        await this.refreshUserData();
       }
     }
     return res;

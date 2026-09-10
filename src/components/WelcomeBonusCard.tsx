@@ -117,118 +117,79 @@ export const WelcomeBonusCard: React.FC<WelcomeBonusCardProps> = ({
     }
   };
 
-  // State 2: Deposit is approved & bonus is ready to withdraw (30% bonus charge applies)
-  if (hasApprovedDeposit) {
-    return (
-      <div
-        className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1E3A8A] via-[#1D4ED8] to-[#1E40AF] p-4.5 text-white shadow-md border border-blue-400/30 ${className}`}
-      >
-        <div className="absolute -top-8 -right-8 w-28 h-28 bg-amber-400/20 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-extrabold uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2.5 py-1 rounded-full border border-amber-300/30 flex items-center gap-1.5 backdrop-blur-xs">
-              <Gift className="w-3.5 h-3.5 text-amber-300" />
-              Welcome Bonus Ready
-            </span>
-            <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-              Unlocked with Deposit
-            </span>
-          </div>
-
-          <div>
-            <h3 className="text-[16.5px] font-black tracking-tight text-white flex items-center gap-2">
-              <span>Withdraw UGX 5,000 Welcome Bonus</span>
-              <Sparkles className="w-4 h-4 text-amber-300" />
-            </h3>
-            <p className="text-[12.5px] text-blue-100/90 mt-1 leading-snug">
-              Your qualifying deposit has been approved! Your UGX 5,000 Welcome Bonus is unlocked for withdrawal (subject to 30% bonus protection charge: UGX 1,500 fee, UGX 3,500 payout).
-            </p>
-          </div>
-
-          {errorMessage && (
-            <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-400/40 text-rose-100 text-[12px] flex items-center gap-2 font-medium">
-              <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />
-              <span className="flex-1">{errorMessage}</span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-            {/* Direct Bonus Withdrawal Action */}
-            {onOpenWithdraw && (
-              <button
-                id="btn-withdraw-welcome-bonus-action"
-                onClick={onOpenWithdraw}
-                className="py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] text-white font-extrabold text-[13px] rounded-xl transition-all shadow-md shadow-emerald-900/30 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <ArrowUpRight className="w-4 h-4 text-emerald-100" />
-                <span>Withdraw UGX 5,000</span>
-                <span className="text-[10px] font-black bg-black/20 text-emerald-100 px-1.5 py-0.5 rounded">
-                  30% CHARGE
-                </span>
-              </button>
-            )}
-
-            {/* Claim to Wallet Balance Action */}
-            <button
-              id="btn-claim-welcome-bonus"
-              onClick={handleClaim}
-              disabled={isClaiming}
-              className={`py-2.5 px-4 ${onOpenWithdraw ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20' : 'w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black'} font-bold text-[13px] rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75`}
-            >
-              {isClaiming ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-current" />
-                  <span>Claiming to Wallet...</span>
-                </>
-              ) : (
-                <>
-                  <Wallet className="w-4 h-4 text-current" />
-                  <span>Claim to Wallet</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // State 1: Before an approved deposit (Locked for newly registered users)
+  // Welcome bonus is active and ready for withdrawal or investment (No deposit requirement, no locked state)
   return (
     <div
-      className={`bg-gradient-to-r from-slate-50 via-slate-100/50 to-slate-50 border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex items-center justify-between gap-3.5 ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1E3A8A] via-[#1D4ED8] to-[#1E40AF] p-4.5 text-white shadow-md border border-blue-400/30 ${className}`}
     >
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-slate-200/90 text-slate-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-          <Lock className="w-5 h-5 text-slate-500" />
+      <div className="absolute -top-8 -right-8 w-28 h-28 bg-amber-400/20 rounded-full blur-xl pointer-events-none" />
+
+      <div className="relative z-10 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10.5px] font-extrabold uppercase tracking-wider bg-amber-400/20 text-amber-300 px-2.5 py-1 rounded-full border border-amber-300/30 flex items-center gap-1.5 backdrop-blur-xs">
+            <Gift className="w-3.5 h-3.5 text-amber-300" />
+            Welcome Bonus Active
+          </span>
+          <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+            UGX 5,000 Available
+          </span>
         </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className="text-[13.5px] font-extrabold text-slate-800 leading-tight">
-              UGX 5,000 Welcome Bonus
-            </h4>
-            <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100/80 border border-amber-200/60 px-2 py-0.5 rounded-full uppercase tracking-wide">
-              Restricted
-            </span>
-          </div>
-          <p className="text-[12px] text-slate-600 mt-0.5 leading-snug">
-            Your UGX 5,000 Welcome Bonus is restricted from immediate withdrawal. Complete a qualifying deposit (minimum UGX 20,000) to unlock withdrawal. Attempting to withdraw bonus funds is subject to a 30% bonus protection charge.
+
+        <div>
+          <h3 className="text-[16.5px] font-black tracking-tight text-white flex items-center gap-2">
+            <span>UGX 5,000 Welcome Bonus</span>
+            <Sparkles className="w-4 h-4 text-amber-300" />
+          </h3>
+          <p className="text-[12.5px] text-blue-100/90 mt-1 leading-snug">
+            Your UGX 5,000 Welcome Bonus is active. You can withdraw directly to your mobile money or use it to invest in machines. (Subject to standard 30% bonus charge on withdrawal: UGX 1,500 fee, UGX 3,500 payout).
           </p>
         </div>
-      </div>
 
-      {onOpenDeposit && (
-        <button
-          id="btn-unlock-welcome-bonus-deposit"
-          onClick={onOpenDeposit}
-          className="shrink-0 px-3.5 py-2 bg-white hover:bg-slate-50 active:scale-95 text-[#1657D9] border border-blue-200 hover:border-blue-400 font-extrabold text-[12.5px] rounded-xl transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
-        >
-          <span>Deposit to Unlock</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
-      )}
+        {errorMessage && (
+          <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-400/40 text-rose-100 text-[12px] flex items-center gap-2 font-medium">
+            <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />
+            <span className="flex-1">{errorMessage}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          {/* Direct Bonus Withdrawal Action */}
+          {onOpenWithdraw && (
+            <button
+              id="btn-withdraw-welcome-bonus-action"
+              onClick={onOpenWithdraw}
+              className="py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 active:scale-[0.99] text-white font-extrabold text-[13px] rounded-xl transition-all shadow-md shadow-emerald-900/30 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ArrowUpRight className="w-4 h-4 text-emerald-100" />
+              <span>Withdraw UGX 5,000</span>
+              <span className="text-[10px] font-black bg-black/20 text-emerald-100 px-1.5 py-0.5 rounded">
+                30% CHARGE
+              </span>
+            </button>
+          )}
+
+          {/* Claim to Wallet Balance Action */}
+          <button
+            id="btn-claim-welcome-bonus"
+            onClick={handleClaim}
+            disabled={isClaiming}
+            className={`py-2.5 px-4 ${onOpenWithdraw ? 'bg-white/10 hover:bg-white/20 text-white border border-white/20' : 'w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black'} font-bold text-[13px] rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75`}
+          >
+            {isClaiming ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin text-current" />
+                <span>Claiming to Wallet...</span>
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4 text-current" />
+                <span>Claim to Wallet</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

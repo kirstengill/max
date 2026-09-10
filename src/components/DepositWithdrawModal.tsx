@@ -40,6 +40,7 @@ interface DepositWithdrawModalProps {
   mode: 'deposit' | 'withdraw';
   onClose: () => void;
   balanceUGX: number;
+  withdrawableBalanceUGX?: number;
   initialIsWelcomeBonus?: boolean;
   hasApprovedDeposit?: boolean;
   welcomeBonusClaimed?: boolean;
@@ -58,6 +59,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
   mode,
   onClose,
   balanceUGX,
+  withdrawableBalanceUGX,
   initialIsWelcomeBonus = false,
   hasApprovedDeposit = false,
   welcomeBonusClaimed = false,
@@ -68,6 +70,9 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
   const [activeTab, setActiveTab] = useState<'mtn' | 'airtel' | 'bank'>('mtn');
   const [isWelcomeBonus, setIsWelcomeBonus] = useState<boolean>(initialIsWelcomeBonus);
   const [minimumWithdrawalUGX, setMinimumWithdrawalUGX] = useState(0);
+
+  const availableWithdrawableUGX =
+    withdrawableBalanceUGX !== undefined ? withdrawableBalanceUGX : balanceUGX;
 
   const [amountUGXStr, setAmountUGXStr] = useState<string>(() => {
     if (initialIsWelcomeBonus) {
@@ -191,40 +196,17 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
         return;
       }
 
-      // Check balance
-      if (requestedWithdrawalUGX > balanceUGX) {
+      // Check balance against user's withdrawable balance
+      if (requestedWithdrawalUGX > availableWithdrawableUGX) {
         setErrorMessage(
-          `Insufficient balance. Requested UGX ${requestedWithdrawalUGX.toLocaleString()} exceeds your available balance of UGX ${balanceUGX.toLocaleString()}.`
+          `Insufficient balance. Requested UGX ${requestedWithdrawalUGX.toLocaleString()} exceeds your available withdrawable balance of UGX ${availableWithdrawableUGX.toLocaleString()}.`
         );
         return;
-      }
-
-      // Welcome Bonus Withdrawal Restriction:
-      // The UGX 5,000 welcome bonus must not be immediately withdrawable.
-      // If a user attempts to withdraw money that comes from the welcome bonus before making a qualifying deposit, prevent the withdrawal.
-      if (!hasApprovedDeposit) {
-        const nonBonusFunds = Math.max(0, balanceUGX - 5000);
-        if (isWelcomeBonus || requestedWithdrawalUGX > nonBonusFunds) {
-          setErrorMessage(
-            'Welcome Bonus Restriction: The UGX 5,000 welcome bonus cannot be withdrawn until you have made a qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.'
-          );
-          return;
-        }
       }
     }
 
     setIsProcessing(true);
     try {
-      // If user selected Welcome Bonus withdrawal and bonus is not yet claimed into wallet balance,
-      // claim it first so wallet balance is funded
-      if (mode === 'withdraw' && isWelcomeBonus && !welcomeBonusClaimed && hasApprovedDeposit) {
-        const claimRes = await authService.claimWelcomeBonus();
-        if (!claimRes.success && !claimRes.error?.toLowerCase().includes('already')) {
-          setIsProcessing(false);
-          setErrorMessage(claimRes.error || 'Failed to initialize welcome bonus for withdrawal.');
-          return;
-        }
-      }
 
       const channelName =
         activeTab === 'mtn'
@@ -426,58 +408,31 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
             )}
             {/* Mode Toggle for Withdraw: Standard vs Welcome Bonus */}
             {mode === 'withdraw' && (
-              hasApprovedDeposit ? (
-                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 p-1 rounded-2xl border border-blue-200/80 shadow-2xs flex gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleWelcomeBonus(true)}
-                    className={`flex-1 py-2 px-2.5 rounded-xl text-[12px] font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      isWelcomeBonus
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'text-slate-700 hover:bg-white/60'
-                    }`}
-                  >
-                    <Gift className="w-3.5 h-3.5" />
-                    <span>Welcome Bonus (30% Charge)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleWelcomeBonus(false)}
-                    className={`flex-1 py-2 px-2.5 rounded-xl text-[12px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                      !isWelcomeBonus
-                        ? 'bg-slate-900 text-white shadow-sm'
-                        : 'text-slate-700 hover:bg-white/60'
-                    }`}
-                  >
-                    <span>Standard (20% Fee)</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                      <Gift className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[11.5px] font-bold text-slate-800 leading-tight">
-                        UGX 5,000 Welcome Bonus Restricted
-                      </p>
-                      <p className="text-[10.5px] text-slate-500 leading-tight truncate">
-                        Make a qualifying deposit (min UGX 20,000) to unlock withdrawal.
-                      </p>
-                    </div>
-                  </div>
-                  {onSwitchMode && (
-                    <button
-                      type="button"
-                      onClick={() => onSwitchMode('deposit')}
-                      className="shrink-0 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 cursor-pointer transition-colors"
-                    >
-                      Deposit Now
-                    </button>
-                  )}
-                </div>
-              )
+              <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-emerald-50 p-1 rounded-2xl border border-blue-200/80 shadow-2xs flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleToggleWelcomeBonus(true)}
+                  className={`flex-1 py-2 px-2.5 rounded-xl text-[12px] font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    isWelcomeBonus
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-white/60'
+                  }`}
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span>Welcome Bonus (30% Charge)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleWelcomeBonus(false)}
+                  className={`flex-1 py-2 px-2.5 rounded-xl text-[12px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    !isWelcomeBonus
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'text-slate-700 hover:bg-white/60'
+                  }`}
+                >
+                  <span>Standard (20% Fee)</span>
+                </button>
+              </div>
             )}
 
             {/* Method Selector */}
@@ -612,20 +567,11 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     </span>
                   </div>
 
-                  {!hasApprovedDeposit && (isWelcomeBonus || requestedWithdrawalUGX > Math.max(0, balanceUGX - 5000)) && (
-                    <div className="text-[11.5px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-start gap-2 mt-1">
-                      <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
-                      <span>
-                        Welcome Bonus Restriction: The UGX 5,000 welcome bonus cannot be withdrawn until you have made an approved qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.
-                      </span>
-                    </div>
-                  )}
-
-                  {totalDeductionUGX > balanceUGX && (
+                  {totalDeductionUGX > availableWithdrawableUGX && (
                     <div className="text-[11px] font-semibold text-rose-600 flex items-center gap-1.5 pt-1 border-t border-rose-100">
                       <ShieldAlert className="w-3.5 h-3.5 shrink-0 text-rose-600" />
                       <span>
-                        Insufficient balance. Requested UGX {requestedWithdrawalUGX.toLocaleString()} exceeds your available balance of UGX {balanceUGX.toLocaleString()}.
+                        Insufficient balance. Requested UGX {requestedWithdrawalUGX.toLocaleString()} exceeds your available withdrawable balance of UGX {availableWithdrawableUGX.toLocaleString()}.
                       </span>
                     </div>
                   )}
@@ -898,7 +844,7 @@ export const DepositWithdrawModal: React.FC<DepositWithdrawModalProps> = ({
                     <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-[11px] text-amber-900 leading-snug">
                       <span className="font-bold">Welcome Bonus Policy:</span> A{' '}
-                      <span className="font-extrabold underline">30% bonus protection charge</span> applies to welcome bonus withdrawals (Fee: UGX 1,500, You Receive: UGX 3,500). An approved qualifying deposit (min UGX 20,000) is required before withdrawal.
+                      <span className="font-extrabold underline">30% bonus protection charge</span> applies to welcome bonus withdrawals (Fee: UGX 1,500, You Receive: UGX 3,500).
                     </p>
                   </div>
                 ) : (

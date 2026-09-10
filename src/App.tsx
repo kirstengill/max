@@ -682,6 +682,7 @@ export default function App() {
             )}
             welcomeBonusClaimed={user?.welcomeBonusClaimed}
             balanceUGX={wallet.totalBalanceUGX}
+            withdrawableBalanceUGX={wallet.withdrawableBalanceUGX ?? wallet.totalBalanceUGX}
             onSwitchMode={(m) => setDepositWithdrawModal({ open: true, mode: m })}
             onClose={() => setDepositWithdrawModal({ open: false, mode: 'deposit' })}
             onSuccess={handleDepositWithdrawSuccess}

@@ -131,29 +131,21 @@ export const supabaseAdmin = {
           };
         }
 
-        const { data: walletRow } = await sb.from('wallets').select('total_balance_ugx').eq('user_id', userId).maybeSingle();
-        const availableBalance = walletRow ? Number(walletRow.total_balance_ugx) : 0;
+        // Fetch authoritative wallet balance from Supabase
+        const { data: walletRow } = await sb
+          .from('wallets')
+          .select('total_balance_ugx, withdrawable_balance_ugx')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        const availableBalance = walletRow
+          ? Number(walletRow.withdrawable_balance_ugx ?? walletRow.total_balance_ugx ?? 0)
+          : 0;
+
         if (numericAmount > availableBalance) {
           return {
             success: false,
             error: `Insufficient balance: requested UGX ${numericAmount.toLocaleString()}, available UGX ${availableBalance.toLocaleString()}`,
-          };
-        }
-
-        // Check qualifying deposit and bonus restriction
-        const { data: deposits } = await sb
-          .from('transactions')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('type', 'deposit')
-          .in('status', ['completed', 'approved']);
-        const hasApprovedDeposit = deposits && deposits.length > 0;
-        const nonBonusFunds = hasApprovedDeposit ? availableBalance : Math.max(0, availableBalance - 5000);
-
-        if (!hasApprovedDeposit && (input.isBonusWithdrawal || numericAmount > nonBonusFunds)) {
-          return {
-            success: false,
-            error: 'Welcome Bonus Restriction: The UGX 5,000 welcome bonus cannot be withdrawn until you have made a qualifying deposit (minimum UGX 20,000). A 30% bonus protection charge applies to bonus withdrawals.',
           };
         }
       }
@@ -521,7 +513,7 @@ export const supabaseAdmin = {
     const dailyReward = Math.max(0, Number(machine.dailyRewardUGX ?? 0));
     const category = machine.category || 'VIP Products';
     const image = machine.image || '/images/precious-metals-portfolio.svg';
-    const status = (machine.status === 'Active' || machine.status === 'active') ? 'Active' : 'Maintenance';
+    const status = machine.status === 'Active' ? 'Active' : 'Maintenance';
     const estYearlyROI = Number(machine.estYearlyROI ?? 0);
     const durationDays = Number(machine.durationDays || 365);
     const subtitle = machine.subtitle ? machine.subtitle.trim() : null;
@@ -1154,134 +1146,87 @@ export const supabaseAdmin = {
       return { success: false, error: 'Database connection is not initialized. Please refresh and try again.' };
     }
 
+    const numAmount = Math.abs(adjustment.amountUGX);
+    if (!numAmount || numAmount <= 0) {
+      return { success: false, error: 'Please enter a valid positive UGX amount.' };
+    }
+
+    const signedAmount = adjustment.type === 'add' ? numAmount : -numAmount;
+
     try {
-      const { data, error } = await sb.rpc('admin_adjust_balance', {
+      // 1. Primary RPC call: admin_adjust_balance with (p_user_id, p_amount_ugx, p_reason)
+      let rpcRes = await sb.rpc('admin_adjust_balance', {
         p_user_id: userId,
-        p_amount: adjustment.amountUGX,
-        p_type: adjustment.type,
-        p_reason: adjustment.reason,
+        p_amount_ugx: signedAmount,
+        p_reason: adjustment.reason || 'Admin balance adjustment',
       });
 
-      if (!error && data) {
-        const row = Array.isArray(data) ? data[0] : data;
-        if (row && (row.new_balance !== undefined || row.newBalance !== undefined)) {
-          return {
-            success: true,
-            previousBalance: Number(row.previous_balance ?? row.previousBalance ?? 0),
-            newBalance: Number(row.new_balance ?? row.newBalance ?? 0),
-          };
+      // If signature is the 4-arg legacy variation (p_user_id, p_amount, p_type, p_reason), fallback to it
+      if (
+        rpcRes.error &&
+        (rpcRes.error.message.includes('parameter') ||
+          rpcRes.error.message.includes('function') ||
+          rpcRes.error.code === 'PGRST202' ||
+          rpcRes.error.code === '42883')
+      ) {
+        const fallbackRes = await sb.rpc('admin_adjust_balance', {
+          p_user_id: userId,
+          p_amount: numAmount,
+          p_type: adjustment.type,
+          p_reason: adjustment.reason || 'Admin balance adjustment',
+        });
+        if (!fallbackRes.error) {
+          rpcRes = fallbackRes;
         }
       }
 
-      console.warn('[Supabase Admin] admin_adjust_balance RPC returned notice or empty, executing direct balance adjustment fallback...', error?.message);
-
-      // Direct fallback: Select user wallet, calculate new balance, and upsert
-      const { data: walletData } = await sb
-        .from('wallets')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      const currentBalance = Number(walletData?.total_balance_ugx ?? walletData?.balance ?? 0);
-      const newBalance =
-        adjustment.type === 'add'
-          ? currentBalance + adjustment.amountUGX
-          : Math.max(0, currentBalance - adjustment.amountUGX);
-
-      if (adjustment.type === 'deduct' && adjustment.amountUGX > currentBalance) {
+      // If the RPC fails, show the actual Supabase error directly; never perform direct browser table mutations
+      if (rpcRes.error) {
+        console.error('[Supabase Admin] admin_adjust_balance RPC error:', rpcRes.error);
         return {
           success: false,
-          error: `Cannot deduct UGX ${adjustment.amountUGX.toLocaleString()}. User balance is only UGX ${currentBalance.toLocaleString()}.`,
+          error: rpcRes.error.message || 'Supabase RPC admin_adjust_balance failed.',
         };
       }
 
-      // Upsert wallet balance
-      const { error: walletUpdateErr } = await sb.from('wallets').upsert({
-        user_id: userId,
-        total_balance_ugx: newBalance,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
+      // 2. Parse previous and new balance from the RPC return table/json
+      let prevBal: number | undefined;
+      let newBal: number | undefined;
 
-      if (walletUpdateErr) {
-        console.warn('[Supabase Admin] Direct wallet update notice:', walletUpdateErr);
-        // Try updating existing row
-        await sb
-          .from('wallets')
-          .update({ total_balance_ugx: newBalance, updated_at: new Date().toISOString() })
-          .eq('user_id', userId);
+      const data = rpcRes.data;
+      if (data) {
+        const row = Array.isArray(data) ? data[0] : data;
+        if (typeof row === 'number') {
+          newBal = row;
+        } else if (row && typeof row === 'object') {
+          if (row.new_balance !== undefined || row.newBalance !== undefined) {
+            newBal = Number(row.new_balance ?? row.newBalance);
+          }
+          if (row.previous_balance !== undefined || row.previousBalance !== undefined) {
+            prevBal = Number(row.previous_balance ?? row.previousBalance);
+          }
+        }
       }
 
-      // Fetch user and admin details for the audit log
-      const { data: userProfile } = await sb.from('profiles').select('username, full_name').eq('id', userId).maybeSingle();
-      const { data: authAdmin } = await sb.auth.getUser();
-      const adminId = authAdmin?.user?.id || 'admin';
-      const adminUsername = authAdmin?.user?.user_metadata?.username || authAdmin?.user?.email?.split('@')[0] || 'Admin';
+      // 3. Authoritatively fetch the updated wallet from Supabase
+      const { data: updatedWallet } = await sb
+        .from('wallets')
+        .select('total_balance_ugx, withdrawable_balance_ugx')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      const now = new Date();
-      const nowIso = now.toISOString();
-
-      // Insert into balance_adjustments table
-      try {
-        await sb.from('balance_adjustments').insert({
-          id: `adj_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          user_id: userId,
-          username: userProfile?.username || 'user',
-          user_full_name: userProfile?.full_name || 'User',
-          previous_balance_ugx: currentBalance,
-          adjustment_amount_ugx: adjustment.amountUGX,
-          new_balance_ugx: newBalance,
-          type: adjustment.type,
-          reason: adjustment.reason || 'Admin balance adjustment',
-          admin_id: adminId,
-          admin_username: adminUsername,
-          timestamp: nowIso,
-          date: nowIso.split('T')[0],
-          created_at: nowIso,
-        });
-      } catch (e) {
-        console.warn('[Supabase Admin] balance_adjustments insert notice:', e);
-      }
-
-      // Insert completed transaction into transactions table
-      try {
-        await sb.from('transactions').insert({
-          id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          user_id: userId,
-          type: 'adjustment',
-          amount_ugx: adjustment.amountUGX,
-          currency: 'UGX',
-          status: 'completed',
-          description: `Admin Balance Adjustment (${adjustment.type === 'add' ? 'Credit' : 'Deduction'}): ${adjustment.reason || 'Manual balance update'}`,
-          timestamp: nowIso,
-          created_at: nowIso,
-        });
-      } catch (e) {
-        console.warn('[Supabase Admin] transactions table notice:', e);
-      }
-
-      // Insert notification for the user
-      try {
-        await sb.from('notifications').insert({
-          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          user_id: userId,
-          title: adjustment.type === 'add' ? 'Funds Credited by Admin' : 'Funds Deducted by Admin',
-          message: `Your wallet balance was ${adjustment.type === 'add' ? 'credited with UGX ' : 'deducted by UGX '} ${adjustment.amountUGX.toLocaleString()}. New balance: UGX ${newBalance.toLocaleString()}. Reason: ${adjustment.reason}`,
-          read: false,
-          type: adjustment.type === 'add' ? 'success' : 'info',
-          created_at: nowIso,
-        });
-      } catch (e) {
-        console.warn('[Supabase Admin] notifications insert notice:', e);
+      if (updatedWallet) {
+        newBal = Number(updatedWallet.total_balance_ugx ?? newBal ?? 0);
       }
 
       return {
         success: true,
-        previousBalance: currentBalance,
-        newBalance: newBalance,
+        previousBalance: prevBal,
+        newBalance: newBal,
       };
     } catch (e: any) {
       console.error('[Supabase Admin] adjustUserBalance exception:', e);
-      return { success: false, error: e?.message || 'Failed to adjust user balance' };
+      return { success: false, error: e?.message || 'Failed to adjust user balance via Supabase RPC.' };
     }
   },
 
